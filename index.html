@@ -16,6 +16,50 @@
     button.active { background:#222; color:#fff; }
     .toggle { display:flex; align-items:center; gap:8px; margin-top:10px; font-size:14px; }
     .status { margin-top:10px; font-size:12px; line-height:1.5; color:#555; }
+    .address-popup {
+      width: 250px;
+      padding: 12px;
+      background: rgba(255,255,255,.98);
+      border-radius: 10px;
+      box-shadow: 0 3px 14px rgba(0,0,0,.28);
+      color: #222;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .address-popup .title {
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+    .address-popup .addr {
+      word-break: keep-all;
+    }
+    .address-popup .coord {
+      margin-top: 4px;
+      color: #777;
+      font-size: 11px;
+    }
+    .address-popup .navi-btn {
+      width: 100%;
+      margin-top: 9px;
+      padding: 8px 10px;
+      border: 0;
+      border-radius: 7px;
+      background: #fee500;
+      color: #191919;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .address-popup .close-btn {
+      position: absolute;
+      right: 8px;
+      top: 6px;
+      border: 0;
+      background: transparent;
+      padding: 2px 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
     .scale-bar {
       position: absolute;
       right: 14px;
@@ -61,7 +105,8 @@
       .status { font-size:11px; }
     }
   </style>
-  <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7ee4bab8cd4d6be6d0d68a49e9b4502b"></script>
+  <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7ee4bab8cd4d6be6d0d68a49e9b4502b&libraries=services"></script>
+  <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js"></script>
 </head>
 <body>
 <div id="map"></div>
@@ -79,6 +124,100 @@ const map=new kakao.maps.Map(document.getElementById('map'),{center:new kakao.ma
 
 let routePolylines=[],routeLabels=[],routeBounds=new kakao.maps.LatLngBounds(),currentMarker=null;
 const statusEl=document.getElementById('status'),routeToggle=document.getElementById('routeToggle');
+const geocoder=new kakao.maps.services.Geocoder();
+let addressOverlay=null;
+
+if(window.Kakao && !Kakao.isInitialized()){
+  Kakao.init('7ee4bab8cd4d6be6d0d68a49e9b4502b');
+}
+function startKakaoNavi(name,lat,lng){
+  if(!window.Kakao || !Kakao.isInitialized() || !Kakao.Navi){
+    alert('카카오내비 연결을 준비하지 못했습니다.');
+    return;
+  }
+
+  Kakao.Navi.start({
+    name: name || '선택 위치',
+    x: lng,
+    y: lat,
+    coordType: 'wgs84'
+  });
+}
+
+function showAddressPopup(latLng){
+  const lat=latLng.getLat();
+  const lng=latLng.getLng();
+
+  geocoder.coord2Address(lng,lat,function(result,status){
+    let jibun='지번 정보를 찾을 수 없습니다.';
+
+    if(status===kakao.maps.services.Status.OK && result && result[0]){
+      if(result[0].address && result[0].address.address_name){
+        jibun=result[0].address.address_name;
+      }else if(result[0].road_address && result[0].road_address.address_name){
+        jibun=result[0].road_address.address_name;
+      }
+    }
+
+    if(addressOverlay){
+      addressOverlay.setMap(null);
+      addressOverlay=null;
+    }
+
+    const box=document.createElement('div');
+    box.className='address-popup';
+
+    const close=document.createElement('button');
+    close.className='close-btn';
+    close.type='button';
+    close.textContent='×';
+
+    const title=document.createElement('div');
+    title.className='title';
+    title.textContent='지번 정보';
+
+    const addr=document.createElement('div');
+    addr.className='addr';
+    addr.textContent=jibun;
+
+    const coord=document.createElement('div');
+    coord.className='coord';
+    coord.textContent=lat.toFixed(6)+', '+lng.toFixed(6);
+
+    const navi=document.createElement('button');
+    navi.className='navi-btn';
+    navi.type='button';
+    navi.textContent='카카오내비 길찾기';
+    navi.addEventListener('click',()=>startKakaoNavi(jibun,lat,lng));
+
+    close.addEventListener('click',()=>{
+      if(addressOverlay){
+        addressOverlay.setMap(null);
+        addressOverlay=null;
+      }
+    });
+
+    box.appendChild(close);
+    box.appendChild(title);
+    box.appendChild(addr);
+    box.appendChild(coord);
+    box.appendChild(navi);
+
+    addressOverlay=new kakao.maps.CustomOverlay({
+      map:map,
+      position:latLng,
+      content:box,
+      xAnchor:0.5,
+      yAnchor:1.08,
+      zIndex:30
+    });
+  });
+}
+
+kakao.maps.event.addListener(map,'rightclick',function(mouseEvent){
+  showAddressPopup(mouseEvent.latLng);
+});
+
 function niceScaleDistance(meters){
   const exponent=Math.pow(10,Math.floor(Math.log10(meters)));
   const fraction=meters/exponent;
