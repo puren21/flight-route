@@ -67,6 +67,40 @@
       color: #222;
     }
     .floating-location:hover { background: #fff; }
+    .route-select-popup {
+      width: 150px;
+      padding: 10px;
+      background: rgba(255,255,255,.98);
+      border-radius: 10px;
+      box-shadow: 0 3px 14px rgba(0,0,0,.28);
+      font-size: 13px;
+      color: #222;
+    }
+    .route-select-popup .route-select-title {
+      font-weight: 700;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+    .route-select-popup .route-select-actions {
+      display: flex;
+      gap: 6px;
+    }
+    .route-select-popup button {
+      flex: 1;
+      padding: 8px 6px;
+      border: 0;
+      border-radius: 7px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .route-select-popup .route-on-btn {
+      background: #1976d2;
+      color: #fff;
+    }
+    .route-select-popup .route-off-btn {
+      background: #e9ecef;
+      color: #222;
+    }
     .address-popup {
       width: 250px;
       padding: 12px;
@@ -192,7 +226,7 @@
   </div>
   <div class="panel-body">
     <label class="toggle"><input type="checkbox" id="routeToggle" checked /> 비행경로 표시</label>
-    <div style="font-size:11px;color:#666;margin:4px 0 8px;">라인 클릭: 켜기/끄기</div>
+    <div style="font-size:11px;color:#666;margin:4px 0 8px;">라인 선택: 켜기 / 끄기</div>
     <div class="row"><button id="roadBtn" class="active">일반지도</button><button id="skyBtn">위성지도</button></div>
     <div class="row"><button id="zoomInBtn">확대 +</button><button id="zoomOutBtn">축소 −</button></div>
     <div class="row"><button id="fitBtn">전체 경로</button><button id="locBtn">현재 위치</button></div>
@@ -204,6 +238,7 @@ const map=new kakao.maps.Map(document.getElementById('map'),{center:new kakao.ma
 
 let routePolylines=[],routeLabels=[],routeBounds=new kakao.maps.LatLngBounds(),currentMarker=null;
 let selectedRoute=null;
+let routeSelectOverlay=null;
 const statusEl=document.getElementById('status'),routeToggle=document.getElementById('routeToggle');
 const controlPanel=document.getElementById('controlPanel');
 const panelToggleBtn=document.getElementById('panelToggleBtn');
@@ -219,6 +254,77 @@ let addressOverlay=null;
 if(window.Kakao && !Kakao.isInitialized()){
   Kakao.init('7ee4bab8cd4d6be6d0d68a49e9b4502b');
 }
+function setRouteState(routeLine,enabled){
+  routeLine._routeEnabled=enabled;
+
+  if(enabled){
+    routeLine.setOptions({
+      strokeWeight:2,
+      strokeOpacity:.9
+    });
+  }else{
+    routeLine.setOptions({
+      strokeWeight:1,
+      strokeOpacity:.45
+    });
+  }
+}
+
+function showRouteSelectPopup(routeLine,position){
+  if(routeSelectOverlay){
+    routeSelectOverlay.setMap(null);
+    routeSelectOverlay=null;
+  }
+
+  const box=document.createElement('div');
+  box.className='route-select-popup';
+
+  const title=document.createElement('div');
+  title.className='route-select-title';
+  title.textContent='라인 표시';
+
+  const actions=document.createElement('div');
+  actions.className='route-select-actions';
+
+  const onBtn=document.createElement('button');
+  onBtn.className='route-on-btn';
+  onBtn.type='button';
+  onBtn.textContent='켜기';
+  onBtn.addEventListener('click',()=>{
+    setRouteState(routeLine,true);
+    if(routeSelectOverlay){
+      routeSelectOverlay.setMap(null);
+      routeSelectOverlay=null;
+    }
+  });
+
+  const offBtn=document.createElement('button');
+  offBtn.className='route-off-btn';
+  offBtn.type='button';
+  offBtn.textContent='끄기';
+  offBtn.addEventListener('click',()=>{
+    setRouteState(routeLine,false);
+    if(routeSelectOverlay){
+      routeSelectOverlay.setMap(null);
+      routeSelectOverlay=null;
+    }
+  });
+
+  actions.appendChild(onBtn);
+  actions.appendChild(offBtn);
+  box.appendChild(title);
+  box.appendChild(actions);
+
+  routeSelectOverlay=new kakao.maps.CustomOverlay({
+    map:map,
+    position:position,
+    content:box,
+    xAnchor:0.5,
+    yAnchor:1.15,
+    zIndex:40
+  });
+}
+
 function startKakaoNavi(name,lat,lng){
   if(!window.Kakao || !Kakao.isInitialized() || !Kakao.Navi){
     alert('카카오내비 연결을 준비하지 못했습니다.');
