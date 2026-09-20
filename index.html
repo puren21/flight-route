@@ -17,6 +17,25 @@
       gap:10px;
       margin-bottom:12px;
     }
+    .mobile-menu-launcher{
+      display:none;
+      position:fixed;
+      top:calc(env(safe-area-inset-top, 0px) + 10px);
+      left:calc(env(safe-area-inset-left, 0px) + 10px);
+      z-index:2147483647;
+      width:44px;
+      height:44px;
+      min-width:44px;
+      padding:0;
+      border:1px solid rgba(0,0,0,.18);
+      border-radius:12px;
+      background:rgba(255,255,255,.98);
+      box-shadow:0 3px 12px rgba(0,0,0,.24);
+      font-size:22px;
+      line-height:44px;
+      text-align:center;
+      color:#222;
+    }
     .panel-toggle {
       flex:0 0 auto;
       width:34px;
@@ -373,16 +392,17 @@
       transform: translate(-50%, -50%);
     }
     @media (max-width:700px) {
+      .mobile-menu-launcher{ display:block; }
       .panel {
         position:fixed;
-        top:calc(env(safe-area-inset-top, 0px) + 10px);
+        top:calc(env(safe-area-inset-top, 0px) + 62px);
         left:calc(env(safe-area-inset-left, 0px) + 10px);
         right:calc(env(safe-area-inset-right, 0px) + 10px);
         width:auto;
         max-height:calc(100vh - env(safe-area-inset-top, 0px) - 20px);
         overflow-y:auto;
         padding:10px;
-        z-index:100;
+        z-index:2147483646;
         display:block;
         visibility:visible;
       }
@@ -416,6 +436,7 @@
 </head>
 <body>
 <div id="map"></div>
+<button id="mobileMenuLauncher" class="mobile-menu-launcher" type="button" aria-label="메뉴 열기">☰</button>
 <div id="memoModalBackdrop" class="memo-modal-backdrop" aria-hidden="true">
   <div class="memo-modal" role="dialog" aria-modal="true" aria-labelledby="memoModalTitle">
     <div id="memoModalTitle" class="memo-modal-title">메모</div>
@@ -525,6 +546,7 @@ const offRouteStyle={weight:2,color:'#6F7F95',opacity:.5};
 const labelStyle={size:13};
 const controlPanel=document.getElementById('controlPanel');
 const panelToggleBtn=document.getElementById('panelToggleBtn');
+const mobileMenuLauncher=document.getElementById('mobileMenuLauncher');
 const MEMO_STORAGE_KEY='flightRouteMemosV1';
 const SUPABASE_REST_URL='https://zdjuksmhtvhetzblczqq.supabase.co/rest/v1';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_Hlk_1ZOd_WF_Ijn6VM258w_3w8HFYN4';
@@ -539,10 +561,18 @@ try{
   routeMemos={};
 }
 
-panelToggleBtn.addEventListener('click',()=>{
-  const collapsed=controlPanel.classList.toggle('collapsed');
+function syncPanelToggle(){
+  const collapsed=controlPanel.classList.contains('collapsed');
   panelToggleBtn.textContent=collapsed?'＋':'−';
   panelToggleBtn.setAttribute('aria-label',collapsed?'메뉴 펼치기':'메뉴 접기');
+}
+panelToggleBtn.addEventListener('click',()=>{
+  controlPanel.classList.toggle('collapsed');
+  syncPanelToggle();
+});
+mobileMenuLauncher.addEventListener('click',()=>{
+  controlPanel.classList.toggle('collapsed');
+  syncPanelToggle();
 });
 const geocoder=new kakao.maps.services.Geocoder();
 let addressOverlay=null;
