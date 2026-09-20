@@ -18,7 +18,7 @@
       margin-bottom:12px;
     }
     .mobile-menu-launcher{
-      display:none;
+      display:block;
       position:fixed;
       top:calc(env(safe-area-inset-top, 0px) + 10px);
       left:calc(env(safe-area-inset-left, 0px) + 10px);
@@ -391,6 +391,9 @@
          1px  1px 0 rgba(255,255,255,.95);
       transform: translate(-50%, -50%);
     }
+    @media (min-width:701px) {
+      .mobile-menu-launcher { display:none !important; }
+    }
     @media (max-width:700px) {
       .mobile-menu-launcher{
         display:block;
@@ -416,9 +419,6 @@
         display:none;
       }
       .panel:not(.collapsed) + * { }
-      body.menu-open .mobile-menu-launcher {
-        display:none;
-      }
       .panel h1 { font-size:16px; }
       .panel-toggle {
         width:36px;
@@ -427,7 +427,6 @@
       }
       button { padding:8px 6px; font-size:13px; }
       .status { font-size:11px; }
-    }
     }
   </style>
   <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7ee4bab8cd4d6be6d0d68a49e9b4502b&libraries=services"></script>
