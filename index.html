@@ -570,6 +570,7 @@
       </div>
     </div>
     <div class="row"><button id="roadBtn" class="active">일반지도</button><button id="skyBtn">위성지도</button></div>
+    <div class="row"><button id="resetRouteStatesBtn" type="button">켜기·끄기 초기화</button></div>
     <div class="status" id="status">GeoJSON 불러오는 중...</div>
   </div>
 </div>
@@ -591,6 +592,7 @@ const panelToggleBtn=document.getElementById('panelToggleBtn');
 const mobileMenuLauncher=document.getElementById('mobileMenuLauncher');
 const MEMO_STORAGE_KEY='flightRouteMemosV1';
 const ROUTE_STATE_STORAGE_KEY='flightRouteStatesV1';
+const ROUTE_STATE_CLOUD_KEY='__route_states__';
 let savedRouteStates={};
 try{
   savedRouteStates=JSON.parse(localStorage.getItem(ROUTE_STATE_STORAGE_KEY)||'{}')||{};
@@ -636,6 +638,7 @@ function setRouteState(routeLine,enabled,persist=true){
   if(persist && routeLine._routeNumber){
     savedRouteStates[routeLine._routeNumber]=enabled;
     localStorage.setItem(ROUTE_STATE_STORAGE_KEY,JSON.stringify(savedRouteStates));
+    syncRemoteRouteStates().catch(console.error);
   }
 
   if(enabled){
@@ -658,6 +661,79 @@ function setRouteState(routeLine,enabled,persist=true){
   }
 }
 
+async function syncRemoteRouteStates(){
+  const response=await fetch(
+    SUPABASE_REST_URL+'/route_memos?on_conflict=route_number',
+    {
+      method:'POST',
+      headers:{
+        ...SUPABASE_HEADERS,
+        'Prefer':'resolution=merge-duplicates,return=minimal'
+      },
+      body:JSON.stringify({
+        route_number:ROUTE_STATE_CLOUD_KEY,
+        memo:JSON.stringify(savedRouteStates),
+        updated_at:new Date().toISOString()
+      })
+    }
+  );
+  if(!response.ok) throw new Error('경로 상태 동기화 실패 ('+response.status+')');
+}
+
+async function loadRemoteRouteStates(){
+  try{
+    const response=await fetch(
+      SUPABASE_REST_URL+'/route_memos?route_number=eq.'+
+        encodeURIComponent(ROUTE_STATE_CLOUD_KEY)+
+        '&select=memo,updated_at',
+      {headers:SUPABASE_HEADERS}
+    );
+    if(!response.ok) throw new Error('경로 상태 불러오기 실패 ('+response.status+')');
+    const rows=await response.json();
+
+    if(rows.length && rows[0].memo){
+      try{
+        savedRouteStates=JSON.parse(rows[0].memo)||{};
+        localStorage.setItem(ROUTE_STATE_STORAGE_KEY,JSON.stringify(savedRouteStates));
+      }catch(e){
+        console.error('온라인 경로 상태 파싱 오류',e);
+      }
+    }else if(Object.keys(savedRouteStates).length){
+      await syncRemoteRouteStates();
+    }
+
+    applySavedRouteStates();
+  }catch(error){
+    console.error(error);
+    applySavedRouteStates();
+  }
+}
+
+function applySavedRouteStates(){
+  routePolylines.forEach(line=>{
+    if(!line._routeNumber) return;
+    const enabled=Object.prototype.hasOwnProperty.call(savedRouteStates,line._routeNumber)
+      ? savedRouteStates[line._routeNumber]!==false
+      : true;
+    setRouteState(line,enabled,false);
+  });
+  updateRouteLabelVisibility();
+}
+
+async function resetRouteStates(){
+  if(!confirm('모든 비행경로의 켜기·끄기 상태를 초기화하고 전부 켜시겠습니까?')) return;
+  savedRouteStates={};
+  localStorage.setItem(ROUTE_STATE_STORAGE_KEY,'{}');
+  applySavedRouteStates();
+  try{
+    await syncRemoteRouteStates();
+    statusEl.textContent='켜기·끄기 상태를 초기화했습니다.';
+  }catch(error){
+    console.error(error);
+    statusEl.textContent='기기에서는 초기화했지만 온라인 동기화에 실패했습니다.';
+  }
+}
+
 function persistRouteMemos(){
   localStorage.setItem(MEMO_STORAGE_KEY,JSON.stringify(routeMemos));
   renderMemoList();
@@ -674,6 +750,7 @@ async function loadRemoteMemos(){
     const rows=await response.json();
     const remote={};
     rows.forEach(row=>{
+      if(row.route_number===ROUTE_STATE_CLOUD_KEY) return;
       if(row.route_number && row.memo){
         remote[String(row.route_number)]={
           memo:row.memo,
@@ -1435,11 +1512,12 @@ function locateMe(){
   });
 }
 document.getElementById('floatingLocBtn')?.addEventListener('click',locateMe);
+document.getElementById('resetRouteStatesBtn')?.addEventListener('click',resetRouteStates);
 syncPanelToggle();
 renderMemoList();
 loadRemoteMemos();
 updateScaleBar();
-loadRoute();
+loadRoute().then(()=>loadRemoteRouteStates());
 </script>
 <script>
 if ('serviceWorker' in navigator) {
