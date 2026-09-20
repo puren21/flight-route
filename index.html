@@ -128,6 +128,19 @@
       border:1px solid rgba(0,0,0,.28);
       flex:0 0 12px;
     }
+    .kr-airspace-legend {
+      display:grid;
+      gap:5px;
+      margin-top:4px;
+      font-size:11px;
+      color:#555;
+    }
+    .kr-airspace-row {
+      display:flex;
+      align-items:center;
+      gap:7px;
+    }
+    .kr-airspace-row input { flex:0 0 auto; }
     .geo-note {
       font-size:10px;
       line-height:1.4;
@@ -593,6 +606,39 @@
       </div>
     </div>
     <div class="route-style-controls">
+      <div class="route-style-title">국내 공역</div>
+      <button class="style-section-toggle" type="button" data-target="krAirspaceBody">
+        <span>비행금지·제한구역</span><span>＋</span>
+      </button>
+      <div id="krAirspaceBody" class="style-section-body">
+        <div class="geo-controls">
+          <label class="geo-toggle-row">
+            <input id="krAirspaceToggle" type="checkbox">
+            <span>국내 공역 표시</span>
+          </label>
+          <div class="kr-airspace-legend">
+            <label class="kr-airspace-row">
+              <input class="krAirspaceCategory" type="checkbox" value="prohibited" checked>
+              <span class="geo-swatch" style="background:rgba(220,0,0,.24);border-color:#dc0000"></span>
+              <span>비행금지구역</span>
+            </label>
+            <label class="kr-airspace-row">
+              <input class="krAirspaceCategory" type="checkbox" value="restricted" checked>
+              <span class="geo-swatch" style="background:rgba(230,140,0,.24);border-color:#e68c00"></span>
+              <span>비행제한구역</span>
+            </label>
+            <label class="kr-airspace-row">
+              <input class="krAirspaceCategory" type="checkbox" value="control" checked>
+              <span class="geo-swatch" style="background:rgba(40,90,200,.20);border-color:#285ac8"></span>
+              <span>관제권</span>
+            </label>
+          </div>
+          <div id="krAirspaceStatus" class="geo-note">V-World 기반 참고용 공역 데이터입니다.</div>
+          <a class="geo-link" href="https://drone.onestop.go.kr/" target="_blank" rel="noopener">드론 원스톱 공식 확인 ↗</a>
+        </div>
+      </div>
+    </div>
+    <div class="route-style-controls">
       <div class="route-style-title">라인 스타일</div>
 
       <button class="style-section-toggle" type="button" data-target="defaultStyleBody">
@@ -688,6 +734,33 @@ const SUPABASE_HEADERS={
 let geoZoneOverlays=[];
 let geoZoneEnabled=false;
 let geoZoneRequestSeq=0;
+
+let krAirspaceEnabled=false;
+let krAirspaceLoaded=false;
+const krAirspaceOverlays={prohibited:[],restricted:[],control:[]};
+const KR_AIRSPACE_SPECS={
+  prohibited:{
+    url:'./airspace/lt_c_aisprhc.geojson',
+    label:'비행금지구역',
+    color:'#DC0000',
+    fillOpacity:.18,
+    nameFields:['prh_lbl_1','prh_lbl_2','name']
+  },
+  restricted:{
+    url:'./airspace/lt_c_aisresc.geojson',
+    label:'비행제한구역',
+    color:'#E68C00',
+    fillOpacity:.16,
+    nameFields:['res_lbl_1','res_lbl_2','name']
+  },
+  control:{
+    url:'./airspace/lt_c_aisctrc.geojson',
+    label:'관제권',
+    color:'#285AC8',
+    fillOpacity:.12,
+    nameFields:['ctr_lbl_1','ctr_lbl_2','name']
+  }
+};
 const GEO_LEVELS={
   0:{name:'경고 구역',stroke:'#FFB300',fill:'#FFCC00'},
   1:{name:'허가 구역',stroke:'#007AFF',fill:'#007AFF'},
@@ -1583,6 +1656,115 @@ labelSizeInput.addEventListener('input',()=>{
 kakao.maps.event.addListener(map,'zoom_changed',updateRouteLabelVisibility);
 document.getElementById('roadBtn').addEventListener('click',()=>{map.setMapTypeId(kakao.maps.MapTypeId.ROADMAP);roadBtn.classList.add('active');skyBtn.classList.remove('active');});
 document.getElementById('skyBtn').addEventListener('click',()=>{map.setMapTypeId(kakao.maps.MapTypeId.HYBRID);skyBtn.classList.add('active');roadBtn.classList.remove('active');});
+function mercatorToWgs84Point(pt){
+  if(!Array.isArray(pt) || pt.length<2) return null;
+  const x=Number(pt[0]), y=Number(pt[1]);
+  if(!Number.isFinite(x)||!Number.isFinite(y)) return null;
+
+  // 이미 WGS84로 저장된 경우 그대로 사용
+  if(Math.abs(x)<=180 && Math.abs(y)<=90){
+    return new kakao.maps.LatLng(y,x);
+  }
+
+  const max=20037508.34;
+  const lon=x/max*180;
+  const lat=180/Math.PI*(2*Math.atan(Math.exp((y/max*180)*Math.PI/180))-Math.PI/2);
+  return new kakao.maps.LatLng(lat,lon);
+}
+
+function airspaceName(props,spec){
+  if(!props) return spec.label;
+  for(const key of spec.nameFields){
+    const v=props[key];
+    if(v!==undefined && v!==null && String(v).trim()) return String(v).trim();
+  }
+  for(const [k,v] of Object.entries(props)){
+    if(typeof v==='string' && v.trim() && !v.trim().startsWith('<')) return v.trim();
+  }
+  return spec.label;
+}
+
+function addKoreanAirspaceRing(ring,spec,key,name){
+  if(!Array.isArray(ring)) return 0;
+  const path=ring.map(mercatorToWgs84Point).filter(Boolean);
+  if(path.length<3) return 0;
+
+  const polygon=new kakao.maps.Polygon({
+    map:krAirspaceEnabled ? map : null,
+    path:path,
+    strokeWeight:2,
+    strokeColor:spec.color,
+    strokeOpacity:.85,
+    strokeStyle:'solid',
+    fillColor:spec.color,
+    fillOpacity:spec.fillOpacity
+  });
+  kakao.maps.event.addListener(polygon,'click',()=>{
+    alert(spec.label+'\n'+name+'\n\n참고용 공간데이터입니다. 실제 비행 전 드론 원스톱 등 공식 정보를 확인하세요.');
+  });
+  krAirspaceOverlays[key].push(polygon);
+  return 1;
+}
+
+function renderKoreanAirspaceFeature(feature,spec,key){
+  if(!feature?.geometry) return 0;
+  const geom=feature.geometry;
+  const name=airspaceName(feature.properties,spec);
+  let count=0;
+
+  if(geom.type==='Polygon'){
+    const outer=geom.coordinates?.[0];
+    count+=addKoreanAirspaceRing(outer,spec,key,name);
+  }else if(geom.type==='MultiPolygon'){
+    (geom.coordinates||[]).forEach(poly=>{
+      const outer=poly?.[0];
+      count+=addKoreanAirspaceRing(outer,spec,key,name);
+    });
+  }
+  return count;
+}
+
+function selectedKoreanAirspaceCategories(){
+  return new Set(
+    [...document.querySelectorAll('.krAirspaceCategory:checked')].map(el=>el.value)
+  );
+}
+
+function refreshKoreanAirspaceVisibility(){
+  const selected=selectedKoreanAirspaceCategories();
+  Object.entries(krAirspaceOverlays).forEach(([key,items])=>{
+    const show=krAirspaceEnabled && selected.has(key);
+    items.forEach(o=>o.setMap(show?map:null));
+  });
+}
+
+async function loadKoreanAirspace(){
+  const status=document.getElementById('krAirspaceStatus');
+  if(krAirspaceLoaded){
+    refreshKoreanAirspaceVisibility();
+    return;
+  }
+  if(status) status.textContent='국내 공역 데이터를 불러오는 중...';
+
+  try{
+    let polygonCount=0;
+    for(const [key,spec] of Object.entries(KR_AIRSPACE_SPECS)){
+      const res=await fetch(spec.url,{cache:'no-store'});
+      if(!res.ok) throw new Error(spec.label+' HTTP '+res.status);
+      const data=await res.json();
+      (data.features||[]).forEach(feature=>{
+        polygonCount+=renderKoreanAirspaceFeature(feature,spec,key);
+      });
+    }
+    krAirspaceLoaded=true;
+    refreshKoreanAirspaceVisibility();
+    if(status) status.textContent='국내 공역 '+polygonCount+'개 폴리곤 표시 준비 완료';
+  }catch(error){
+    console.error('Korean airspace load error',error);
+    if(status) status.textContent='국내 공역 데이터를 불러오지 못했습니다.';
+  }
+}
+
 function clearDjiGeoZones(){
   geoZoneOverlays.forEach(o=>{ try{o.setMap(null);}catch(e){} });
   geoZoneOverlays=[];
@@ -1815,6 +1997,15 @@ function locateMe(){
     maximumAge:0
   });
 }
+document.getElementById('krAirspaceToggle')?.addEventListener('change',function(){
+  krAirspaceEnabled=this.checked;
+  if(krAirspaceEnabled) loadKoreanAirspace();
+  else refreshKoreanAirspaceVisibility();
+});
+document.querySelectorAll('.krAirspaceCategory').forEach(el=>{
+  el.addEventListener('change',refreshKoreanAirspaceVisibility);
+});
+
 document.getElementById('geoZoneToggle')?.addEventListener('change',function(){
   geoZoneEnabled=this.checked;
   if(geoZoneEnabled) loadDjiGeoZones();
