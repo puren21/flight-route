@@ -564,27 +564,14 @@
       </div>
     </div>
     <div class="route-style-controls">
-      <div class="route-style-title">드론원스톱 공역</div>
-      <button class="style-section-toggle" type="button" data-target="krAirspaceBody">
-        <span>공역 폴리곤</span><span>＋</span>
-      </button>
-      <div id="krAirspaceBody" class="style-section-body">
-        <div class="geo-controls">
-          <label class="geo-toggle-row">
-            <input id="krAirspaceToggle" type="checkbox">
-            <span>공역 폴리곤 표시</span>
-          </label>
-          <div class="kr-airspace-legend">
-            <label class="kr-airspace-row">
-              <input class="krAirspaceCategory" type="checkbox" value="obstacle" checked>
-              <span class="geo-swatch" style="background:rgba(110,110,110,.15);border-color:#6e6e6e"></span>
-              <span>장애물공역</span>
-            </label>
-          </div>
-          <div id="krAirspaceStatus" class="geo-note">드론원스톱 범례의 장애물공역만 표시합니다.</div>
-          <a class="geo-link" href="https://drone.onestop.go.kr/common/flightArea" target="_blank" rel="noopener">드론원스톱 공식 지도 열기 ↗</a>
-        </div>
-      </div>
+      <label class="geo-toggle-row" style="font-weight:700;">
+        <input id="krAirspaceToggle" type="checkbox">
+        <span class="geo-swatch" style="background:rgba(110,110,110,.15);border-color:#6e6e6e"></span>
+        <span>장애물공역 표시</span>
+      </label>
+      <input class="krAirspaceCategory" type="checkbox" value="obstacle" checked hidden>
+      <div id="krAirspaceStatus" class="geo-note" style="margin-top:6px;">드론원스톱 장애물공역</div>
+      <a class="geo-link" href="https://drone.onestop.go.kr/common/flightArea" target="_blank" rel="noopener">공식 지도 열기 ↗</a>
     </div>
     <div class="route-style-controls">
       <div class="route-style-title">라인 스타일</div>
