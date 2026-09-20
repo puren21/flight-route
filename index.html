@@ -681,16 +681,6 @@ function updateRouteLabelVisibility(){
 }
 
 kakao.maps.event.addListener(map,'zoom_changed',updateRouteLabelVisibility);
-
-routeToggle.addEventListener('change',()=>{
-  const targetMap=routeToggle.checked?map:null;
-  routePolylines.forEach(line=>{
-    line.setMap(targetMap);
-    if(line._hitLine) line._hitLine.setMap(targetMap);
-  });
-  routeLabels.forEach(label=>label.setMap(null));
-  updateRouteLabelVisibility();
-});
 document.getElementById('roadBtn').addEventListener('click',()=>{map.setMapTypeId(kakao.maps.MapTypeId.ROADMAP);roadBtn.classList.add('active');skyBtn.classList.remove('active');});
 document.getElementById('skyBtn').addEventListener('click',()=>{map.setMapTypeId(kakao.maps.MapTypeId.HYBRID);skyBtn.classList.add('active');roadBtn.classList.remove('active');});
 function locateMe(){
