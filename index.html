@@ -575,17 +575,18 @@
             <span>공역 폴리곤 표시</span>
           </label>
           <div class="kr-airspace-legend">
-            <label class="kr-airspace-row"><input class="krAirspaceCategory" type="checkbox" value="prohibited" checked><span class="geo-swatch" style="background:rgba(220,0,0,.24);border-color:#dc0000"></span><span>비행금지구역</span></label>
-            <label class="kr-airspace-row"><input class="krAirspaceCategory" type="checkbox" value="restricted" checked><span class="geo-swatch" style="background:rgba(230,140,0,.24);border-color:#e68c00"></span><span>비행제한구역</span></label>
-            <label class="kr-airspace-row"><input class="krAirspaceCategory" type="checkbox" value="control" checked><span class="geo-swatch" style="background:rgba(40,90,200,.20);border-color:#285ac8"></span><span>관제권</span></label>
-            <label class="kr-airspace-row"><input class="krAirspaceCategory" type="checkbox" value="danger" checked><span class="geo-swatch" style="background:rgba(140,0,0,.22);border-color:#8c0000"></span><span>위험지역</span></label>
-            <label class="kr-airspace-row"><input class="krAirspaceCategory" type="checkbox" value="temp" checked><span class="geo-swatch" style="background:rgba(220,40,120,.22);border-color:#dc2878"></span><span>임시비행금지구역</span></label>
-            <label class="kr-airspace-row"><input class="krAirspaceCategory" type="checkbox" value="alert"><span class="geo-swatch" style="background:rgba(150,60,180,.18);border-color:#963cb4"></span><span>경계구역</span></label>
-            <label class="kr-airspace-row"><input class="krAirspaceCategory" type="checkbox" value="obstacle"><span class="geo-swatch" style="background:rgba(110,110,110,.15);border-color:#6e6e6e"></span><span>장애물공역</span></label>
-            <label class="kr-airspace-row"><input class="krAirspaceCategory" type="checkbox" value="coordination"><span class="geo-swatch" style="background:rgba(0,150,150,.16);border-color:#009696"></span><span>사전협의구역</span></label>
-            <label class="kr-airspace-row"><input class="krAirspaceCategory" type="checkbox" value="droneAllowed" checked><span class="geo-swatch" style="background:rgba(30,150,60,.18);border-color:#1e963c"></span><span>드론 전용공역</span></label>
+            <label class="kr-airspace-row">
+              <input class="krAirspaceCategory" type="checkbox" value="control" checked>
+              <span class="geo-swatch" style="background:rgba(40,90,200,.20);border-color:#285ac8"></span>
+              <span>관제권</span>
+            </label>
+            <label class="kr-airspace-row">
+              <input class="krAirspaceCategory" type="checkbox" value="obstacle" checked>
+              <span class="geo-swatch" style="background:rgba(110,110,110,.15);border-color:#6e6e6e"></span>
+              <span>장애물공역</span>
+            </label>
           </div>
-          <div id="krAirspaceStatus" class="geo-note">드론원스톱 지도에서 사용하는 공역 유형과 맞춘 9종 폴리곤을 표시합니다.</div>
+          <div id="krAirspaceStatus" class="geo-note">드론원스톱 범례에서 체크된 관제권과 장애물공역만 표시합니다.</div>
           <a class="geo-link" href="https://drone.onestop.go.kr/common/flightArea" target="_blank" rel="noopener">드론원스톱 공식 지도 열기 ↗</a>
         </div>
       </div>
