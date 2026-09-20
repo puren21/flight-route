@@ -259,14 +259,21 @@ function setRouteState(routeLine,enabled){
 
   if(enabled){
     routeLine.setOptions({
-      strokeWeight:2,
+      strokeWeight:3,
+      strokeColor:'#E53935',
       strokeOpacity:.9
     });
   }else{
     routeLine.setOptions({
-      strokeWeight:1,
-      strokeOpacity:.45
+      strokeWeight:1.5,
+      strokeColor:'#1976D2',
+      strokeOpacity:.5
     });
+  }
+
+  if(routeLine._labelOverlay){
+    const showLabel=enabled && routeToggle.checked && map.getLevel()<=8;
+    routeLine._labelOverlay.setMap(showLabel?map:null);
   }
 }
 
@@ -500,7 +507,7 @@ function drawLineString(coordinates,labelNumber){
   const routeLine=new kakao.maps.Polyline({
     map:map,
     path:path,
-    strokeWeight:2,
+    strokeWeight:3,
     strokeColor:'#E53935',
     strokeOpacity:.9,
     strokeStyle:'solid',
@@ -551,6 +558,7 @@ function drawLineString(coordinates,labelNumber){
       zIndex:10
     });
 
+    routeLine._labelOverlay=overlay;
     routeLabels.push(overlay);
     updateRouteLabelVisibility();
   }
@@ -558,8 +566,14 @@ function drawLineString(coordinates,labelNumber){
 
 function updateRouteLabelVisibility(){
   // 카카오 지도 level 값은 숫자가 클수록 더 멀리 축소된 상태임
-  const showLabels=routeToggle.checked && map.getLevel()<=8;
-  routeLabels.forEach(label=>label.setMap(showLabels?map:null));
+  const showByScale=routeToggle.checked && map.getLevel()<=8;
+
+  routePolylines.forEach(line=>{
+    if(line._labelOverlay){
+      const showLabel=showByScale && line._routeEnabled!==false;
+      line._labelOverlay.setMap(showLabel?map:null);
+    }
+  });
 }
 
 kakao.maps.event.addListener(map,'zoom_changed',updateRouteLabelVisibility);
