@@ -263,6 +263,7 @@ let routePolylines=[],routeLabels=[],routeBounds=new kakao.maps.LatLngBounds(),c
 const routeIndex=new Map();
 let selectedRoute=null;
 let routeSelectOverlay=null;
+let routePopupOpenedAt=0;
 const statusEl=document.getElementById('status'),routeToggle=document.getElementById('routeToggle');
 const controlPanel=document.getElementById('controlPanel');
 const panelToggleBtn=document.getElementById('panelToggleBtn');
@@ -301,18 +302,22 @@ function setRouteState(routeLine,enabled){
   }
 }
 
-function showRouteSelectPopup(routeLine,position){
+function closeRouteSelectPopup(){
   if(routeSelectOverlay){
     routeSelectOverlay.setMap(null);
     routeSelectOverlay=null;
   }
+}
+
+function showRouteSelectPopup(routeLine,position){
+  closeRouteSelectPopup();
 
   const box=document.createElement('div');
   box.className='route-select-popup';
 
   const title=document.createElement('div');
   title.className='route-select-title';
-  title.textContent='라인 표시';
+  title.textContent='라인 표시 · '+(routeLine._routeNumber || '번호 없음');
 
   const actions=document.createElement('div');
   actions.className='route-select-actions';
@@ -346,6 +351,7 @@ function showRouteSelectPopup(routeLine,position){
   box.appendChild(title);
   box.appendChild(actions);
 
+  routePopupOpenedAt=Date.now();
   routeSelectOverlay=new kakao.maps.CustomOverlay({
     map:map,
     position:position,
@@ -461,6 +467,12 @@ function showAddressPopup(latLng){
   });
 }
 
+kakao.maps.event.addListener(map,'click',function(){
+  if(routeSelectOverlay && Date.now()-routePopupOpenedAt>250){
+    closeRouteSelectPopup();
+  }
+});
+
 kakao.maps.event.addListener(map,'rightclick',function(mouseEvent){
   showAddressPopup(mouseEvent.latLng);
 });
@@ -543,6 +555,7 @@ function drawLineString(coordinates,labelNumber){
   });
 
   routeLine._routeEnabled=true;
+  routeLine._routeNumber=labelNumber!=='' ? String(labelNumber) : '';
 
   if(labelNumber!==''){
     const key=String(labelNumber);
