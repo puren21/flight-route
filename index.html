@@ -16,6 +16,30 @@
     button.active { background:#222; color:#fff; }
     .toggle { display:flex; align-items:center; gap:8px; margin-top:10px; font-size:14px; }
     .status { margin-top:10px; font-size:12px; line-height:1.5; color:#555; }
+    .scale-bar {
+      position: absolute;
+      right: 14px;
+      bottom: 14px;
+      z-index: 10;
+      min-width: 70px;
+      padding: 3px 8px 2px;
+      background: rgba(255,255,255,.88);
+      border: 1px solid rgba(0,0,0,.45);
+      border-top: 0;
+      color: #222;
+      font-size: 11px;
+      text-align: center;
+      line-height: 1.2;
+      pointer-events: none;
+    }
+    .scale-bar::before {
+      content: "";
+      position: absolute;
+      left: -1px;
+      right: -1px;
+      top: 0;
+      border-top: 2px solid #222;
+    }
     .route-label {
       color: #111;
       font-size: 13px;
@@ -41,6 +65,7 @@
 </head>
 <body>
 <div id="map"></div>
+<div id="scaleBar" class="scale-bar">축척 계산 중...</div>
 <div class="panel">
   <h1>비행경로</h1>
   <label class="toggle"><input type="checkbox" id="routeToggle" checked /> 비행경로 표시</label>
@@ -51,10 +76,43 @@
 </div>
 <script>
 const map=new kakao.maps.Map(document.getElementById('map'),{center:new kakao.maps.LatLng(35.16,126.84),level:8});
-const scaleControl=new kakao.maps.ScaleControl();
-map.addControl(scaleControl,kakao.maps.ControlPosition.BOTTOMRIGHT);
+
 let routePolylines=[],routeLabels=[],routeBounds=new kakao.maps.LatLngBounds(),currentMarker=null;
 const statusEl=document.getElementById('status'),routeToggle=document.getElementById('routeToggle');
+function niceScaleDistance(meters){
+  const exponent=Math.pow(10,Math.floor(Math.log10(meters)));
+  const fraction=meters/exponent;
+  let niceFraction;
+  if(fraction>=5) niceFraction=5;
+  else if(fraction>=2) niceFraction=2;
+  else niceFraction=1;
+  return niceFraction*exponent;
+}
+
+function updateScaleBar(){
+  const scaleBar=document.getElementById('scaleBar');
+  if(!scaleBar) return;
+
+  const center=map.getCenter();
+  const projection=map.getProjection();
+  if(!projection) return;
+
+  const centerPoint=projection.containerPointFromCoords(center);
+  const targetPoint=new kakao.maps.Point(centerPoint.x+100,centerPoint.y);
+  const targetCoord=projection.coordsFromContainerPoint(targetPoint);
+
+  const line=new kakao.maps.Polyline({path:[center,targetCoord]});
+  const meters100px=line.getLength();
+  const niceMeters=niceScaleDistance(meters100px);
+  const width=Math.max(40,Math.round(100*(niceMeters/meters100px)));
+
+  scaleBar.style.width=width+'px';
+  scaleBar.textContent=niceMeters>=1000 ? (niceMeters/1000)+' km' : Math.round(niceMeters)+' m';
+}
+
+kakao.maps.event.addListener(map,'zoom_changed',updateScaleBar);
+kakao.maps.event.addListener(map,'idle',updateScaleBar);
+
 async function loadRoute(){
   try{
     const response=await fetch('./flight-route.geojson');
@@ -140,6 +198,7 @@ document.getElementById('locBtn').addEventListener('click',()=>{
     statusEl.textContent='현재 위치: '+lat.toFixed(6)+', '+lng.toFixed(6);
   },error=>{console.error(error);statusEl.textContent='현재 위치를 가져오지 못했습니다.';alert('위치 권한을 허용했는지 확인해 주세요.');},{enableHighAccuracy:true,timeout:10000,maximumAge:0});
 });
+updateScaleBar();
 loadRoute();
 </script>
 </body>
