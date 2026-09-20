@@ -41,7 +41,7 @@ let routePolylines=[],routeBounds=new kakao.maps.LatLngBounds(),currentMarker=nu
 const statusEl=document.getElementById('status'),routeToggle=document.getElementById('routeToggle');
 async function loadRoute(){
   try{
-    const response=await fetch('./비행경로_최종.geojson');
+    const response=await fetch('./flight-route.geojson');
     if(!response.ok) throw new Error('GeoJSON 파일을 불러오지 못했습니다.');
     const geojson=await response.json();
     if(!geojson.features||!Array.isArray(geojson.features)) throw new Error('유효한 GeoJSON FeatureCollection이 아닙니다.');
