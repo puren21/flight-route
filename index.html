@@ -16,6 +16,25 @@
     button.active { background:#222; color:#fff; }
     .toggle { display:flex; align-items:center; gap:8px; margin-top:10px; font-size:14px; }
     .status { margin-top:10px; font-size:12px; line-height:1.5; color:#555; }
+    .route-label {
+      min-width: 26px;
+      height: 26px;
+      padding: 0 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,.95);
+      border: 2px solid #E53935;
+      border-radius: 13px;
+      color: #111;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1;
+      box-shadow: 0 1px 4px rgba(0,0,0,.25);
+      white-space: nowrap;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+    }
     @media (max-width:700px) {
       .panel { top:10px; left:10px; right:10px; width:auto; padding:10px; }
       .panel h1 { font-size:16px; margin-bottom:8px; }
@@ -37,7 +56,7 @@
 </div>
 <script>
 const map=new kakao.maps.Map(document.getElementById('map'),{center:new kakao.maps.LatLng(35.16,126.84),level:8});
-let routePolylines=[],routeBounds=new kakao.maps.LatLngBounds(),currentMarker=null;
+let routePolylines=[],routeLabels=[],routeBounds=new kakao.maps.LatLngBounds(),currentMarker=null;
 const statusEl=document.getElementById('status'),routeToggle=document.getElementById('routeToggle');
 async function loadRoute(){
   try{
@@ -48,18 +67,55 @@ async function loadRoute(){
     let lineCount=0;
     geojson.features.forEach(feature=>{
       if(!feature.geometry)return;
-      if(feature.geometry.type==='LineString'){drawLineString(feature.geometry.coordinates);lineCount++;}
-      if(feature.geometry.type==='MultiLineString'){feature.geometry.coordinates.forEach(coords=>{drawLineString(coords);lineCount++;});}
+      const labelNumber=feature.properties?.num ?? feature.properties?.num1 ?? '';
+      if(feature.geometry.type==='LineString'){drawLineString(feature.geometry.coordinates,labelNumber);lineCount++;}
+      if(feature.geometry.type==='MultiLineString'){feature.geometry.coordinates.forEach(coords=>{drawLineString(coords,labelNumber);lineCount++;});}
     });
     if(routePolylines.length>0) map.setBounds(routeBounds);
     statusEl.textContent='비행경로 '+lineCount+'개 선 표시 완료';
   }catch(error){console.error(error);statusEl.textContent='GeoJSON 로딩 오류: '+error.message;}
 }
-function drawLineString(coordinates){
-  const path=coordinates.map(coord=>{const latLng=new kakao.maps.LatLng(coord[1],coord[0]);routeBounds.extend(latLng);return latLng;});
-  routePolylines.push(new kakao.maps.Polyline({map,path,strokeWeight:4,strokeColor:'#E53935',strokeOpacity:.9,strokeStyle:'solid',zIndex:5}));
+function drawLineString(coordinates,labelNumber){
+  const path=coordinates.map(coord=>{
+    const latLng=new kakao.maps.LatLng(coord[1],coord[0]);
+    routeBounds.extend(latLng);
+    return latLng;
+  });
+
+  routePolylines.push(new kakao.maps.Polyline({
+    map,
+    path,
+    strokeWeight:4,
+    strokeColor:'#E53935',
+    strokeOpacity:.9,
+    strokeStyle:'solid',
+    zIndex:5
+  }));
+
+  if(labelNumber!=='' && coordinates.length>0){
+    const midIndex=Math.floor((coordinates.length-1)/2);
+    const mid=coordinates[midIndex];
+    const label=document.createElement('div');
+    label.className='route-label';
+    label.textContent=labelNumber;
+
+    const overlay=new kakao.maps.CustomOverlay({
+      map,
+      position:new kakao.maps.LatLng(mid[1],mid[0]),
+      content:label,
+      xAnchor:0.5,
+      yAnchor:0.5,
+      zIndex:10
+    });
+
+    routeLabels.push(overlay);
+  }
 }
-routeToggle.addEventListener('change',()=>routePolylines.forEach(line=>line.setMap(routeToggle.checked?map:null)));
+routeToggle.addEventListener('change',()=>{
+  const targetMap=routeToggle.checked?map:null;
+  routePolylines.forEach(line=>line.setMap(targetMap));
+  routeLabels.forEach(label=>label.setMap(targetMap));
+});
 document.getElementById('roadBtn').addEventListener('click',()=>{map.setMapTypeId(kakao.maps.MapTypeId.ROADMAP);roadBtn.classList.add('active');skyBtn.classList.remove('active');});
 document.getElementById('skyBtn').addEventListener('click',()=>{map.setMapTypeId(kakao.maps.MapTypeId.HYBRID);skyBtn.classList.add('active');roadBtn.classList.remove('active');});
 document.getElementById('zoomInBtn').addEventListener('click',()=>map.setLevel(Math.max(1,map.getLevel()-1)));
