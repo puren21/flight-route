@@ -90,9 +90,19 @@
       color: #777;
       font-size: 11px;
     }
+    .address-popup .route-actions {
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      margin-top:9px;
+    }
+    .address-popup .route-actions button {
+      width:100%;
+      margin-top:0;
+    }
     .address-popup .navi-btn {
       width: 100%;
-      margin-top: 9px;
+      margin-top: 0;
       padding: 8px 10px;
       border: 0;
       border-radius: 7px;
@@ -103,7 +113,7 @@
     }
     .address-popup .naver-btn {
       width: 100%;
-      margin-top: 6px;
+      margin-top: 0;
       padding: 8px 10px;
       border: 0;
       border-radius: 7px;
@@ -297,8 +307,11 @@ function showAddressPopup(latLng){
     box.appendChild(title);
     box.appendChild(addr);
     box.appendChild(coord);
-    box.appendChild(naver);
-    box.appendChild(navi);
+    const routeActions=document.createElement('div');
+    routeActions.className='route-actions';
+    routeActions.appendChild(naver);
+    routeActions.appendChild(navi);
+    box.appendChild(routeActions);
 
     addressOverlay=new kakao.maps.CustomOverlay({
       map:map,
@@ -414,7 +427,10 @@ kakao.maps.event.addListener(map,'zoom_changed',updateRouteLabelVisibility);
 
 routeToggle.addEventListener('change',()=>{
   const targetMap=routeToggle.checked?map:null;
-  routePolylines.forEach(line=>line.setMap(targetMap));
+  routePolylines.forEach(line=>{
+    line.setMap(targetMap);
+    if(line._hitLine) line._hitLine.setMap(targetMap);
+  });
   routeLabels.forEach(label=>label.setMap(null));
   updateRouteLabelVisibility();
 });
