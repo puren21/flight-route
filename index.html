@@ -90,6 +90,56 @@
       border-radius: 9px;
       background: #fafafa;
     }
+    .geo-controls {
+      display:grid;
+      gap:7px;
+      padding-top:6px;
+    }
+    .geo-controls select,
+    .geo-controls button {
+      width:100%;
+    }
+    .geo-toggle-row {
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:12px;
+      color:#333;
+    }
+    .geo-toggle-row input { flex:0 0 auto; }
+    .geo-legend {
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:5px 8px;
+      margin-top:4px;
+      font-size:11px;
+      color:#555;
+    }
+    .geo-legend-item {
+      display:flex;
+      align-items:center;
+      gap:5px;
+      min-width:0;
+    }
+    .geo-swatch {
+      width:12px;
+      height:12px;
+      border-radius:50%;
+      border:1px solid rgba(0,0,0,.28);
+      flex:0 0 12px;
+    }
+    .geo-note {
+      font-size:10px;
+      line-height:1.4;
+      color:#777;
+    }
+    .geo-link {
+      display:block;
+      margin-top:2px;
+      font-size:11px;
+      color:#0D6EFD;
+      text-decoration:none;
+    }
     .route-style-title {
       font-size: 12px;
       font-weight: 700;
@@ -515,6 +565,34 @@
       </div>
     </div>
     <div class="route-style-controls">
+      <div class="route-style-title">DJI GEO 구역</div>
+      <button class="style-section-toggle" type="button" data-target="geoZoneBody">
+        <span>GEO 구역 정보</span><span>＋</span>
+      </button>
+      <div id="geoZoneBody" class="style-section-body">
+        <div class="geo-controls">
+          <label class="geo-toggle-row">
+            <input id="geoZoneToggle" type="checkbox">
+            <span>지도에 GEO 구역 표시</span>
+          </label>
+          <select id="geoDroneSelect" class="route-number-select">
+            <option value="dji-mavic-3" selected>DJI Mavic 3</option>
+            <option value="dji-air-2s">DJI Air 2S</option>
+            <option value="mavic-mini-2">DJI Mini 2</option>
+            <option value="phantom-4-pro">Phantom 4 Pro</option>
+          </select>
+          <div class="geo-legend">
+            <div class="geo-legend-item"><span class="geo-swatch" style="background:rgba(255,59,48,.35);border-color:#ff3b30"></span><span>제한 구역</span></div>
+            <div class="geo-legend-item"><span class="geo-swatch" style="background:rgba(0,122,255,.28);border-color:#007aff"></span><span>허가 구역</span></div>
+            <div class="geo-legend-item"><span class="geo-swatch" style="background:rgba(255,204,0,.28);border-color:#ffb300"></span><span>경고 구역</span></div>
+            <div class="geo-legend-item"><span class="geo-swatch" style="background:rgba(142,142,147,.25);border-color:#8e8e93"></span><span>고도 제한</span></div>
+          </div>
+          <div id="geoZoneStatus" class="geo-note">표시를 켜면 현재 지도 중심 주변의 DJI GEO 데이터를 불러옵니다.</div>
+          <a class="geo-link" href="https://fly-safe.dji.com/nfz/nfz-query" target="_blank" rel="noopener">DJI 공식 GEO 구역 정보 열기 ↗</a>
+        </div>
+      </div>
+    </div>
+    <div class="route-style-controls">
       <div class="route-style-title">라인 스타일</div>
 
       <button class="style-section-toggle" type="button" data-target="defaultStyleBody">
@@ -605,6 +683,19 @@ const SUPABASE_PUBLISHABLE_KEY='sb_publishable_Hlk_1ZOd_WF_Ijn6VM258w_3w8HFYN4';
 const SUPABASE_HEADERS={
   'apikey':SUPABASE_PUBLISHABLE_KEY,
   'Content-Type':'application/json'
+};
+
+let geoZoneOverlays=[];
+let geoZoneEnabled=false;
+let geoZoneRequestSeq=0;
+const GEO_LEVELS={
+  0:{name:'경고 구역',stroke:'#FFB300',fill:'#FFCC00'},
+  1:{name:'허가 구역',stroke:'#007AFF',fill:'#007AFF'},
+  2:{name:'제한 구역',stroke:'#FF3B30',fill:'#FF3B30'},
+  3:{name:'강화 경고 구역',stroke:'#FF9500',fill:'#FF9500'},
+  4:{name:'규제 제한 구역',stroke:'#64B5F6',fill:'#64B5F6'},
+  6:{name:'고도 제한 구역',stroke:'#8E8E93',fill:'#8E8E93'},
+  7:{name:'권장 구역',stroke:'#34C759',fill:'#34C759'}
 };
 let routeMemos={};
 try{
@@ -1492,6 +1583,172 @@ labelSizeInput.addEventListener('input',()=>{
 kakao.maps.event.addListener(map,'zoom_changed',updateRouteLabelVisibility);
 document.getElementById('roadBtn').addEventListener('click',()=>{map.setMapTypeId(kakao.maps.MapTypeId.ROADMAP);roadBtn.classList.add('active');skyBtn.classList.remove('active');});
 document.getElementById('skyBtn').addEventListener('click',()=>{map.setMapTypeId(kakao.maps.MapTypeId.HYBRID);skyBtn.classList.add('active');roadBtn.classList.remove('active');});
+function clearDjiGeoZones(){
+  geoZoneOverlays.forEach(o=>{ try{o.setMap(null);}catch(e){} });
+  geoZoneOverlays=[];
+}
+
+function geoLevelStyle(level){
+  return GEO_LEVELS[Number(level)] || {name:'GEO 구역',stroke:'#7E57C2',fill:'#7E57C2'};
+}
+
+function addGeoCircle(lat,lng,radius,level,name){
+  if(!Number.isFinite(lat)||!Number.isFinite(lng)||!Number.isFinite(radius)||radius<=0) return 0;
+  const s=geoLevelStyle(level);
+  const circle=new kakao.maps.Circle({
+    map:map,
+    center:new kakao.maps.LatLng(lat,lng),
+    radius:radius,
+    strokeWeight:2,
+    strokeColor:s.stroke,
+    strokeOpacity:.85,
+    strokeStyle:'solid',
+    fillColor:s.fill,
+    fillOpacity:.18
+  });
+  kakao.maps.event.addListener(circle,'click',()=>{
+    alert((name||s.name)+'\nDJI GEO 구역\n레벨: '+String(level??'-'));
+  });
+  geoZoneOverlays.push(circle);
+  return 1;
+}
+
+function normalizeGeoPoint(p){
+  if(Array.isArray(p) && p.length>=2){
+    const a=Number(p[0]), b=Number(p[1]);
+    if(Number.isFinite(a)&&Number.isFinite(b)){
+      return Math.abs(a)<=90 && Math.abs(b)>90
+        ? new kakao.maps.LatLng(a,b)
+        : new kakao.maps.LatLng(b,a);
+    }
+  }
+  if(p && typeof p==='object'){
+    const lat=Number(p.lat ?? p.latitude ?? p.y);
+    const lng=Number(p.lng ?? p.lon ?? p.longitude ?? p.x);
+    if(Number.isFinite(lat)&&Number.isFinite(lng)) return new kakao.maps.LatLng(lat,lng);
+  }
+  return null;
+}
+
+function addGeoPolygon(points,level,name){
+  if(!Array.isArray(points)) return 0;
+  const path=points.map(normalizeGeoPoint).filter(Boolean);
+  if(path.length<3) return 0;
+  const s=geoLevelStyle(level);
+  const polygon=new kakao.maps.Polygon({
+    map:map,
+    path:path,
+    strokeWeight:2,
+    strokeColor:s.stroke,
+    strokeOpacity:.85,
+    strokeStyle:'solid',
+    fillColor:s.fill,
+    fillOpacity:.18
+  });
+  kakao.maps.event.addListener(polygon,'click',()=>{
+    alert((name||s.name)+'\nDJI GEO 구역\n레벨: '+String(level??'-'));
+  });
+  geoZoneOverlays.push(polygon);
+  return 1;
+}
+
+function renderDjiGeoItem(item,inheritLevel=null){
+  if(!item || typeof item!=='object') return 0;
+  let count=0;
+  const level=item.level ?? item.type ?? item.zone_level ?? inheritLevel;
+  const name=item.name ?? item.title ?? item.area_name ?? geoLevelStyle(level).name;
+
+  const lat=Number(item.lat ?? item.latitude ?? item.center_lat ?? item.centerLat);
+  const lng=Number(item.lng ?? item.lon ?? item.longitude ?? item.center_lng ?? item.centerLng);
+  const radius=Number(item.radius ?? item.radius_m ?? item.radiusMeters);
+  if(Number.isFinite(lat)&&Number.isFinite(lng)&&Number.isFinite(radius)){
+    count+=addGeoCircle(lat,lng,radius,level,name);
+  }
+
+  const geom=item.geometry;
+  if(geom && geom.type==='Polygon' && Array.isArray(geom.coordinates)){
+    const rings=geom.coordinates;
+    if(rings[0]) count+=addGeoPolygon(rings[0],level,name);
+  }else if(geom && geom.type==='MultiPolygon' && Array.isArray(geom.coordinates)){
+    geom.coordinates.forEach(poly=>{
+      if(poly && poly[0]) count+=addGeoPolygon(poly[0],level,name);
+    });
+  }
+
+  const pointCandidates=[
+    item.points,item.polygon,item.path,item.coordinates,item.vertices,item.boundary
+  ];
+  pointCandidates.forEach(arr=>{
+    if(Array.isArray(arr) && arr.length>=3 && !Array.isArray(arr[0]?.[0])){
+      count+=addGeoPolygon(arr,level,name);
+    }
+  });
+
+  const nestedKeys=['areas','sub_areas','subAreas','children','items','data'];
+  nestedKeys.forEach(k=>{
+    if(Array.isArray(item[k])){
+      item[k].forEach(child=>{count+=renderDjiGeoItem(child,level);});
+    }
+  });
+  return count;
+}
+
+function extractDjiGeoItems(data){
+  if(Array.isArray(data)) return data;
+  if(!data || typeof data!=='object') return [];
+  for(const k of ['areas','data','items','results','list']){
+    if(Array.isArray(data[k])) return data[k];
+    if(data[k] && typeof data[k]==='object'){
+      for(const kk of ['areas','items','list']){
+        if(Array.isArray(data[k][kk])) return data[k][kk];
+      }
+    }
+  }
+  return [];
+}
+
+async function loadDjiGeoZones(){
+  if(!geoZoneEnabled) return;
+  const status=document.getElementById('geoZoneStatus');
+  const seq=++geoZoneRequestSeq;
+  clearDjiGeoZones();
+  if(status) status.textContent='DJI GEO 구역을 불러오는 중...';
+
+  const center=map.getCenter();
+  const drone=document.getElementById('geoDroneSelect')?.value || 'dji-mavic-3';
+  const radius=Math.min(50000,Math.max(15000,Math.round(12000*Math.pow(1.55,Math.max(0,map.getLevel()-4)))));
+  const api='https://www-api.dji.com/api/geo/areas?'+new URLSearchParams({
+    drone:drone,
+    zones_mode:'total',
+    country:'KR',
+    lng:String(center.getLng()),
+    lat:String(center.getLat()),
+    search_radius:String(radius),
+    level:'0,1,2,3,4,6,7'
+  }).toString();
+  const proxy='https://api.allorigins.win/raw?url='+encodeURIComponent(api);
+
+  try{
+    const res=await fetch(proxy,{cache:'no-store'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    if(seq!==geoZoneRequestSeq || !geoZoneEnabled) return;
+    const items=extractDjiGeoItems(data);
+    let count=0;
+    items.forEach(item=>{count+=renderDjiGeoItem(item);});
+    if(status){
+      status.textContent=count
+        ? 'DJI GEO 구역 '+count+'개 표시 중'
+        : '현재 화면 주변에서 표시 가능한 GEO 구역을 찾지 못했습니다.';
+    }
+  }catch(error){
+    console.error('DJI GEO load error',error);
+    if(status){
+      status.textContent='DJI GEO 데이터를 불러오지 못했습니다. 아래 공식 링크에서 확인해 주세요.';
+    }
+  }
+}
+
 function locateMe(){
   if(!navigator.geolocation){
     alert('이 브라우저에서는 현재 위치 기능을 사용할 수 없습니다.');
@@ -1525,6 +1782,17 @@ function locateMe(){
     maximumAge:0
   });
 }
+document.getElementById('geoZoneToggle')?.addEventListener('change',function(){
+  geoZoneEnabled=this.checked;
+  if(geoZoneEnabled) loadDjiGeoZones();
+  else clearDjiGeoZones();
+});
+document.getElementById('geoDroneSelect')?.addEventListener('change',()=>{
+  if(geoZoneEnabled) loadDjiGeoZones();
+});
+kakao.maps.event.addListener(map,'idle',()=>{
+  if(geoZoneEnabled) loadDjiGeoZones();
+});
 document.getElementById('floatingLocBtn')?.addEventListener('click',locateMe);
 document.getElementById('resetRouteStatesBtn')?.addEventListener('click',resetRouteStates);
 syncPanelToggle();
