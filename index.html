@@ -75,6 +75,45 @@
     }
     .style-section-body { display:none; padding-top:2px; }
     .style-section-body.open { display:block; }
+    .memo-list {
+      margin-top:8px;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .memo-empty {
+      font-size:12px;
+      color:#777;
+      padding:6px 2px;
+    }
+    .memo-item {
+      width:100%;
+      display:grid;
+      grid-template-columns:42px 1fr;
+      gap:7px;
+      align-items:start;
+      padding:7px 8px;
+      border:1px solid #e2e5e9;
+      border-radius:7px;
+      background:#fff;
+      text-align:left;
+      cursor:pointer;
+    }
+    .memo-item:hover { background:#f7f8fa; }
+    .memo-num {
+      font-size:12px;
+      font-weight:700;
+      color:#0D47A1;
+    }
+    .memo-text {
+      font-size:12px;
+      line-height:1.35;
+      color:#444;
+      overflow:hidden;
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+    }
     .route-style-row {
       display: grid;
       grid-template-columns: 48px 1fr 44px;
@@ -141,7 +180,7 @@
     }
     .floating-location:hover { background: #fff; }
     .route-select-popup {
-      width: 150px;
+      width: 220px;
       padding: 10px;
       background: rgba(255,255,255,.98);
       border-radius: 10px;
@@ -155,7 +194,8 @@
       text-align: center;
     }
     .route-select-popup .route-select-actions {
-      display: flex;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 6px;
     }
     .route-select-popup button {
@@ -173,6 +213,14 @@
     .route-select-popup .route-off-btn {
       background: #e9ecef;
       color: #222;
+    }
+    .route-select-popup .route-memo-btn {
+      background:#fff3cd;
+      color:#5f4b00;
+    }
+    .route-select-popup .route-prop-btn {
+      background:#e7f1ff;
+      color:#0D47A1;
     }
     .address-popup {
       width: 250px;
@@ -312,6 +360,15 @@
       </select>
     </div>
     <div class="route-style-controls">
+      <div class="route-style-title">메모</div>
+      <button class="style-section-toggle" type="button" data-target="memoListBody">
+        <span>메모된 번호</span><span>＋</span>
+      </button>
+      <div id="memoListBody" class="style-section-body">
+        <div id="memoList" class="memo-list"></div>
+      </div>
+    </div>
+    <div class="route-style-controls">
       <div class="route-style-title">라인 스타일</div>
 
       <button class="style-section-toggle" type="button" data-target="defaultStyleBody">
@@ -386,6 +443,13 @@ const offRouteStyle={weight:2,color:'#6F7F95',opacity:.5};
 const labelStyle={size:13};
 const controlPanel=document.getElementById('controlPanel');
 const panelToggleBtn=document.getElementById('panelToggleBtn');
+const MEMO_STORAGE_KEY='flightRouteMemosV1';
+let routeMemos={};
+try{
+  routeMemos=JSON.parse(localStorage.getItem(MEMO_STORAGE_KEY)||'{}')||{};
+}catch(e){
+  routeMemos={};
+}
 
 panelToggleBtn.addEventListener('click',()=>{
   const collapsed=controlPanel.classList.toggle('collapsed');
@@ -419,6 +483,82 @@ function setRouteState(routeLine,enabled){
     const showLabel=enabled && routeToggle.checked && map.getLevel()<=8;
     routeLine._labelOverlay.setMap(showLabel?map:null);
   }
+}
+
+function persistRouteMemos(){
+  localStorage.setItem(MEMO_STORAGE_KEY,JSON.stringify(routeMemos));
+  renderMemoList();
+}
+
+function saveRouteMemo(routeLine){
+  const num=routeLine._routeNumber || '';
+  if(!num){
+    alert('번호가 없는 라인에는 메모를 저장할 수 없습니다.');
+    return;
+  }
+  const current=routeMemos[num]?.memo || '';
+  const value=window.prompt(num+'번 메모를 입력하세요.\n내용을 모두 지우고 확인하면 메모가 삭제됩니다.',current);
+  if(value===null) return;
+
+  const memo=value.trim();
+  if(memo){
+    routeMemos[num]={
+      memo:memo,
+      updated:new Date().toISOString()
+    };
+  }else{
+    delete routeMemos[num];
+  }
+  persistRouteMemos();
+}
+
+function showRouteProperties(routeLine){
+  const num=routeLine._routeNumber || '번호 없음';
+  const memo=routeMemos[routeLine._routeNumber]?.memo || '저장된 메모 없음';
+  alert('번호: '+num+'\n\n메모:\n'+memo);
+}
+
+function renderMemoList(){
+  const list=document.getElementById('memoList');
+  if(!list) return;
+  list.innerHTML='';
+
+  const keys=Object.keys(routeMemos).filter(num=>routeMemos[num]?.memo).sort((a,b)=>{
+    const na=Number(a), nb=Number(b);
+    if(!Number.isNaN(na) && !Number.isNaN(nb)) return na-nb;
+    return a.localeCompare(b,'ko');
+  });
+
+  if(keys.length===0){
+    const empty=document.createElement('div');
+    empty.className='memo-empty';
+    empty.textContent='저장된 메모가 없습니다.';
+    list.appendChild(empty);
+    return;
+  }
+
+  keys.forEach(num=>{
+    const item=document.createElement('button');
+    item.type='button';
+    item.className='memo-item';
+
+    const n=document.createElement('span');
+    n.className='memo-num';
+    n.textContent=num+'번';
+
+    const t=document.createElement('span');
+    t.className='memo-text';
+    t.textContent=routeMemos[num].memo;
+
+    item.appendChild(n);
+    item.appendChild(t);
+    item.addEventListener('click',()=>{
+      focusRouteNumber(num);
+      setTimeout(()=>alert(num+'번 메모\n\n'+routeMemos[num].memo),100);
+    });
+
+    list.appendChild(item);
+  });
 }
 
 function closeRouteSelectPopup(){
@@ -472,8 +612,29 @@ function showRouteSelectPopup(routeLine,position){
   offBtn.addEventListener('click',turnOff);
   offBtn.addEventListener('touchend',turnOff,{passive:false});
 
+  const memoBtn=document.createElement('button');
+  memoBtn.className='route-memo-btn';
+  memoBtn.type='button';
+  memoBtn.textContent='메모';
+  memoBtn.addEventListener('click',function(e){
+    e.preventDefault(); e.stopPropagation();
+    saveRouteMemo(routeLine);
+    closeRouteSelectPopup();
+  });
+
+  const propBtn=document.createElement('button');
+  propBtn.className='route-prop-btn';
+  propBtn.type='button';
+  propBtn.textContent='속성';
+  propBtn.addEventListener('click',function(e){
+    e.preventDefault(); e.stopPropagation();
+    showRouteProperties(routeLine);
+  });
+
   actions.appendChild(onBtn);
   actions.appendChild(offBtn);
+  actions.appendChild(memoBtn);
+  actions.appendChild(propBtn);
   box.appendChild(title);
   box.appendChild(actions);
 
@@ -923,6 +1084,7 @@ function locateMe(){
   });
 }
 document.getElementById('floatingLocBtn')?.addEventListener('click',locateMe);
+renderMemoList();
 updateScaleBar();
 loadRoute();
 </script>
