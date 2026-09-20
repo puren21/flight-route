@@ -1661,7 +1661,11 @@ function renderDjiGeoItem(item,inheritLevel=null){
   const lat=Number(item.lat ?? item.latitude ?? item.center_lat ?? item.centerLat);
   const lng=Number(item.lng ?? item.lon ?? item.longitude ?? item.center_lng ?? item.centerLng);
   const radius=Number(item.radius ?? item.radius_m ?? item.radiusMeters);
-  if(Number.isFinite(lat)&&Number.isFinite(lng)&&Number.isFinite(radius)){
+
+  // DJI areas 응답은 polygon_points 또는 sub_areas를 주로 사용함.
+  if(Array.isArray(item.polygon_points) && item.polygon_points.length>=3){
+    count+=addGeoPolygon(item.polygon_points,level,name);
+  }else if(Number.isFinite(lat)&&Number.isFinite(lng)&&Number.isFinite(radius)&&radius>0){
     count+=addGeoCircle(lat,lng,radius,level,name);
   }
 
@@ -1684,7 +1688,7 @@ function renderDjiGeoItem(item,inheritLevel=null){
     }
   });
 
-  const nestedKeys=['areas','sub_areas','subAreas','children','items','data'];
+  const nestedKeys=['sub_areas','subAreas','children','items','data'];
   nestedKeys.forEach(k=>{
     if(Array.isArray(item[k])){
       item[k].forEach(child=>{count+=renderDjiGeoItem(child,level);});
@@ -1707,6 +1711,30 @@ function extractDjiGeoItems(data){
   return [];
 }
 
+async function fetchDjiGeoJson(api){
+  const targets=[
+    'https://api.allorigins.win/raw?url='+encodeURIComponent(api),
+    'https://corsproxy.io/?'+encodeURIComponent(api)
+  ];
+  let lastError=null;
+
+  for(const url of targets){
+    const controller=new AbortController();
+    const timer=setTimeout(()=>controller.abort(),8000);
+    try{
+      const res=await fetch(url,{cache:'no-store',signal:controller.signal});
+      clearTimeout(timer);
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      return await res.json();
+    }catch(error){
+      clearTimeout(timer);
+      lastError=error;
+      console.warn('DJI GEO proxy failed',url,error);
+    }
+  }
+  throw lastError || new Error('DJI GEO proxy unavailable');
+}
+
 async function loadDjiGeoZones(){
   if(!geoZoneEnabled) return;
   const status=document.getElementById('geoZoneStatus');
@@ -1716,35 +1744,40 @@ async function loadDjiGeoZones(){
 
   const center=map.getCenter();
   const drone=document.getElementById('geoDroneSelect')?.value || 'dji-mavic-3';
-  const radius=Math.min(50000,Math.max(15000,Math.round(12000*Math.pow(1.55,Math.max(0,map.getLevel()-4)))));
-  const api='https://www-api.dji.com/api/geo/areas?'+new URLSearchParams({
-    drone:drone,
-    zones_mode:'total',
-    country:'KR',
-    lng:String(center.getLng()),
-    lat:String(center.getLat()),
-    search_radius:String(radius),
-    level:'0,1,2,3,4,6,7'
-  }).toString();
-  const proxy='https://api.allorigins.win/raw?url='+encodeURIComponent(api);
+
+  // DJI API는 너무 넓은 검색반경에서 응답하지 않는 경우가 있어 35km 이내로 제한함.
+  const radius=Math.min(
+    35000,
+    Math.max(10000,Math.round(9000*Math.pow(1.45,Math.max(0,map.getLevel()-4))))
+  );
+
+  const api=
+    'https://www-api.dji.com/api/geo/areas?'+
+    'drone='+encodeURIComponent(drone)+
+    '&zones_mode=total'+
+    '&country=KR'+
+    '&level=0,1,2,3,4,5,6,7,8,9'+
+    '&lng='+encodeURIComponent(String(center.getLng()))+
+    '&lat='+encodeURIComponent(String(center.getLat()))+
+    '&search_radius='+encodeURIComponent(String(radius));
 
   try{
-    const res=await fetch(proxy,{cache:'no-store'});
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    const data=await res.json();
+    const data=await fetchDjiGeoJson(api);
     if(seq!==geoZoneRequestSeq || !geoZoneEnabled) return;
+
     const items=extractDjiGeoItems(data);
     let count=0;
     items.forEach(item=>{count+=renderDjiGeoItem(item);});
+
     if(status){
       status.textContent=count
         ? 'DJI GEO 구역 '+count+'개 표시 중'
-        : '현재 화면 주변에서 표시 가능한 GEO 구역을 찾지 못했습니다.';
+        : 'DJI 응답은 받았지만 현재 화면 주변에 표시할 GEO 구역이 없습니다.';
     }
   }catch(error){
     console.error('DJI GEO load error',error);
     if(status){
-      status.textContent='DJI GEO 데이터를 불러오지 못했습니다. 아래 공식 링크에서 확인해 주세요.';
+      status.textContent='DJI GEO 서버/프록시 응답이 없습니다. 잠시 후 다시 켜거나 공식 지도를 확인해 주세요.';
     }
   }
 }
