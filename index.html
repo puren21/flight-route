@@ -502,6 +502,12 @@ const labelStyle={size:13};
 const controlPanel=document.getElementById('controlPanel');
 const panelToggleBtn=document.getElementById('panelToggleBtn');
 const MEMO_STORAGE_KEY='flightRouteMemosV1';
+const SUPABASE_REST_URL='https://zdjuksmhtvhetzblczqq.supabase.co/rest/v1';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_Hlk_1ZOd_WF_Ijn6VM258w_3w8HFYN4';
+const SUPABASE_HEADERS={
+  'apikey':SUPABASE_PUBLISHABLE_KEY,
+  'Content-Type':'application/json'
+};
 let routeMemos={};
 try{
   routeMemos=JSON.parse(localStorage.getItem(MEMO_STORAGE_KEY)||'{}')||{};
@@ -548,6 +554,94 @@ function persistRouteMemos(){
   renderMemoList();
 }
 
+async function loadRemoteMemos(){
+  try{
+    const response=await fetch(
+      SUPABASE_REST_URL+'/route_memos?select=route_number,memo,updated_at',
+      {headers:SUPABASE_HEADERS}
+    );
+    if(!response.ok) throw new Error('메모 불러오기 실패 ('+response.status+')');
+
+    const rows=await response.json();
+    const remote={};
+    rows.forEach(row=>{
+      if(row.route_number && row.memo){
+        remote[String(row.route_number)]={
+          memo:row.memo,
+          updated:row.updated_at || ''
+        };
+      }
+    });
+
+    // 기존 브라우저에 있던 메모와 온라인 메모를 병합함.
+    const local={...routeMemos};
+    const merged={...remote};
+    const uploads=[];
+
+    Object.keys(local).forEach(num=>{
+      const localItem=local[num];
+      if(!localItem?.memo) return;
+      const remoteItem=remote[num];
+      const localTime=Date.parse(localItem.updated||'')||0;
+      const remoteTime=Date.parse(remoteItem?.updated||'')||0;
+
+      if(!remoteItem || localTime>remoteTime){
+        merged[num]=localItem;
+        uploads.push(upsertRemoteMemo(num,localItem.memo,localItem.updated||new Date().toISOString()));
+      }
+    });
+
+    if(uploads.length) await Promise.allSettled(uploads);
+
+    routeMemos=merged;
+    persistRouteMemos();
+    return true;
+  }catch(error){
+    console.error(error);
+    renderMemoList();
+    return false;
+  }
+}
+
+async function upsertRemoteMemo(num,memo,updatedAt){
+  const response=await fetch(
+    SUPABASE_REST_URL+'/route_memos?on_conflict=route_number',
+    {
+      method:'POST',
+      headers:{
+        ...SUPABASE_HEADERS,
+        'Prefer':'resolution=merge-duplicates,return=minimal'
+      },
+      body:JSON.stringify({
+        route_number:String(num),
+        memo:memo,
+        updated_at:updatedAt || new Date().toISOString()
+      })
+    }
+  );
+  if(!response.ok){
+    const detail=await response.text();
+    throw new Error('메모 저장 실패 ('+response.status+'): '+detail);
+  }
+}
+
+async function deleteRemoteMemo(num){
+  const response=await fetch(
+    SUPABASE_REST_URL+'/route_memos?route_number=eq.'+encodeURIComponent(String(num)),
+    {
+      method:'DELETE',
+      headers:{
+        ...SUPABASE_HEADERS,
+        'Prefer':'return=minimal'
+      }
+    }
+  );
+  if(!response.ok){
+    const detail=await response.text();
+    throw new Error('메모 삭제 실패 ('+response.status+'): '+detail);
+  }
+}
+
 let memoEditingRoute=null;
 
 function openMemoEditor(routeLine){
@@ -580,30 +674,55 @@ function closeMemoEditor(){
   memoEditingRoute=null;
 }
 
-function saveCurrentMemo(){
+async function saveCurrentMemo(){
   if(!memoEditingRoute) return;
   const num=memoEditingRoute._routeNumber || '';
   const memo=document.getElementById('memoTextarea').value.trim();
+  const saveBtn=document.getElementById('memoSaveBtn');
 
-  if(memo){
-    routeMemos[num]={
-      memo:memo,
-      updated:new Date().toISOString()
-    };
-  }else{
-    delete routeMemos[num];
+  try{
+    saveBtn.disabled=true;
+    saveBtn.textContent='저장 중...';
+
+    if(memo){
+      const updated=new Date().toISOString();
+      await upsertRemoteMemo(num,memo,updated);
+      routeMemos[num]={memo:memo,updated:updated};
+    }else{
+      await deleteRemoteMemo(num);
+      delete routeMemos[num];
+    }
+
+    persistRouteMemos();
+    closeMemoEditor();
+  }catch(error){
+    console.error(error);
+    alert('온라인 메모 저장에 실패했습니다.\n\n'+error.message);
+  }finally{
+    saveBtn.disabled=false;
+    saveBtn.textContent='저장';
   }
-
-  persistRouteMemos();
-  closeMemoEditor();
 }
 
-function deleteCurrentMemo(){
+async function deleteCurrentMemo(){
   if(!memoEditingRoute) return;
   const num=memoEditingRoute._routeNumber || '';
-  delete routeMemos[num];
-  persistRouteMemos();
-  closeMemoEditor();
+  const deleteBtn=document.getElementById('memoDeleteBtn');
+
+  try{
+    deleteBtn.disabled=true;
+    deleteBtn.textContent='삭제 중...';
+    await deleteRemoteMemo(num);
+    delete routeMemos[num];
+    persistRouteMemos();
+    closeMemoEditor();
+  }catch(error){
+    console.error(error);
+    alert('온라인 메모 삭제에 실패했습니다.\n\n'+error.message);
+  }finally{
+    deleteBtn.disabled=false;
+    deleteBtn.textContent='삭제';
+  }
 }
 
 document.getElementById('memoSaveBtn').addEventListener('click',saveCurrentMemo);
@@ -1196,6 +1315,7 @@ function locateMe(){
 }
 document.getElementById('floatingLocBtn')?.addEventListener('click',locateMe);
 renderMemoList();
+loadRemoteMemos();
 updateScaleBar();
 loadRoute();
 </script>
