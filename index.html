@@ -375,7 +375,11 @@ async function loadRoute(){
       if(feature.geometry.type==='LineString'){drawLineString(feature.geometry.coordinates,labelNumber);lineCount++;}
       if(feature.geometry.type==='MultiLineString'){feature.geometry.coordinates.forEach(coords=>{drawLineString(coords,labelNumber);lineCount++;});}
     });
-    if(routePolylines.length>0) map.setBounds(routeBounds);
+    if(routePolylines.length>0){
+      map.setBounds(routeBounds);
+      const fittedLevel=map.getLevel();
+      map.setLevel(Math.max(1,fittedLevel-1));
+    }
     updateRouteLabelVisibility();
     statusEl.textContent='비행경로 '+lineCount+'개 선 표시 완료';
   }catch(error){console.error(error);statusEl.textContent='GeoJSON 로딩 오류: '+error.message;}
@@ -394,6 +398,7 @@ function drawLineString(coordinates,labelNumber){
     strokeColor:'#E53935',
     strokeOpacity:.9,
     strokeStyle:'solid',
+    clickable:true,
     zIndex:5
   }));
 
