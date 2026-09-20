@@ -497,16 +497,43 @@ function drawLineString(coordinates,labelNumber){
     return latLng;
   });
 
-  routePolylines.push(new kakao.maps.Polyline({
-    map,
-    path,
-    strokeWeight:4,
+  const routeLine=new kakao.maps.Polyline({
+    map:map,
+    path:path,
+    strokeWeight:2,
     strokeColor:'#E53935',
     strokeOpacity:.9,
     strokeStyle:'solid',
     clickable:true,
     zIndex:5
-  }));
+  });
+
+  routeLine._routeEnabled=true;
+
+  // 모바일에서도 쉽게 선택할 수 있도록 같은 경로에 넓은 투명 터치영역을 둠
+  const hitLine=new kakao.maps.Polyline({
+    map:map,
+    path:path,
+    strokeWeight:24,
+    strokeColor:'#000000',
+    strokeOpacity:0.01,
+    strokeStyle:'solid',
+    clickable:true,
+    zIndex:6
+  });
+
+  const openRouteMenu=function(mouseEvent){
+    const pos=(mouseEvent && mouseEvent.latLng)
+      ? mouseEvent.latLng
+      : path[Math.floor(path.length/2)];
+    showRouteSelectPopup(routeLine,pos);
+  };
+
+  kakao.maps.event.addListener(hitLine,'click',openRouteMenu);
+  kakao.maps.event.addListener(routeLine,'click',openRouteMenu);
+
+  routeLine._hitLine=hitLine;
+  routePolylines.push(routeLine);
 
   if(labelNumber!=='' && coordinates.length>0){
     const midIndex=Math.floor((coordinates.length-1)/2);
@@ -516,7 +543,7 @@ function drawLineString(coordinates,labelNumber){
     label.textContent=labelNumber;
 
     const overlay=new kakao.maps.CustomOverlay({
-      map: null,
+      map:null,
       position:new kakao.maps.LatLng(mid[1],mid[0]),
       content:label,
       xAnchor:0.5,
@@ -528,6 +555,7 @@ function drawLineString(coordinates,labelNumber){
     updateRouteLabelVisibility();
   }
 }
+
 function updateRouteLabelVisibility(){
   // 카카오 지도 level 값은 숫자가 클수록 더 멀리 축소된 상태임
   const showLabels=routeToggle.checked && map.getLevel()<=8;
