@@ -58,6 +58,23 @@
       color: #444;
       margin-bottom: 7px;
     }
+    .style-section-toggle {
+      width:100%;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:7px 8px;
+      margin-top:6px;
+      border:0;
+      border-radius:7px;
+      background:#f1f3f5;
+      font-size:12px;
+      font-weight:700;
+      color:#333;
+      cursor:pointer;
+    }
+    .style-section-body { display:none; padding-top:2px; }
+    .style-section-body.open { display:block; }
     .route-style-row {
       display: grid;
       grid-template-columns: 48px 1fr 44px;
@@ -247,7 +264,7 @@
       border-top: 2px solid #222;
     }
     .route-label {
-      color: #111;
+      color: #1976D2;
       font-size: 13px;
       font-weight: 700;
       line-height: 1;
@@ -296,25 +313,58 @@
     </div>
     <div class="route-style-controls">
       <div class="route-style-title">라인 스타일</div>
-      <div class="route-style-row">
-        <span>두께</span>
-        <input id="routeWeight" type="range" min="1" max="10" step="1" value="3">
-        <span id="routeWeightValue" class="route-style-value">3</span>
+
+      <button class="style-section-toggle" type="button" data-target="defaultStyleBody">
+        <span>기본 라인</span><span>＋</span>
+      </button>
+      <div id="defaultStyleBody" class="style-section-body">
+        <div class="route-style-row">
+          <span>두께</span>
+          <input id="routeWeight" type="range" min="1" max="10" step="1" value="3">
+          <span id="routeWeightValue" class="route-style-value">3</span>
+        </div>
+        <div class="route-style-row">
+          <span>색상</span>
+          <input id="routeColor" type="color" value="#e53935">
+          <span></span>
+        </div>
+        <div class="route-style-row">
+          <span>투명도</span>
+          <input id="routeOpacity" type="range" min="0.1" max="1" step="0.1" value="0.9">
+          <span id="routeOpacityValue" class="route-style-value">90%</span>
+        </div>
       </div>
-      <div class="route-style-row">
-        <span>색상</span>
-        <input id="routeColor" type="color" value="#e53935">
-        <span></span>
+
+      <button class="style-section-toggle" type="button" data-target="offStyleBody">
+        <span>끄기 라인</span><span>＋</span>
+      </button>
+      <div id="offStyleBody" class="style-section-body">
+        <div class="route-style-row">
+          <span>두께</span>
+          <input id="offRouteWeight" type="range" min="1" max="10" step="1" value="2">
+          <span id="offRouteWeightValue" class="route-style-value">2</span>
+        </div>
+        <div class="route-style-row">
+          <span>색상</span>
+          <input id="offRouteColor" type="color" value="#1976d2">
+          <span></span>
+        </div>
+        <div class="route-style-row">
+          <span>투명도</span>
+          <input id="offRouteOpacity" type="range" min="0.1" max="1" step="0.1" value="0.5">
+          <span id="offRouteOpacityValue" class="route-style-value">50%</span>
+        </div>
       </div>
-      <div class="route-style-row">
-        <span>투명도</span>
-        <input id="routeOpacity" type="range" min="0.1" max="1" step="0.1" value="0.9">
-        <span id="routeOpacityValue" class="route-style-value">90%</span>
-      </div>
-      <div class="route-style-row">
-        <span>라벨크기</span>
-        <input id="labelSize" type="range" min="8" max="28" step="1" value="13">
-        <span id="labelSizeValue" class="route-style-value">13px</span>
+
+      <button class="style-section-toggle" type="button" data-target="labelStyleBody">
+        <span>라벨</span><span>＋</span>
+      </button>
+      <div id="labelStyleBody" class="style-section-body">
+        <div class="route-style-row">
+          <span>크기</span>
+          <input id="labelSize" type="range" min="8" max="28" step="1" value="13">
+          <span id="labelSizeValue" class="route-style-value">13px</span>
+        </div>
       </div>
     </div>
     <div class="row"><button id="roadBtn" class="active">일반지도</button><button id="skyBtn">위성지도</button></div>
@@ -332,6 +382,7 @@ let routePopupOpenedAt=0;
 const statusEl=document.getElementById('status');
 const routeToggle={checked:true};
 const routeStyle={weight:3,color:'#E53935',opacity:.9};
+const offRouteStyle={weight:2,color:'#1976D2',opacity:.5};
 const labelStyle={size:13};
 const controlPanel=document.getElementById('controlPanel');
 const panelToggleBtn=document.getElementById('panelToggleBtn');
@@ -358,9 +409,9 @@ function setRouteState(routeLine,enabled){
     });
   }else{
     routeLine.setOptions({
-      strokeWeight:1.5,
-      strokeColor:'#1976D2',
-      strokeOpacity:.5
+      strokeWeight:offRouteStyle.weight,
+      strokeColor:offRouteStyle.color,
+      strokeOpacity:offRouteStyle.opacity
     });
   }
 
@@ -758,6 +809,26 @@ function applyRouteStyle(){
   });
 }
 
+function applyOffRouteStyle(){
+  routePolylines.forEach(line=>{
+    if(line._routeEnabled===false){
+      line.setOptions({
+        strokeWeight:offRouteStyle.weight,
+        strokeColor:offRouteStyle.color,
+        strokeOpacity:offRouteStyle.opacity
+      });
+    }
+  });
+}
+
+document.querySelectorAll('.style-section-toggle').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const body=document.getElementById(btn.dataset.target);
+    const open=body.classList.toggle('open');
+    btn.lastElementChild.textContent=open?'−':'＋';
+  });
+});
+
 const routeWeightInput=document.getElementById('routeWeight');
 const routeColorInput=document.getElementById('routeColor');
 const routeOpacityInput=document.getElementById('routeOpacity');
@@ -765,6 +836,11 @@ const routeWeightValue=document.getElementById('routeWeightValue');
 const routeOpacityValue=document.getElementById('routeOpacityValue');
 const labelSizeInput=document.getElementById('labelSize');
 const labelSizeValue=document.getElementById('labelSizeValue');
+const offRouteWeightInput=document.getElementById('offRouteWeight');
+const offRouteColorInput=document.getElementById('offRouteColor');
+const offRouteOpacityInput=document.getElementById('offRouteOpacity');
+const offRouteWeightValue=document.getElementById('offRouteWeightValue');
+const offRouteOpacityValue=document.getElementById('offRouteOpacityValue');
 
 routeWeightInput.addEventListener('input',()=>{
   routeStyle.weight=Number(routeWeightInput.value);
@@ -781,6 +857,23 @@ routeOpacityInput.addEventListener('input',()=>{
   routeStyle.opacity=Number(routeOpacityInput.value);
   routeOpacityValue.textContent=Math.round(routeStyle.opacity*100)+'%';
   applyRouteStyle();
+});
+
+offRouteWeightInput.addEventListener('input',()=>{
+  offRouteStyle.weight=Number(offRouteWeightInput.value);
+  offRouteWeightValue.textContent=offRouteWeightInput.value;
+  applyOffRouteStyle();
+});
+
+offRouteColorInput.addEventListener('input',()=>{
+  offRouteStyle.color=offRouteColorInput.value;
+  applyOffRouteStyle();
+});
+
+offRouteOpacityInput.addEventListener('input',()=>{
+  offRouteStyle.opacity=Number(offRouteOpacityInput.value);
+  offRouteOpacityValue.textContent=Math.round(offRouteStyle.opacity*100)+'%';
+  applyOffRouteStyle();
 });
 
 labelSizeInput.addEventListener('input',()=>{
