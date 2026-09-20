@@ -101,6 +101,17 @@
       font-weight: 700;
       cursor: pointer;
     }
+    .address-popup .naver-btn {
+      width: 100%;
+      margin-top: 6px;
+      padding: 8px 10px;
+      border: 0;
+      border-radius: 7px;
+      background: #03c75a;
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+    }
     .address-popup .close-btn {
       position: absolute;
       right: 8px;
@@ -210,6 +221,17 @@ function startKakaoNavi(name,lat,lng){
   });
 }
 
+function startNaverMapRoute(name,lat,lng){
+  const appName=encodeURIComponent(window.location.origin + window.location.pathname);
+  const destinationName=encodeURIComponent(name || '선택 위치');
+  const url='nmap://route/car?dlat='+lat+
+    '&dlng='+lng+
+    '&dname='+destinationName+
+    '&appname='+appName;
+
+  window.location.href=url;
+}
+
 function showAddressPopup(latLng){
   const lat=latLng.getLat();
   const lng=latLng.getLng();
@@ -256,6 +278,12 @@ function showAddressPopup(latLng){
     navi.textContent='카카오내비 길찾기';
     navi.addEventListener('click',()=>startKakaoNavi(jibun,lat,lng));
 
+    const naver=document.createElement('button');
+    naver.className='naver-btn';
+    naver.type='button';
+    naver.textContent='네이버지도 길찾기';
+    naver.addEventListener('click',()=>startNaverMapRoute(jibun,lat,lng));
+
     close.addEventListener('click',()=>{
       if(addressOverlay){
         addressOverlay.setMap(null);
@@ -268,6 +296,7 @@ function showAddressPopup(latLng){
     box.appendChild(addr);
     box.appendChild(coord);
     box.appendChild(navi);
+    box.appendChild(naver);
 
     addressOverlay=new kakao.maps.CustomOverlay({
       map:map,
