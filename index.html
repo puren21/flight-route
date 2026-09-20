@@ -668,20 +668,15 @@ const SUPABASE_HEADERS={
 
 let krAirspaceEnabled=false;
 let krAirspaceLoaded=false;
-const krAirspaceOverlays={
-  prohibited:[],restricted:[],control:[],danger:[],temp:[],
-  alert:[],obstacle:[],coordination:[],droneAllowed:[]
-};
+const krAirspaceOverlays={obstacle:[]};
 const KR_AIRSPACE_SPECS={
-  prohibited:{url:'./airspace/lt_c_aisprhc.geojson',label:'비행금지구역',color:'#DC0000',fillOpacity:.18,nameFields:['prh_lbl_1','prh_lbl_2','name']},
-  restricted:{url:'./airspace/lt_c_aisresc.geojson',label:'비행제한구역',color:'#E68C00',fillOpacity:.16,nameFields:['res_lbl_1','res_lbl_2','name']},
-  control:{url:'./airspace/lt_c_aisctrc.geojson',label:'관제권',color:'#285AC8',fillOpacity:.12,nameFields:['ctr_lbl_1','ctr_lbl_2','name']},
-  danger:{url:'./airspace/lt_c_aisdngc.geojson',label:'위험지역',color:'#8C0000',fillOpacity:.14,nameFields:['dng_lbl_1','dng_lbl_2','name']},
-  temp:{url:'./airspace/lt_c_aistemp.geojson',label:'임시비행금지구역',color:'#DC2878',fillOpacity:.15,nameFields:['prh_lbl_1','prh_lbl_2','name']},
-  alert:{url:'./airspace/lt_c_aisaltc.geojson',label:'경계구역',color:'#963CB4',fillOpacity:.10,nameFields:['alt_lbl_1','alt_lbl_2','name']},
-  obstacle:{url:'./airspace/lt_c_aisobls.geojson',label:'장애물공역',color:'#6E6E6E',fillOpacity:.08,nameFields:['remarks_tx','name']},
-  coordination:{url:'./airspace/lt_c_aispca.geojson',label:'사전협의구역',color:'#009696',fillOpacity:.10,nameFields:['nm_kor','name']},
-  droneAllowed:{url:'./airspace/lt_c_aisdronezone.geojson',label:'드론 전용공역',color:'#1E963C',fillOpacity:.12,nameFields:['name','nm_kor']}
+  obstacle:{
+    url:'./airspace/lt_c_aisobls.geojson',
+    label:'장애물공역',
+    color:'#6E6E6E',
+    fillOpacity:.08,
+    nameFields:['remarks_tx','name']
+  }
 };
 let routeMemos={};
 try{
@@ -1603,7 +1598,7 @@ function addKoreanAirspaceRing(ring,spec,key,name){
   if(path.length<3) return 0;
 
   const polygon=new kakao.maps.Polygon({
-    map:krAirspaceEnabled ? map : null,
+    map:null,
     path:path,
     strokeWeight:2,
     strokeColor:spec.color,
