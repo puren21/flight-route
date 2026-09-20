@@ -28,6 +28,23 @@
       line-height:1;
     }
     .panel-body { display:block; }
+    .route-number-wrap {
+      margin: 8px 0 10px;
+    }
+    .route-number-wrap label {
+      display:block;
+      font-size:12px;
+      color:#555;
+      margin-bottom:4px;
+    }
+    .route-number-select {
+      width:100%;
+      padding:7px 8px;
+      border:1px solid #ccc;
+      border-radius:7px;
+      background:#fff;
+      font-size:13px;
+    }
     .panel.collapsed {
       width:auto;
       min-width:0;
@@ -226,6 +243,12 @@
   </div>
   <div class="panel-body">
     <label class="toggle"><input type="checkbox" id="routeToggle" checked /> 비행경로 표시</label>
+    <div class="route-number-wrap">
+      <label for="routeNumberSelect">번호 선택</label>
+      <select id="routeNumberSelect" class="route-number-select">
+        <option value="">번호 선택</option>
+      </select>
+    </div>
     <div style="font-size:11px;color:#666;margin:4px 0 8px;">라인 선택: 켜기 / 끄기</div>
     <div class="row"><button id="roadBtn" class="active">일반지도</button><button id="skyBtn">위성지도</button></div>
     <div class="row"><button id="zoomInBtn">확대 +</button><button id="zoomOutBtn">축소 −</button></div>
@@ -237,6 +260,7 @@
 const map=new kakao.maps.Map(document.getElementById('map'),{center:new kakao.maps.LatLng(35.16,126.84),level:8});
 
 let routePolylines=[],routeLabels=[],routeBounds=new kakao.maps.LatLngBounds(),currentMarker=null;
+const routeIndex=new Map();
 let selectedRoute=null;
 let routeSelectOverlay=null;
 const statusEl=document.getElementById('status'),routeToggle=document.getElementById('routeToggle');
@@ -494,13 +518,16 @@ async function loadRoute(){
       map.setLevel(Math.max(1,fittedLevel-1));
     }
     updateRouteLabelVisibility();
+    populateRouteNumberMenu();
     statusEl.textContent='비행경로 '+lineCount+'개 선 표시 완료';
   }catch(error){console.error(error);statusEl.textContent='GeoJSON 로딩 오류: '+error.message;}
 }
 function drawLineString(coordinates,labelNumber){
+  const localBounds=new kakao.maps.LatLngBounds();
   const path=coordinates.map(coord=>{
     const latLng=new kakao.maps.LatLng(coord[1],coord[0]);
     routeBounds.extend(latLng);
+    localBounds.extend(latLng);
     return latLng;
   });
 
@@ -516,6 +543,19 @@ function drawLineString(coordinates,labelNumber){
   });
 
   routeLine._routeEnabled=true;
+
+  if(labelNumber!==''){
+    const key=String(labelNumber);
+    if(!routeIndex.has(key)){
+      routeIndex.set(key,{
+        bounds:new kakao.maps.LatLngBounds(),
+        lines:[]
+      });
+    }
+    const entry=routeIndex.get(key);
+    path.forEach(p=>entry.bounds.extend(p));
+    entry.lines.push(routeLine);
+  }
 
   // 모바일에서도 쉽게 선택할 수 있도록 같은 경로에 넓은 투명 터치영역을 둠
   const hitLine=new kakao.maps.Polyline({
@@ -563,6 +603,45 @@ function drawLineString(coordinates,labelNumber){
     updateRouteLabelVisibility();
   }
 }
+
+function populateRouteNumberMenu(){
+  const select=document.getElementById('routeNumberSelect');
+  if(!select) return;
+
+  const current=select.value;
+  select.innerHTML='<option value="">번호 선택</option>';
+
+  const nums=[...routeIndex.keys()].sort((a,b)=>{
+    const na=Number(a), nb=Number(b);
+    if(!Number.isNaN(na) && !Number.isNaN(nb)) return na-nb;
+    return a.localeCompare(b,'ko');
+  });
+
+  nums.forEach(num=>{
+    const option=document.createElement('option');
+    option.value=num;
+    option.textContent=num;
+    select.appendChild(option);
+  });
+
+  if(current && routeIndex.has(current)) select.value=current;
+}
+
+function focusRouteNumber(num){
+  const entry=routeIndex.get(String(num));
+  if(!entry) return;
+
+  map.setBounds(entry.bounds);
+
+  // 너무 멀리 보이지 않도록 한 단계 확대
+  setTimeout(()=>{
+    map.setLevel(Math.max(1,map.getLevel()-1));
+  },0);
+}
+
+document.getElementById('routeNumberSelect').addEventListener('change',function(){
+  if(this.value) focusRouteNumber(this.value);
+});
 
 function updateRouteLabelVisibility(){
   // 카카오 지도 level 값은 숫자가 클수록 더 멀리 축소된 상태임
