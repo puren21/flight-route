@@ -112,7 +112,7 @@ function drawLineString(coordinates,labelNumber){
 }
 function updateRouteLabelVisibility(){
   // 카카오 지도 level 값은 숫자가 클수록 더 멀리 축소된 상태임
-  const showLabels=routeToggle.checked && map.getLevel()<=6;
+  const showLabels=routeToggle.checked && map.getLevel()<=8;
   routeLabels.forEach(label=>label.setMap(showLabels?map:null));
 }
 
