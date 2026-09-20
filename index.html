@@ -1630,9 +1630,6 @@ function addKoreanAirspaceRing(ring,spec,key,name){
     fillColor:spec.color,
     fillOpacity:spec.fillOpacity
   });
-  kakao.maps.event.addListener(polygon,'click',()=>{
-    alert(spec.label+'\n'+name+'\n\n참고용 공간데이터입니다. 실제 비행 전 드론 원스톱 등 공식 정보를 확인하세요.');
-  });
   krAirspaceOverlays[key].push(polygon);
   return 1;
 }
