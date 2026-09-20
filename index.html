@@ -182,6 +182,7 @@
   </div>
   <div class="panel-body">
     <label class="toggle"><input type="checkbox" id="routeToggle" checked /> 비행경로 표시</label>
+    <div style="font-size:11px;color:#666;margin:4px 0 8px;">라인 클릭: 켜기/끄기</div>
     <div class="row"><button id="roadBtn" class="active">일반지도</button><button id="skyBtn">위성지도</button></div>
     <div class="row"><button id="zoomInBtn">확대 +</button><button id="zoomOutBtn">축소 −</button></div>
     <div class="row"><button id="fitBtn">전체 경로</button><button id="locBtn">현재 위치</button></div>
@@ -192,6 +193,7 @@
 const map=new kakao.maps.Map(document.getElementById('map'),{center:new kakao.maps.LatLng(35.16,126.84),level:8});
 
 let routePolylines=[],routeLabels=[],routeBounds=new kakao.maps.LatLngBounds(),currentMarker=null;
+let selectedRoute=null;
 const statusEl=document.getElementById('status'),routeToggle=document.getElementById('routeToggle');
 const controlPanel=document.getElementById('controlPanel');
 const panelToggleBtn=document.getElementById('panelToggleBtn');
@@ -295,8 +297,8 @@ function showAddressPopup(latLng){
     box.appendChild(title);
     box.appendChild(addr);
     box.appendChild(coord);
-    box.appendChild(navi);
     box.appendChild(naver);
+    box.appendChild(navi);
 
     addressOverlay=new kakao.maps.CustomOverlay({
       map:map,
