@@ -249,17 +249,14 @@
     <button id="panelToggleBtn" class="panel-toggle" type="button" aria-label="메뉴 펼치기">＋</button>
   </div>
   <div class="panel-body">
-    <label class="toggle"><input type="checkbox" id="routeToggle" checked /> 비행경로 표시</label>
     <div class="route-number-wrap">
       <label for="routeNumberSelect">번호 선택</label>
       <select id="routeNumberSelect" class="route-number-select">
         <option value="">번호 선택</option>
       </select>
     </div>
-    <div style="font-size:11px;color:#666;margin:4px 0 8px;">라인 선택: 켜기 / 끄기</div>
     <div class="row"><button id="roadBtn" class="active">일반지도</button><button id="skyBtn">위성지도</button></div>
     <div class="row"><button id="zoomInBtn">확대 +</button><button id="zoomOutBtn">축소 −</button></div>
-    <div class="row"><button id="fitBtn">전체 경로</button><button id="locBtn">현재 위치</button></div>
     <div class="status" id="status">GeoJSON 불러오는 중...</div>
   </div>
 </div>
@@ -271,7 +268,8 @@ const routeIndex=new Map();
 let selectedRoute=null;
 let routeSelectOverlay=null;
 let routePopupOpenedAt=0;
-const statusEl=document.getElementById('status'),routeToggle=document.getElementById('routeToggle');
+const statusEl=document.getElementById('status');
+const routeToggle={checked:true};
 const controlPanel=document.getElementById('controlPanel');
 const panelToggleBtn=document.getElementById('panelToggleBtn');
 
