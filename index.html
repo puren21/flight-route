@@ -590,6 +590,13 @@ const controlPanel=document.getElementById('controlPanel');
 const panelToggleBtn=document.getElementById('panelToggleBtn');
 const mobileMenuLauncher=document.getElementById('mobileMenuLauncher');
 const MEMO_STORAGE_KEY='flightRouteMemosV1';
+const ROUTE_STATE_STORAGE_KEY='flightRouteStatesV1';
+let savedRouteStates={};
+try{
+  savedRouteStates=JSON.parse(localStorage.getItem(ROUTE_STATE_STORAGE_KEY)||'{}')||{};
+}catch(e){
+  savedRouteStates={};
+}
 const SUPABASE_REST_URL='https://zdjuksmhtvhetzblczqq.supabase.co/rest/v1';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_Hlk_1ZOd_WF_Ijn6VM258w_3w8HFYN4';
 const SUPABASE_HEADERS={
@@ -623,8 +630,13 @@ let addressOverlay=null;
 if(window.Kakao && !Kakao.isInitialized()){
   Kakao.init('7ee4bab8cd4d6be6d0d68a49e9b4502b');
 }
-function setRouteState(routeLine,enabled){
+function setRouteState(routeLine,enabled,persist=true){
   routeLine._routeEnabled=enabled;
+
+  if(persist && routeLine._routeNumber){
+    savedRouteStates[routeLine._routeNumber]=enabled;
+    localStorage.setItem(ROUTE_STATE_STORAGE_KEY,JSON.stringify(savedRouteStates));
+  }
 
   if(enabled){
     routeLine.setOptions({
@@ -1169,8 +1181,19 @@ function drawLineString(coordinates,labelNumber){
     zIndex:5
   });
 
-  routeLine._routeEnabled=true;
   routeLine._routeNumber=labelNumber!=='' ? String(labelNumber) : '';
+  const savedEnabled=routeLine._routeNumber &&
+    Object.prototype.hasOwnProperty.call(savedRouteStates,routeLine._routeNumber)
+      ? savedRouteStates[routeLine._routeNumber]!==false
+      : true;
+  routeLine._routeEnabled=savedEnabled;
+  if(!savedEnabled){
+    routeLine.setOptions({
+      strokeWeight:offRouteStyle.weight,
+      strokeColor:offRouteStyle.color,
+      strokeOpacity:offRouteStyle.opacity
+    });
+  }
 
   if(labelNumber!==''){
     const key=String(labelNumber);
@@ -1230,6 +1253,7 @@ function drawLineString(coordinates,labelNumber){
     overlay._labelElement=label;
     routeLine._labelOverlay=overlay;
     routeLabels.push(overlay);
+    setRouteState(routeLine,savedEnabled,false);
     updateRouteLabelVisibility();
   }
 }
