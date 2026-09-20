@@ -398,6 +398,7 @@
     }
     .route-label {
       color: #0D47A1;
+      opacity: 1;
       font-size: 13px;
       font-weight: 700;
       line-height: 1;
@@ -656,8 +657,12 @@ function setRouteState(routeLine,enabled,persist=true){
   }
 
   if(routeLine._labelOverlay){
-    const showLabel=enabled && routeToggle.checked && map.getLevel()<=8;
+    const showLabel=routeToggle.checked && map.getLevel()<=8;
     routeLine._labelOverlay.setMap(showLabel?map:null);
+    if(routeLine._labelOverlay._labelElement){
+      routeLine._labelOverlay._labelElement.style.opacity=
+        enabled ? String(routeStyle.opacity) : String(offRouteStyle.opacity);
+    }
   }
 }
 
@@ -1380,8 +1385,11 @@ function updateRouteLabelVisibility(){
 
   routePolylines.forEach(line=>{
     if(line._labelOverlay){
-      const showLabel=showByScale && line._routeEnabled!==false;
-      line._labelOverlay.setMap(showLabel?map:null);
+      line._labelOverlay.setMap(showByScale?map:null);
+      if(line._labelOverlay._labelElement){
+        line._labelOverlay._labelElement.style.opacity=
+          line._routeEnabled===false ? String(offRouteStyle.opacity) : String(routeStyle.opacity);
+      }
     }
   });
 }
@@ -1394,6 +1402,9 @@ function applyRouteStyle(){
         strokeColor:routeStyle.color,
         strokeOpacity:routeStyle.opacity
       });
+      if(line._labelOverlay?._labelElement){
+        line._labelOverlay._labelElement.style.opacity=String(routeStyle.opacity);
+      }
     }
   });
 }
@@ -1406,6 +1417,9 @@ function applyOffRouteStyle(){
         strokeColor:offRouteStyle.color,
         strokeOpacity:offRouteStyle.opacity
       });
+      if(line._labelOverlay?._labelElement){
+        line._labelOverlay._labelElement.style.opacity=String(offRouteStyle.opacity);
+      }
     }
   });
 }
