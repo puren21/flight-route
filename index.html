@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>비행경로</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    #map { width: 100%; height: 100%; }
+    .panel { position:absolute; top:16px; left:16px; z-index:10; width:220px; padding:14px; background:rgba(255,255,255,.96); border-radius:12px; box-shadow:0 4px 18px rgba(0,0,0,.18); }
+    .panel h1 { margin:0 0 12px; font-size:18px; }
+    .row { display:flex; gap:8px; margin-top:8px; }
+    button { flex:1; border:0; border-radius:8px; padding:9px 10px; background:#f1f3f5; cursor:pointer; font-size:14px; }
+    button:hover { background:#e9ecef; }
+    button.active { background:#222; color:#fff; }
+    .toggle { display:flex; align-items:center; gap:8px; margin-top:10px; font-size:14px; }
+    .status { margin-top:10px; font-size:12px; line-height:1.5; color:#555; }
+    @media (max-width:700px) {
+      .panel { top:10px; left:10px; right:10px; width:auto; padding:10px; }
+      .panel h1 { font-size:16px; margin-bottom:8px; }
+      button { padding:8px 6px; font-size:13px; }
+      .status { font-size:11px; }
+    }
+  </style>
+  <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=YOUR_KAKAO_JAVASCRIPT_KEY"></script>
+</head>
+<body>
+<div id="map"></div>
+<div class="panel">
+  <h1>비행경로</h1>
+  <label class="toggle"><input type="checkbox" id="routeToggle" checked /> 비행경로 표시</label>
+  <div class="row"><button id="roadBtn" class="active">일반지도</button><button id="skyBtn">위성지도</button></div>
+  <div class="row"><button id="zoomInBtn">확대 +</button><button id="zoomOutBtn">축소 −</button></div>
+  <div class="row"><button id="fitBtn">전체 경로</button><button id="locBtn">현재 위치</button></div>
+  <div class="status" id="status">GeoJSON 불러오는 중...</div>
+</div>
+<script>
+const map=new kakao.maps.Map(document.getElementById('map'),{center:new kakao.maps.LatLng(35.16,126.84),level:8});
+let routePolylines=[],routeBounds=new kakao.maps.LatLngBounds(),currentMarker=null;
+const statusEl=document.getElementById('status'),routeToggle=document.getElementById('routeToggle');
+async function loadRoute(){
+  try{
+    const response=await fetch('./data/비행경로_최종.geojson');
+    if(!response.ok) throw new Error('GeoJSON 파일을 불러오지 못했습니다.');
+    const geojson=await response.json();
+    if(!geojson.features||!Array.isArray(geojson.features)) throw new Error('유효한 GeoJSON FeatureCollection이 아닙니다.');
+    let lineCount=0;
+    geojson.features.forEach(feature=>{
+      if(!feature.geometry)return;
+      if(feature.geometry.type==='LineString'){drawLineString(feature.geometry.coordinates);lineCount++;}
+      if(feature.geometry.type==='MultiLineString'){feature.geometry.coordinates.forEach(coords=>{drawLineString(coords);lineCount++;});}
+    });
+    if(routePolylines.length>0) map.setBounds(routeBounds);
+    statusEl.textContent='비행경로 '+lineCount+'개 선 표시 완료';
+  }catch(error){console.error(error);statusEl.textContent='GeoJSON 로딩 오류: '+error.message;}
+}
+function drawLineString(coordinates){
+  const path=coordinates.map(coord=>{const latLng=new kakao.maps.LatLng(coord[1],coord[0]);routeBounds.extend(latLng);return latLng;});
+  routePolylines.push(new kakao.maps.Polyline({map,path,strokeWeight:4,strokeColor:'#E53935',strokeOpacity:.9,strokeStyle:'solid',zIndex:5}));
+}
+routeToggle.addEventListener('change',()=>routePolylines.forEach(line=>line.setMap(routeToggle.checked?map:null)));
+document.getElementById('roadBtn').addEventListener('click',()=>{map.setMapTypeId(kakao.maps.MapTypeId.ROADMAP);roadBtn.classList.add('active');skyBtn.classList.remove('active');});
+document.getElementById('skyBtn').addEventListener('click',()=>{map.setMapTypeId(kakao.maps.MapTypeId.HYBRID);skyBtn.classList.add('active');roadBtn.classList.remove('active');});
+document.getElementById('zoomInBtn').addEventListener('click',()=>map.setLevel(Math.max(1,map.getLevel()-1)));
+document.getElementById('zoomOutBtn').addEventListener('click',()=>map.setLevel(map.getLevel()+1));
+document.getElementById('fitBtn').addEventListener('click',()=>{if(routePolylines.length>0)map.setBounds(routeBounds);});
+document.getElementById('locBtn').addEventListener('click',()=>{
+  if(!navigator.geolocation){alert('이 브라우저에서는 현재 위치 기능을 사용할 수 없습니다.');return;}
+  statusEl.textContent='현재 위치 확인 중...';
+  navigator.geolocation.getCurrentPosition(position=>{
+    const lat=position.coords.latitude,lng=position.coords.longitude,loc=new kakao.maps.LatLng(lat,lng);
+    if(currentMarker)currentMarker.setMap(null);
+    currentMarker=new kakao.maps.Marker({map,position:loc});
+    map.setCenter(loc);map.setLevel(4);
+    statusEl.textContent='현재 위치: '+lat.toFixed(6)+', '+lng.toFixed(6);
+  },error=>{console.error(error);statusEl.textContent='현재 위치를 가져오지 못했습니다.';alert('위치 권한을 허용했는지 확인해 주세요.');},{enableHighAccuracy:true,timeout:10000,maximumAge:0});
+});
+loadRoute();
+</script>
+</body>
+</html>
