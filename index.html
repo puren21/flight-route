@@ -107,20 +107,6 @@
       color:#333;
     }
     .geo-toggle-row input { flex:0 0 auto; }
-    .geo-legend {
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:5px 8px;
-      margin-top:4px;
-      font-size:11px;
-      color:#555;
-    }
-    .geo-legend-item {
-      display:flex;
-      align-items:center;
-      gap:5px;
-      min-width:0;
-    }
     .geo-swatch {
       width:12px;
       height:12px;
@@ -578,34 +564,6 @@
       </div>
     </div>
     <div class="route-style-controls">
-      <div class="route-style-title">DJI GEO 구역</div>
-      <button class="style-section-toggle" type="button" data-target="geoZoneBody">
-        <span>GEO 구역 정보</span><span>＋</span>
-      </button>
-      <div id="geoZoneBody" class="style-section-body">
-        <div class="geo-controls">
-          <label class="geo-toggle-row">
-            <input id="geoZoneToggle" type="checkbox">
-            <span>지도에 GEO 구역 표시</span>
-          </label>
-          <select id="geoDroneSelect" class="route-number-select">
-            <option value="dji-mavic-3" selected>DJI Mavic 3</option>
-            <option value="dji-air-2s">DJI Air 2S</option>
-            <option value="mavic-mini-2">DJI Mini 2</option>
-            <option value="phantom-4-pro">Phantom 4 Pro</option>
-          </select>
-          <div class="geo-legend">
-            <div class="geo-legend-item"><span class="geo-swatch" style="background:rgba(255,59,48,.35);border-color:#ff3b30"></span><span>제한 구역</span></div>
-            <div class="geo-legend-item"><span class="geo-swatch" style="background:rgba(0,122,255,.28);border-color:#007aff"></span><span>허가 구역</span></div>
-            <div class="geo-legend-item"><span class="geo-swatch" style="background:rgba(255,204,0,.28);border-color:#ffb300"></span><span>경고 구역</span></div>
-            <div class="geo-legend-item"><span class="geo-swatch" style="background:rgba(142,142,147,.25);border-color:#8e8e93"></span><span>고도 제한</span></div>
-          </div>
-          <div id="geoZoneStatus" class="geo-note">표시를 켜면 현재 지도 중심 주변의 DJI GEO 데이터를 불러옵니다.</div>
-          <a class="geo-link" href="https://fly-safe.dji.com/nfz/nfz-query" target="_blank" rel="noopener">DJI 공식 GEO 구역 정보 열기 ↗</a>
-        </div>
-      </div>
-    </div>
-    <div class="route-style-controls">
       <div class="route-style-title">드론원스톱 공역</div>
       <button class="style-section-toggle" type="button" data-target="krAirspaceBody">
         <span>공역 폴리곤</span><span>＋</span>
@@ -725,10 +683,6 @@ const SUPABASE_HEADERS={
   'Content-Type':'application/json'
 };
 
-let geoZoneOverlays=[];
-let geoZoneEnabled=false;
-let geoZoneRequestSeq=0;
-
 let krAirspaceEnabled=false;
 let krAirspaceLoaded=false;
 const krAirspaceOverlays={
@@ -745,15 +699,6 @@ const KR_AIRSPACE_SPECS={
   obstacle:{url:'./airspace/lt_c_aisobls.geojson',label:'장애물공역',color:'#6E6E6E',fillOpacity:.08,nameFields:['remarks_tx','name']},
   coordination:{url:'./airspace/lt_c_aispca.geojson',label:'사전협의구역',color:'#009696',fillOpacity:.10,nameFields:['nm_kor','name']},
   droneAllowed:{url:'./airspace/lt_c_aisdronezone.geojson',label:'드론 전용공역',color:'#1E963C',fillOpacity:.12,nameFields:['name','nm_kor']}
-};
-const GEO_LEVELS={
-  0:{name:'경고 구역',stroke:'#FFB300',fill:'#FFCC00'},
-  1:{name:'허가 구역',stroke:'#007AFF',fill:'#007AFF'},
-  2:{name:'제한 구역',stroke:'#FF3B30',fill:'#FF3B30'},
-  3:{name:'강화 경고 구역',stroke:'#FF9500',fill:'#FF9500'},
-  4:{name:'규제 제한 구역',stroke:'#64B5F6',fill:'#64B5F6'},
-  6:{name:'고도 제한 구역',stroke:'#8E8E93',fill:'#8E8E93'},
-  7:{name:'권장 구역',stroke:'#34C759',fill:'#34C759'}
 };
 let routeMemos={};
 try{
@@ -1750,205 +1695,6 @@ async function loadKoreanAirspace(){
   }
 }
 
-function clearDjiGeoZones(){
-  geoZoneOverlays.forEach(o=>{ try{o.setMap(null);}catch(e){} });
-  geoZoneOverlays=[];
-}
-
-function geoLevelStyle(level){
-  return GEO_LEVELS[Number(level)] || {name:'GEO 구역',stroke:'#7E57C2',fill:'#7E57C2'};
-}
-
-function addGeoCircle(lat,lng,radius,level,name){
-  if(!Number.isFinite(lat)||!Number.isFinite(lng)||!Number.isFinite(radius)||radius<=0) return 0;
-  const s=geoLevelStyle(level);
-  const circle=new kakao.maps.Circle({
-    map:map,
-    center:new kakao.maps.LatLng(lat,lng),
-    radius:radius,
-    strokeWeight:2,
-    strokeColor:s.stroke,
-    strokeOpacity:.85,
-    strokeStyle:'solid',
-    fillColor:s.fill,
-    fillOpacity:.18
-  });
-  kakao.maps.event.addListener(circle,'click',()=>{
-    alert((name||s.name)+'\nDJI GEO 구역\n레벨: '+String(level??'-'));
-  });
-  geoZoneOverlays.push(circle);
-  return 1;
-}
-
-function normalizeGeoPoint(p){
-  if(Array.isArray(p) && p.length>=2){
-    const a=Number(p[0]), b=Number(p[1]);
-    if(Number.isFinite(a)&&Number.isFinite(b)){
-      return Math.abs(a)<=90 && Math.abs(b)>90
-        ? new kakao.maps.LatLng(a,b)
-        : new kakao.maps.LatLng(b,a);
-    }
-  }
-  if(p && typeof p==='object'){
-    const lat=Number(p.lat ?? p.latitude ?? p.y);
-    const lng=Number(p.lng ?? p.lon ?? p.longitude ?? p.x);
-    if(Number.isFinite(lat)&&Number.isFinite(lng)) return new kakao.maps.LatLng(lat,lng);
-  }
-  return null;
-}
-
-function addGeoPolygon(points,level,name){
-  if(!Array.isArray(points)) return 0;
-  const path=points.map(normalizeGeoPoint).filter(Boolean);
-  if(path.length<3) return 0;
-  const s=geoLevelStyle(level);
-  const polygon=new kakao.maps.Polygon({
-    map:map,
-    path:path,
-    strokeWeight:2,
-    strokeColor:s.stroke,
-    strokeOpacity:.85,
-    strokeStyle:'solid',
-    fillColor:s.fill,
-    fillOpacity:.18
-  });
-  kakao.maps.event.addListener(polygon,'click',()=>{
-    alert((name||s.name)+'\nDJI GEO 구역\n레벨: '+String(level??'-'));
-  });
-  geoZoneOverlays.push(polygon);
-  return 1;
-}
-
-function renderDjiGeoItem(item,inheritLevel=null){
-  if(!item || typeof item!=='object') return 0;
-  let count=0;
-  const level=item.level ?? item.type ?? item.zone_level ?? inheritLevel;
-  const name=item.name ?? item.title ?? item.area_name ?? geoLevelStyle(level).name;
-
-  const lat=Number(item.lat ?? item.latitude ?? item.center_lat ?? item.centerLat);
-  const lng=Number(item.lng ?? item.lon ?? item.longitude ?? item.center_lng ?? item.centerLng);
-  const radius=Number(item.radius ?? item.radius_m ?? item.radiusMeters);
-
-  // DJI areas 응답은 polygon_points 또는 sub_areas를 주로 사용함.
-  if(Array.isArray(item.polygon_points) && item.polygon_points.length>=3){
-    count+=addGeoPolygon(item.polygon_points,level,name);
-  }else if(Number.isFinite(lat)&&Number.isFinite(lng)&&Number.isFinite(radius)&&radius>0){
-    count+=addGeoCircle(lat,lng,radius,level,name);
-  }
-
-  const geom=item.geometry;
-  if(geom && geom.type==='Polygon' && Array.isArray(geom.coordinates)){
-    const rings=geom.coordinates;
-    if(rings[0]) count+=addGeoPolygon(rings[0],level,name);
-  }else if(geom && geom.type==='MultiPolygon' && Array.isArray(geom.coordinates)){
-    geom.coordinates.forEach(poly=>{
-      if(poly && poly[0]) count+=addGeoPolygon(poly[0],level,name);
-    });
-  }
-
-  const pointCandidates=[
-    item.points,item.polygon,item.path,item.coordinates,item.vertices,item.boundary
-  ];
-  pointCandidates.forEach(arr=>{
-    if(Array.isArray(arr) && arr.length>=3 && !Array.isArray(arr[0]?.[0])){
-      count+=addGeoPolygon(arr,level,name);
-    }
-  });
-
-  const nestedKeys=['sub_areas','subAreas','children','items','data'];
-  nestedKeys.forEach(k=>{
-    if(Array.isArray(item[k])){
-      item[k].forEach(child=>{count+=renderDjiGeoItem(child,level);});
-    }
-  });
-  return count;
-}
-
-function extractDjiGeoItems(data){
-  if(Array.isArray(data)) return data;
-  if(!data || typeof data!=='object') return [];
-  for(const k of ['areas','data','items','results','list']){
-    if(Array.isArray(data[k])) return data[k];
-    if(data[k] && typeof data[k]==='object'){
-      for(const kk of ['areas','items','list']){
-        if(Array.isArray(data[k][kk])) return data[k][kk];
-      }
-    }
-  }
-  return [];
-}
-
-async function fetchDjiGeoJson(api){
-  const targets=[
-    'https://api.allorigins.win/raw?url='+encodeURIComponent(api),
-    'https://corsproxy.io/?'+encodeURIComponent(api)
-  ];
-  let lastError=null;
-
-  for(const url of targets){
-    const controller=new AbortController();
-    const timer=setTimeout(()=>controller.abort(),8000);
-    try{
-      const res=await fetch(url,{cache:'no-store',signal:controller.signal});
-      clearTimeout(timer);
-      if(!res.ok) throw new Error('HTTP '+res.status);
-      return await res.json();
-    }catch(error){
-      clearTimeout(timer);
-      lastError=error;
-      console.warn('DJI GEO proxy failed',url,error);
-    }
-  }
-  throw lastError || new Error('DJI GEO proxy unavailable');
-}
-
-async function loadDjiGeoZones(){
-  if(!geoZoneEnabled) return;
-  const status=document.getElementById('geoZoneStatus');
-  const seq=++geoZoneRequestSeq;
-  clearDjiGeoZones();
-  if(status) status.textContent='DJI GEO 구역을 불러오는 중...';
-
-  const center=map.getCenter();
-  const drone=document.getElementById('geoDroneSelect')?.value || 'dji-mavic-3';
-
-  // DJI API는 너무 넓은 검색반경에서 응답하지 않는 경우가 있어 35km 이내로 제한함.
-  const radius=Math.min(
-    35000,
-    Math.max(10000,Math.round(9000*Math.pow(1.45,Math.max(0,map.getLevel()-4))))
-  );
-
-  const api=
-    'https://www-api.dji.com/api/geo/areas?'+
-    'drone='+encodeURIComponent(drone)+
-    '&zones_mode=total'+
-    '&country=KR'+
-    '&level=0,1,2,3,4,5,6,7,8,9'+
-    '&lng='+encodeURIComponent(String(center.getLng()))+
-    '&lat='+encodeURIComponent(String(center.getLat()))+
-    '&search_radius='+encodeURIComponent(String(radius));
-
-  try{
-    const data=await fetchDjiGeoJson(api);
-    if(seq!==geoZoneRequestSeq || !geoZoneEnabled) return;
-
-    const items=extractDjiGeoItems(data);
-    let count=0;
-    items.forEach(item=>{count+=renderDjiGeoItem(item);});
-
-    if(status){
-      status.textContent=count
-        ? 'DJI GEO 구역 '+count+'개 표시 중'
-        : 'DJI 응답은 받았지만 현재 화면 주변에 표시할 GEO 구역이 없습니다.';
-    }
-  }catch(error){
-    console.error('DJI GEO load error',error);
-    if(status){
-      status.textContent='DJI GEO 서버/프록시 응답이 없습니다. 잠시 후 다시 켜거나 공식 지도를 확인해 주세요.';
-    }
-  }
-}
-
 function locateMe(){
   if(!navigator.geolocation){
     alert('이 브라우저에서는 현재 위치 기능을 사용할 수 없습니다.');
@@ -1991,17 +1737,6 @@ document.querySelectorAll('.krAirspaceCategory').forEach(el=>{
   el.addEventListener('change',refreshKoreanAirspaceVisibility);
 });
 
-document.getElementById('geoZoneToggle')?.addEventListener('change',function(){
-  geoZoneEnabled=this.checked;
-  if(geoZoneEnabled) loadDjiGeoZones();
-  else clearDjiGeoZones();
-});
-document.getElementById('geoDroneSelect')?.addEventListener('change',()=>{
-  if(geoZoneEnabled) loadDjiGeoZones();
-});
-kakao.maps.event.addListener(map,'idle',()=>{
-  if(geoZoneEnabled) loadDjiGeoZones();
-});
 document.getElementById('floatingLocBtn')?.addEventListener('click',locateMe);
 document.getElementById('resetRouteStatesBtn')?.addEventListener('click',resetRouteStates);
 syncPanelToggle();
