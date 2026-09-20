@@ -606,35 +606,29 @@
       </div>
     </div>
     <div class="route-style-controls">
-      <div class="route-style-title">국내 공역</div>
+      <div class="route-style-title">드론원스톱 공역</div>
       <button class="style-section-toggle" type="button" data-target="krAirspaceBody">
-        <span>비행금지·제한구역</span><span>＋</span>
+        <span>공역 폴리곤</span><span>＋</span>
       </button>
       <div id="krAirspaceBody" class="style-section-body">
         <div class="geo-controls">
           <label class="geo-toggle-row">
             <input id="krAirspaceToggle" type="checkbox">
-            <span>국내 공역 표시</span>
+            <span>공역 폴리곤 표시</span>
           </label>
           <div class="kr-airspace-legend">
-            <label class="kr-airspace-row">
-              <input class="krAirspaceCategory" type="checkbox" value="prohibited" checked>
-              <span class="geo-swatch" style="background:rgba(220,0,0,.24);border-color:#dc0000"></span>
-              <span>비행금지구역</span>
-            </label>
-            <label class="kr-airspace-row">
-              <input class="krAirspaceCategory" type="checkbox" value="restricted" checked>
-              <span class="geo-swatch" style="background:rgba(230,140,0,.24);border-color:#e68c00"></span>
-              <span>비행제한구역</span>
-            </label>
-            <label class="kr-airspace-row">
-              <input class="krAirspaceCategory" type="checkbox" value="control" checked>
-              <span class="geo-swatch" style="background:rgba(40,90,200,.20);border-color:#285ac8"></span>
-              <span>관제권</span>
-            </label>
+            <label class="kr-airspace-row"><input class="krAirspaceCategory" type="checkbox" value="prohibited" checked><span class="geo-swatch" style="background:rgba(220,0,0,.24);border-color:#dc0000"></span><span>비행금지구역</span></label>
+            <label class="kr-airspace-row"><input class="krAirspaceCategory" type="checkbox" value="restricted" checked><span class="geo-swatch" style="background:rgba(230,140,0,.24);border-color:#e68c00"></span><span>비행제한구역</span></label>
+            <label class="kr-airspace-row"><input class="krAirspaceCategory" type="checkbox" value="control" checked><span class="geo-swatch" style="background:rgba(40,90,200,.20);border-color:#285ac8"></span><span>관제권</span></label>
+            <label class="kr-airspace-row"><input class="krAirspaceCategory" type="checkbox" value="danger" checked><span class="geo-swatch" style="background:rgba(140,0,0,.22);border-color:#8c0000"></span><span>위험지역</span></label>
+            <label class="kr-airspace-row"><input class="krAirspaceCategory" type="checkbox" value="temp" checked><span class="geo-swatch" style="background:rgba(220,40,120,.22);border-color:#dc2878"></span><span>임시비행금지구역</span></label>
+            <label class="kr-airspace-row"><input class="krAirspaceCategory" type="checkbox" value="alert"><span class="geo-swatch" style="background:rgba(150,60,180,.18);border-color:#963cb4"></span><span>경계구역</span></label>
+            <label class="kr-airspace-row"><input class="krAirspaceCategory" type="checkbox" value="obstacle"><span class="geo-swatch" style="background:rgba(110,110,110,.15);border-color:#6e6e6e"></span><span>장애물공역</span></label>
+            <label class="kr-airspace-row"><input class="krAirspaceCategory" type="checkbox" value="coordination"><span class="geo-swatch" style="background:rgba(0,150,150,.16);border-color:#009696"></span><span>사전협의구역</span></label>
+            <label class="kr-airspace-row"><input class="krAirspaceCategory" type="checkbox" value="droneAllowed" checked><span class="geo-swatch" style="background:rgba(30,150,60,.18);border-color:#1e963c"></span><span>드론 전용공역</span></label>
           </div>
-          <div id="krAirspaceStatus" class="geo-note">V-World 기반 참고용 공역 데이터입니다.</div>
-          <a class="geo-link" href="https://drone.onestop.go.kr/" target="_blank" rel="noopener">드론 원스톱 공식 확인 ↗</a>
+          <div id="krAirspaceStatus" class="geo-note">드론원스톱 지도에서 사용하는 공역 유형과 맞춘 9종 폴리곤을 표시합니다.</div>
+          <a class="geo-link" href="https://drone.onestop.go.kr/common/flightArea" target="_blank" rel="noopener">드론원스톱 공식 지도 열기 ↗</a>
         </div>
       </div>
     </div>
@@ -737,29 +731,20 @@ let geoZoneRequestSeq=0;
 
 let krAirspaceEnabled=false;
 let krAirspaceLoaded=false;
-const krAirspaceOverlays={prohibited:[],restricted:[],control:[]};
+const krAirspaceOverlays={
+  prohibited:[],restricted:[],control:[],danger:[],temp:[],
+  alert:[],obstacle:[],coordination:[],droneAllowed:[]
+};
 const KR_AIRSPACE_SPECS={
-  prohibited:{
-    url:'./airspace/lt_c_aisprhc.geojson',
-    label:'비행금지구역',
-    color:'#DC0000',
-    fillOpacity:.18,
-    nameFields:['prh_lbl_1','prh_lbl_2','name']
-  },
-  restricted:{
-    url:'./airspace/lt_c_aisresc.geojson',
-    label:'비행제한구역',
-    color:'#E68C00',
-    fillOpacity:.16,
-    nameFields:['res_lbl_1','res_lbl_2','name']
-  },
-  control:{
-    url:'./airspace/lt_c_aisctrc.geojson',
-    label:'관제권',
-    color:'#285AC8',
-    fillOpacity:.12,
-    nameFields:['ctr_lbl_1','ctr_lbl_2','name']
-  }
+  prohibited:{url:'./airspace/lt_c_aisprhc.geojson',label:'비행금지구역',color:'#DC0000',fillOpacity:.18,nameFields:['prh_lbl_1','prh_lbl_2','name']},
+  restricted:{url:'./airspace/lt_c_aisresc.geojson',label:'비행제한구역',color:'#E68C00',fillOpacity:.16,nameFields:['res_lbl_1','res_lbl_2','name']},
+  control:{url:'./airspace/lt_c_aisctrc.geojson',label:'관제권',color:'#285AC8',fillOpacity:.12,nameFields:['ctr_lbl_1','ctr_lbl_2','name']},
+  danger:{url:'./airspace/lt_c_aisdngc.geojson',label:'위험지역',color:'#8C0000',fillOpacity:.14,nameFields:['dng_lbl_1','dng_lbl_2','name']},
+  temp:{url:'./airspace/lt_c_aistemp.geojson',label:'임시비행금지구역',color:'#DC2878',fillOpacity:.15,nameFields:['prh_lbl_1','prh_lbl_2','name']},
+  alert:{url:'./airspace/lt_c_aisaltc.geojson',label:'경계구역',color:'#963CB4',fillOpacity:.10,nameFields:['alt_lbl_1','alt_lbl_2','name']},
+  obstacle:{url:'./airspace/lt_c_aisobls.geojson',label:'장애물공역',color:'#6E6E6E',fillOpacity:.08,nameFields:['remarks_tx','name']},
+  coordination:{url:'./airspace/lt_c_aispca.geojson',label:'사전협의구역',color:'#009696',fillOpacity:.10,nameFields:['nm_kor','name']},
+  droneAllowed:{url:'./airspace/lt_c_aisdronezone.geojson',label:'드론 전용공역',color:'#1E963C',fillOpacity:.12,nameFields:['name','nm_kor']}
 };
 const GEO_LEVELS={
   0:{name:'경고 구역',stroke:'#FFB300',fill:'#FFCC00'},
