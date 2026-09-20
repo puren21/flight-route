@@ -693,9 +693,6 @@ routeToggle.addEventListener('change',()=>{
 });
 document.getElementById('roadBtn').addEventListener('click',()=>{map.setMapTypeId(kakao.maps.MapTypeId.ROADMAP);roadBtn.classList.add('active');skyBtn.classList.remove('active');});
 document.getElementById('skyBtn').addEventListener('click',()=>{map.setMapTypeId(kakao.maps.MapTypeId.HYBRID);skyBtn.classList.add('active');roadBtn.classList.remove('active');});
-document.getElementById('zoomInBtn').addEventListener('click',()=>map.setLevel(Math.max(1,map.getLevel()-1)));
-document.getElementById('zoomOutBtn').addEventListener('click',()=>map.setLevel(map.getLevel()+1));
-document.getElementById('fitBtn').addEventListener('click',()=>{if(routePolylines.length>0)map.setBounds(routeBounds);});
 function locateMe(){
   if(!navigator.geolocation){
     alert('이 브라우저에서는 현재 위치 기능을 사용할 수 없습니다.');
@@ -729,9 +726,7 @@ function locateMe(){
     maximumAge:0
   });
 }
-
-document.getElementById('locBtn').addEventListener('click',locateMe);
-document.getElementById('floatingLocBtn').addEventListener('click',locateMe);
+document.getElementById('floatingLocBtn')?.addEventListener('click',locateMe);
 updateScaleBar();
 loadRoute();
 </script>
