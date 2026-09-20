@@ -6,8 +6,20 @@
   <title>비행경로</title>
   <style>
     * { box-sizing: border-box; }
-    html, body { width: 100%; height: 100%; margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-    #map { width: 100%; height: 100%; }
+    html, body {
+      width:100%;
+      max-width:100%;
+      height:100%;
+      margin:0;
+      overflow-x:hidden;
+      font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #map {
+      width:100%;
+      max-width:100vw;
+      height:100%;
+      overflow:hidden;
+    }
     .panel { position:absolute; top:16px; left:16px; z-index:10; width:220px; padding:14px; background:rgba(255,255,255,.96); border-radius:12px; box-shadow:0 4px 18px rgba(0,0,0,.18); }
     .panel h1 { margin:0; font-size:18px; }
     .panel-header {
@@ -406,8 +418,9 @@
         position:fixed;
         top:calc(env(safe-area-inset-top, 0px) + 62px);
         left:10px;
-        right:10px;
-        width:auto;
+        right:auto;
+        width:calc(100vw - 20px);
+        max-width:calc(100vw - 20px);
         max-height:calc(100dvh - env(safe-area-inset-top, 0px) - 80px);
         overflow-y:auto;
         padding:10px;
@@ -419,12 +432,29 @@
         display:none;
       }
       .panel:not(.collapsed) + * { }
+      .panel * { min-width:0; }
       .panel h1 { font-size:16px; }
+      .route-number-select,
+      .route-style-controls,
+      .style-section-toggle,
+      .memo-list,
+      .memo-item,
+      .row {
+        max-width:100%;
+      }
+      .memo-text,
+      .status {
+        overflow-wrap:anywhere;
+        word-break:break-word;
+      }
       .panel-toggle {
         width:36px;
         height:36px;
         min-width:36px;
       }
+      .route-select-popup { max-width:calc(100vw - 24px); }
+      .address-popup { max-width:calc(100vw - 24px); }
+      .memo-modal { max-width:calc(100vw - 36px); }
       button { padding:8px 6px; font-size:13px; }
       .status { font-size:11px; }
     }
