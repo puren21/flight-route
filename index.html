@@ -9,7 +9,39 @@
     html, body { width: 100%; height: 100%; margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
     #map { width: 100%; height: 100%; }
     .panel { position:absolute; top:16px; left:16px; z-index:10; width:220px; padding:14px; background:rgba(255,255,255,.96); border-radius:12px; box-shadow:0 4px 18px rgba(0,0,0,.18); }
-    .panel h1 { margin:0 0 12px; font-size:18px; }
+    .panel h1 { margin:0; font-size:18px; }
+    .panel-header {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:12px;
+    }
+    .panel-toggle {
+      flex:0 0 auto;
+      width:34px;
+      height:34px;
+      padding:0;
+      border-radius:8px;
+      font-size:18px;
+      font-weight:700;
+      line-height:1;
+    }
+    .panel-body { display:block; }
+    .panel.collapsed {
+      width:auto;
+      min-width:0;
+      padding:10px 12px;
+    }
+    .panel.collapsed .panel-header {
+      margin-bottom:0;
+    }
+    .panel.collapsed .panel-body {
+      display:none;
+    }
+    .panel.collapsed h1 {
+      font-size:16px;
+    }
     .row { display:flex; gap:8px; margin-top:8px; }
     button { flex:1; border:0; border-radius:8px; padding:9px 10px; background:#f1f3f5; cursor:pointer; font-size:14px; }
     button:hover { background:#e9ecef; }
@@ -100,7 +132,8 @@
     }
     @media (max-width:700px) {
       .panel { top:10px; left:10px; right:10px; width:auto; padding:10px; }
-      .panel h1 { font-size:16px; margin-bottom:8px; }
+      .panel h1 { font-size:16px; }
+      .panel.collapsed { right:auto; width:auto; }
       button { padding:8px 6px; font-size:13px; }
       .status { font-size:11px; }
     }
@@ -111,19 +144,32 @@
 <body>
 <div id="map"></div>
 <div id="scaleBar" class="scale-bar">축척 계산 중...</div>
-<div class="panel">
-  <h1>비행경로</h1>
-  <label class="toggle"><input type="checkbox" id="routeToggle" checked /> 비행경로 표시</label>
-  <div class="row"><button id="roadBtn" class="active">일반지도</button><button id="skyBtn">위성지도</button></div>
-  <div class="row"><button id="zoomInBtn">확대 +</button><button id="zoomOutBtn">축소 −</button></div>
-  <div class="row"><button id="fitBtn">전체 경로</button><button id="locBtn">현재 위치</button></div>
-  <div class="status" id="status">GeoJSON 불러오는 중...</div>
+<div class="panel" id="controlPanel">
+  <div class="panel-header">
+    <h1>비행경로</h1>
+    <button id="panelToggleBtn" class="panel-toggle" type="button" aria-label="메뉴 접기">−</button>
+  </div>
+  <div class="panel-body">
+    <label class="toggle"><input type="checkbox" id="routeToggle" checked /> 비행경로 표시</label>
+    <div class="row"><button id="roadBtn" class="active">일반지도</button><button id="skyBtn">위성지도</button></div>
+    <div class="row"><button id="zoomInBtn">확대 +</button><button id="zoomOutBtn">축소 −</button></div>
+    <div class="row"><button id="fitBtn">전체 경로</button><button id="locBtn">현재 위치</button></div>
+    <div class="status" id="status">GeoJSON 불러오는 중...</div>
+  </div>
 </div>
 <script>
 const map=new kakao.maps.Map(document.getElementById('map'),{center:new kakao.maps.LatLng(35.16,126.84),level:8});
 
 let routePolylines=[],routeLabels=[],routeBounds=new kakao.maps.LatLngBounds(),currentMarker=null;
 const statusEl=document.getElementById('status'),routeToggle=document.getElementById('routeToggle');
+const controlPanel=document.getElementById('controlPanel');
+const panelToggleBtn=document.getElementById('panelToggleBtn');
+
+panelToggleBtn.addEventListener('click',()=>{
+  const collapsed=controlPanel.classList.toggle('collapsed');
+  panelToggleBtn.textContent=collapsed?'＋':'−';
+  panelToggleBtn.setAttribute('aria-label',collapsed?'메뉴 펼치기':'메뉴 접기');
+});
 const geocoder=new kakao.maps.services.Geocoder();
 let addressOverlay=null;
 
