@@ -17,22 +17,17 @@
     .toggle { display:flex; align-items:center; gap:8px; margin-top:10px; font-size:14px; }
     .status { margin-top:10px; font-size:12px; line-height:1.5; color:#555; }
     .route-label {
-      min-width: 26px;
-      height: 26px;
-      padding: 0 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255,255,255,.95);
-      border: 2px solid #E53935;
-      border-radius: 13px;
       color: #111;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 700;
       line-height: 1;
-      box-shadow: 0 1px 4px rgba(0,0,0,.25);
       white-space: nowrap;
       pointer-events: none;
+      text-shadow:
+        -1px -1px 0 rgba(255,255,255,.95),
+         1px -1px 0 rgba(255,255,255,.95),
+        -1px  1px 0 rgba(255,255,255,.95),
+         1px  1px 0 rgba(255,255,255,.95);
       transform: translate(-50%, -50%);
     }
     @media (max-width:700px) {
@@ -56,6 +51,8 @@
 </div>
 <script>
 const map=new kakao.maps.Map(document.getElementById('map'),{center:new kakao.maps.LatLng(35.16,126.84),level:8});
+const scaleControl=new kakao.maps.ScaleControl();
+map.addControl(scaleControl,kakao.maps.ControlPosition.BOTTOMRIGHT);
 let routePolylines=[],routeLabels=[],routeBounds=new kakao.maps.LatLngBounds(),currentMarker=null;
 const statusEl=document.getElementById('status'),routeToggle=document.getElementById('routeToggle');
 async function loadRoute(){
@@ -72,6 +69,7 @@ async function loadRoute(){
       if(feature.geometry.type==='MultiLineString'){feature.geometry.coordinates.forEach(coords=>{drawLineString(coords,labelNumber);lineCount++;});}
     });
     if(routePolylines.length>0) map.setBounds(routeBounds);
+    updateRouteLabelVisibility();
     statusEl.textContent='비행경로 '+lineCount+'개 선 표시 완료';
   }catch(error){console.error(error);statusEl.textContent='GeoJSON 로딩 오류: '+error.message;}
 }
@@ -100,7 +98,7 @@ function drawLineString(coordinates,labelNumber){
     label.textContent=labelNumber;
 
     const overlay=new kakao.maps.CustomOverlay({
-      map,
+      map: null,
       position:new kakao.maps.LatLng(mid[1],mid[0]),
       content:label,
       xAnchor:0.5,
@@ -109,12 +107,22 @@ function drawLineString(coordinates,labelNumber){
     });
 
     routeLabels.push(overlay);
+    updateRouteLabelVisibility();
   }
 }
+function updateRouteLabelVisibility(){
+  // 카카오 지도 level 값은 숫자가 클수록 더 멀리 축소된 상태임
+  const showLabels=routeToggle.checked && map.getLevel()<=6;
+  routeLabels.forEach(label=>label.setMap(showLabels?map:null));
+}
+
+kakao.maps.event.addListener(map,'zoom_changed',updateRouteLabelVisibility);
+
 routeToggle.addEventListener('change',()=>{
   const targetMap=routeToggle.checked?map:null;
   routePolylines.forEach(line=>line.setMap(targetMap));
-  routeLabels.forEach(label=>label.setMap(targetMap));
+  routeLabels.forEach(label=>label.setMap(null));
+  updateRouteLabelVisibility();
 });
 document.getElementById('roadBtn').addEventListener('click',()=>{map.setMapTypeId(kakao.maps.MapTypeId.ROADMAP);roadBtn.classList.add('active');skyBtn.classList.remove('active');});
 document.getElementById('skyBtn').addEventListener('click',()=>{map.setMapTypeId(kakao.maps.MapTypeId.HYBRID);skyBtn.classList.add('active');roadBtn.classList.remove('active');});
