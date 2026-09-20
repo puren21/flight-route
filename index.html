@@ -329,29 +329,36 @@ function showRouteSelectPopup(routeLine,position){
   const actions=document.createElement('div');
   actions.className='route-select-actions';
 
+  ['mousedown','mouseup','click','touchstart','touchend'].forEach(eventName=>{
+    box.addEventListener(eventName,function(e){
+      e.stopPropagation();
+      kakao.maps.event.preventMap();
+    },{passive:false});
+  });
+
   const onBtn=document.createElement('button');
   onBtn.className='route-on-btn';
   onBtn.type='button';
   onBtn.textContent='켜기';
-  onBtn.addEventListener('click',()=>{
+  const turnOn=function(e){
+    if(e){ e.preventDefault(); e.stopPropagation(); }
     setRouteState(routeLine,true);
-    if(routeSelectOverlay){
-      routeSelectOverlay.setMap(null);
-      routeSelectOverlay=null;
-    }
-  });
+    closeRouteSelectPopup();
+  };
+  onBtn.addEventListener('click',turnOn);
+  onBtn.addEventListener('touchend',turnOn,{passive:false});
 
   const offBtn=document.createElement('button');
   offBtn.className='route-off-btn';
   offBtn.type='button';
   offBtn.textContent='끄기';
-  offBtn.addEventListener('click',()=>{
+  const turnOff=function(e){
+    if(e){ e.preventDefault(); e.stopPropagation(); }
     setRouteState(routeLine,false);
-    if(routeSelectOverlay){
-      routeSelectOverlay.setMap(null);
-      routeSelectOverlay=null;
-    }
-  });
+    closeRouteSelectPopup();
+  };
+  offBtn.addEventListener('click',turnOff);
+  offBtn.addEventListener('touchend',turnOff,{passive:false});
 
   actions.appendChild(onBtn);
   actions.appendChild(offBtn);
@@ -363,6 +370,7 @@ function showRouteSelectPopup(routeLine,position){
     map:map,
     position:position,
     content:box,
+    clickable:true,
     xAnchor:0.5,
     yAnchor:1.15,
     zIndex:40
