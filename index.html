@@ -655,7 +655,13 @@ function renderMemoList(){
     item.appendChild(t);
     item.addEventListener('click',()=>{
       focusRouteNumber(num);
-      setTimeout(()=>alert(num+'번 메모\n\n'+routeMemos[num].memo),100);
+      const entry=routeIndex.get(String(num));
+      const routeLine=entry && entry.lines && entry.lines[0];
+      if(routeLine){
+        setTimeout(()=>openMemoEditor(routeLine),100);
+      }else{
+        setTimeout(()=>alert(num+'번 메모\n\n'+routeMemos[num].memo),100);
+      }
     });
 
     list.appendChild(item);
