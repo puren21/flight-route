@@ -538,6 +538,7 @@
       margin-bottom:10px;
       padding:2px 2px 8px;
       border-bottom:1px solid #edf0f2;
+      cursor:pointer;
     }
     .panel h1{
       font-size:17px;
@@ -1025,13 +1026,22 @@ function syncPanelToggle(){
   panelToggleBtn.setAttribute('aria-label',collapsed?'메뉴 펼치기':'메뉴 접기');
   document.body.classList.toggle('menu-open',!collapsed);
 }
-panelToggleBtn.addEventListener('click',()=>{
+function toggleControlPanel(){
   controlPanel.classList.toggle('collapsed');
   syncPanelToggle();
+}
+
+panelToggleBtn.addEventListener('click',e=>{
+  e.stopPropagation();
+  toggleControlPanel();
 });
+
+document.querySelector('.panel-header')?.addEventListener('click',()=>{
+  toggleControlPanel();
+});
+
 mobileMenuLauncher.addEventListener('click',()=>{
-  controlPanel.classList.toggle('collapsed');
-  syncPanelToggle();
+  toggleControlPanel();
 });
 
 document.addEventListener('pointerdown',event=>{
