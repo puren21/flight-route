@@ -5732,4 +5732,30 @@ if ('serviceWorker' in navigator) {
 .panel:not(.detail-view):not(.collapsed) .menu-back-btn{
   display:none !important;
 }
+
+/* Larger hit area for the initial settings launcher, visual icon unchanged */
+.panel.collapsed{
+  top:calc(env(safe-area-inset-top,0px) + 0px) !important;
+  left:0 !important;
+  width:64px !important;
+  min-width:64px !important;
+  max-width:64px !important;
+  height:64px !important;
+  min-height:64px !important;
+  max-height:64px !important;
+}
+.panel.collapsed .panel-header,
+.panel.collapsed .panel-header h1{
+  width:64px !important;
+  height:64px !important;
+  min-height:64px !important;
+}
+.panel.collapsed .settings-title-icon.send-title-icon{
+  width:50px !important;
+  height:50px !important;
+}
+.panel.collapsed .settings-title-icon.send-title-icon svg{
+  width:50px !important;
+  height:50px !important;
+}
 </style>
