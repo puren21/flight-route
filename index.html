@@ -2549,6 +2549,33 @@ async function loadRoute(){
     statusEl.textContent='비행경로 '+lineCount+'개 선 표시 완료';
   }catch(error){console.error(error);statusEl.textContent='GeoJSON 로딩 오류: '+error.message;}
 }
+function smoothRoutePath(sourcePath,iterations=2,ratio=0.12){
+  if(!Array.isArray(sourcePath) || sourcePath.length<3) return sourcePath;
+
+  let points=sourcePath.slice();
+  for(let pass=0;pass<iterations;pass++){
+    const next=[points[0]];
+    for(let i=0;i<points.length-1;i++){
+      const a=points[i];
+      const b=points[i+1];
+      const alat=a.getLat(), alng=a.getLng();
+      const blat=b.getLat(), blng=b.getLng();
+
+      next.push(new kakao.maps.LatLng(
+        alat+(blat-alat)*ratio,
+        alng+(blng-alng)*ratio
+      ));
+      next.push(new kakao.maps.LatLng(
+        blat-(blat-alat)*ratio,
+        blng-(blng-alng)*ratio
+      ));
+    }
+    next.push(points[points.length-1]);
+    points=next;
+  }
+  return points;
+}
+
 function drawLineString(coordinates,labelNumber){
   const localBounds=new kakao.maps.LatLngBounds();
   const path=coordinates.map(coord=>{
@@ -2557,10 +2584,11 @@ function drawLineString(coordinates,labelNumber){
     localBounds.extend(latLng);
     return latLng;
   });
+  const displayPath=smoothRoutePath(path);
 
   const routeLine=new kakao.maps.Polyline({
     map:map,
-    path:path,
+    path:displayPath,
     strokeWeight:routeStyle.weight,
     strokeColor:routeStyle.color,
     strokeOpacity:routeStyle.opacity,
@@ -2599,7 +2627,7 @@ function drawLineString(coordinates,labelNumber){
   // 모바일에서도 쉽게 선택할 수 있도록 같은 경로에 넓은 투명 터치영역을 둠
   const hitLine=new kakao.maps.Polyline({
     map:map,
-    path:path,
+    path:displayPath,
     strokeWeight:24,
     strokeColor:'#000000',
     strokeOpacity:0.01,
@@ -2611,7 +2639,7 @@ function drawLineString(coordinates,labelNumber){
   const openRouteMenu=function(mouseEvent){
     const pos=(mouseEvent && mouseEvent.latLng)
       ? mouseEvent.latLng
-      : path[Math.floor(path.length/2)];
+      : displayPath[Math.floor(displayPath.length/2)];
     showRouteSelectPopup(routeLine,pos);
   };
 
