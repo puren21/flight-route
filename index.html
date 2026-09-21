@@ -627,6 +627,11 @@
           <input id="labelSize" type="range" min="8" max="28" step="1" value="13">
           <span id="labelSizeValue" class="route-style-value">13px</span>
         </div>
+        <div class="route-style-row">
+          <span>색상</span>
+          <input id="labelColor" type="color" value="#0d47a1">
+          <span></span>
+        </div>
       </div>
     </div>
     <div class="row"><button id="roadBtn" class="active">일반지도</button><button id="skyBtn">위성지도</button></div>
@@ -646,7 +651,7 @@ const statusEl=document.getElementById('status');
 const routeToggle={checked:true};
 const routeStyle={weight:3,color:'#E53935',opacity:.9};
 const offRouteStyle={weight:2,color:'#6F7F95',opacity:.5};
-const labelStyle={size:13};
+const labelStyle={size:13,color:'#0D47A1'};
 const controlPanel=document.getElementById('controlPanel');
 const panelToggleBtn=document.getElementById('panelToggleBtn');
 const mobileMenuLauncher=document.getElementById('mobileMenuLauncher');
@@ -1394,6 +1399,7 @@ function drawLineString(coordinates,labelNumber){
     label.className='route-label';
     label.textContent=labelNumber;
     label.style.fontSize=labelStyle.size+'px';
+    label.style.color=labelStyle.color;
 
     const overlay=new kakao.maps.CustomOverlay({
       map:null,
@@ -1511,6 +1517,7 @@ const routeWeightValue=document.getElementById('routeWeightValue');
 const routeOpacityValue=document.getElementById('routeOpacityValue');
 const labelSizeInput=document.getElementById('labelSize');
 const labelSizeValue=document.getElementById('labelSizeValue');
+const labelColorInput=document.getElementById('labelColor');
 const offRouteWeightInput=document.getElementById('offRouteWeight');
 const offRouteColorInput=document.getElementById('offRouteColor');
 const offRouteOpacityInput=document.getElementById('offRouteOpacity');
@@ -1557,6 +1564,15 @@ labelSizeInput.addEventListener('input',()=>{
   routeLabels.forEach(overlay=>{
     if(overlay._labelElement){
       overlay._labelElement.style.fontSize=labelStyle.size+'px';
+    }
+  });
+});
+
+labelColorInput.addEventListener('input',()=>{
+  labelStyle.color=labelColorInput.value;
+  routeLabels.forEach(overlay=>{
+    if(overlay._labelElement){
+      overlay._labelElement.style.color=labelStyle.color;
     }
   });
 });
