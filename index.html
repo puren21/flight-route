@@ -1175,19 +1175,23 @@ async function loadRemoteMemos(){
       }
     });
 
-    // 기존 브라우저에 있던 메모와 온라인 메모를 병합함.
+    // 온라인 데이터를 기준으로 동기화함.
+    // 서버에서 삭제된 메모를 다른 기기의 오래된 localStorage가 다시 살려내지 않도록
+    // 원격에 없는 로컬 메모는 자동 재업로드하지 않음.
     const local={...routeMemos};
     const merged={...remote};
     const uploads=[];
 
     Object.keys(local).forEach(num=>{
       const localItem=local[num];
-      if(!localItem?.memo) return;
       const remoteItem=remote[num];
-      const localTime=Date.parse(localItem.updated||'')||0;
-      const remoteTime=Date.parse(remoteItem?.updated||'')||0;
+      if(!localItem?.memo || !remoteItem) return;
 
-      if(!remoteItem || localTime>remoteTime){
+      const localTime=Date.parse(localItem.updated||'')||0;
+      const remoteTime=Date.parse(remoteItem.updated||'')||0;
+
+      // 같은 메모가 서버에도 존재하고 로컬 수정본이 더 최신인 경우에만 업로드함.
+      if(localTime>remoteTime){
         merged[num]=localItem;
         uploads.push(upsertRemoteMemo(num,localItem.memo,localItem.updated||new Date().toISOString()));
       }
@@ -2172,6 +2176,13 @@ document.getElementById('resetRouteStatesBtn')?.addEventListener('click',resetRo
 syncPanelToggle();
 renderMemoList();
 loadRemoteMemos();
+
+// 다른 기기에서 수정·삭제된 메모가 이 기기로 돌아왔을 때 즉시 반영되도록 갱신함.
+window.addEventListener('focus',()=>loadRemoteMemos());
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible') loadRemoteMemos();
+});
+
 updateScaleBar();
 loadRoute().then(()=>loadRemoteRouteStates());
 </script>
