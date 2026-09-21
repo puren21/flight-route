@@ -6564,4 +6564,24 @@ if ('serviceWorker' in navigator) {
 .memo-settings-row .memo-settings-chevron{
   pointer-events:none !important;
 }
+
+/* Hide all visible scroll indicators in the settings panel, keep scrolling enabled */
+#controlPanel,
+#controlPanel .panel-body,
+#controlPanel .menu-page,
+#controlPanel .memo-settings-list,
+#controlPanel .memo-page-card{
+  scrollbar-width:none !important;
+  -ms-overflow-style:none !important;
+}
+#controlPanel::-webkit-scrollbar,
+#controlPanel .panel-body::-webkit-scrollbar,
+#controlPanel .menu-page::-webkit-scrollbar,
+#controlPanel .memo-settings-list::-webkit-scrollbar,
+#controlPanel .memo-page-card::-webkit-scrollbar{
+  width:0 !important;
+  height:0 !important;
+  display:none !important;
+  -webkit-appearance:none !important;
+}
 </style>
