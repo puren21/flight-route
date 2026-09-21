@@ -1,4 +1,4 @@
-const CACHE='flight-route-v7';
+const CACHE='flight-route-v8';
 const APP_SHELL=['./flight-route.geojson','./manifest.webmanifest','./icon.svg'];
 
 self.addEventListener('install',event=>{
@@ -10,24 +10,32 @@ self.addEventListener('install',event=>{
 
 self.addEventListener('activate',event=>{
   event.waitUntil(
-    caches.keys().then(keys=>Promise.all(
-      keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))
-    ))
+    Promise.all([
+      caches.keys().then(keys=>Promise.all(
+        keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))
+      )),
+      self.clients.claim()
+    ])
   );
-  self.clients.claim();
 });
 
 self.addEventListener('fetch',event=>{
   if(event.request.method!=='GET') return;
 
   const request=event.request;
+  const url=new URL(request.url);
   const isNavigation=request.mode==='navigate' ||
     request.destination==='document' ||
-    new URL(request.url).pathname.endsWith('/index.html');
+    url.pathname.endsWith('/index.html') ||
+    url.pathname.endsWith('/flight-route/');
 
   if(isNavigation){
+    const freshUrl=new URL('./index.html?build=20260921-1243',self.registration.scope).href;
     event.respondWith(
-      fetch(request,{cache:'no-store'}).catch(()=>caches.match(request))
+      fetch(freshUrl,{
+        cache:'no-store',
+        headers:{'Cache-Control':'no-cache'}
+      }).catch(()=>fetch(request,{cache:'no-store'})).catch(()=>caches.match(request))
     );
     return;
   }
