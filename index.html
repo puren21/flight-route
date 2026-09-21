@@ -2394,35 +2394,46 @@ function focusMemoRoute(value){
   if(!keys.length) return false;
 
   const bounds=new kakao.maps.LatLngBounds();
-  let hasPoint=false;
+  let hasBounds=false;
 
   keys.forEach(key=>{
     const entry=routeIndex.get(key);
-    if(!entry) return;
+    if(!entry?.bounds) return;
 
-    entry.lines.forEach(line=>{
-      const path=typeof line.getPath==='function' ? line.getPath() : null;
-      if(!path) return;
+    try{
+      const sw=entry.bounds.getSouthWest?.();
+      const ne=entry.bounds.getNorthEast?.();
 
-      for(let i=0;i<path.getLength();i++){
-        bounds.extend(path.getAt(i));
-        hasPoint=true;
+      if(sw && ne){
+        bounds.extend(sw);
+        bounds.extend(ne);
+        hasBounds=true;
       }
-    });
+    }catch(e){
+      console.error('메모 경로 범위 계산 오류',key,e);
+    }
   });
 
-  if(!hasPoint) return false;
+  if(!hasBounds) return false;
 
   clearTimeout(memoRouteFocusTimer);
 
-  // 메모 선택 때마다 이전 이동/확대 예약을 취소하고 새 경로 범위로 즉시 이동함.
-  map.setBounds(bounds);
+  try{
+    map.setBounds(bounds);
 
-  memoRouteFocusTimer=setTimeout(()=>{
-    map.setLevel(Math.max(1,map.getLevel()-1));
-  },40);
+    memoRouteFocusTimer=setTimeout(()=>{
+      try{
+        map.setLevel(Math.max(1,map.getLevel()-1));
+      }catch(e){
+        console.error('메모 경로 확대 오류',e);
+      }
+    },40);
 
-  return true;
+    return true;
+  }catch(e){
+    console.error('메모 경로 이동 오류',e);
+    return false;
+  }
 }
 
 function renderMemoList(){
@@ -2481,9 +2492,16 @@ function renderMemoList(){
     row.appendChild(chevron);
 
     row.addEventListener('click',()=>{
-      // 한 번의 선택으로 지도 이동과 메모 상세 열기를 항상 함께 실행함.
-      focusMemoRoute(num);
+      // 메모 상세는 먼저 항상 열고, 지도 이동은 별도로 실행함.
       openMemoFromList(num);
+
+      requestAnimationFrame(()=>{
+        try{
+          focusMemoRoute(num);
+        }catch(e){
+          console.error('메모 선택 경로 이동 오류',e);
+        }
+      });
     });
 
     list.appendChild(row);
