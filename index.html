@@ -1265,7 +1265,11 @@
 
     <section id="routePage" class="menu-page">
       <div class="route-direct-search">
-        <input id="routeNumberInput" class="route-number-input" type="text" inputmode="numeric" autocomplete="off" placeholder="번호 직접 입력" aria-label="비행경로 번호 직접 입력">
+        <select id="routePrefixSelect" class="route-prefix-select" aria-label="경로 구분">
+          <option value="normal">일반</option>
+          <option value="dolsan">돌산</option>
+        </select>
+        <input id="routeNumberInput" class="route-number-input" type="text" inputmode="numeric" autocomplete="off" placeholder="번호" aria-label="비행경로 번호 직접 입력">
         <button id="routeNumberGoBtn" class="route-number-go" type="button">이동</button>
       </div>
       <div class="route-number-wrap route-wheel-wrap">
@@ -2995,18 +2999,33 @@ function normalizeRouteSearchValue(value){
   const raw=String(value||'').trim();
   if(!raw) return '';
 
+  const prefix=document.getElementById('routePrefixSelect')?.value || 'normal';
+
+  // 사용자가 전체 번호를 직접 넣은 경우도 우선 허용함.
   if(routeIndex.has(raw)) return raw;
 
   const numeric=Number(raw);
-  if(!Number.isNaN(numeric)){
-    const candidates=[
-      String(numeric),
-      String(numeric).padStart(2,'0'),
-      String(numeric).padStart(3,'0')
+  if(Number.isNaN(numeric)) return '';
+
+  if(prefix==='dolsan'){
+    const dolsanCandidates=[
+      '돌산_'+String(numeric),
+      '돌산_'+String(numeric).padStart(2,'0'),
+      '돌산_'+String(numeric).padStart(3,'0')
     ];
-    for(const candidate of candidates){
+    for(const candidate of dolsanCandidates){
       if(routeIndex.has(candidate)) return candidate;
     }
+    return '';
+  }
+
+  const candidates=[
+    String(numeric),
+    String(numeric).padStart(2,'0'),
+    String(numeric).padStart(3,'0')
+  ];
+  for(const candidate of candidates){
+    if(routeIndex.has(candidate)) return candidate;
   }
 
   return '';
@@ -3065,6 +3084,20 @@ document.getElementById('routeNumberInput')?.addEventListener('keydown',e=>{
     goToRouteFromInput();
     e.currentTarget.blur();
   }
+});
+
+document.getElementById('routePrefixSelect')?.addEventListener('change',()=>{
+  clearTimeout(routeNumberInputTimer);
+  const input=document.getElementById('routeNumberInput');
+  if(!input || !input.value.trim()) return;
+
+  const num=normalizeRouteSearchValue(input.value);
+  if(!num) return;
+
+  routeNumberInputTimer=setTimeout(()=>{
+    scrollRouteWheelTo(num,false);
+    focusRouteNumber(num);
+  },500);
 });
 
 function updateRouteLabelVisibility(){
@@ -5403,7 +5436,7 @@ if ('serviceWorker' in navigator) {
 /* Mobile-friendly direct route number search */
 .route-direct-search{
   display:grid;
-  grid-template-columns:minmax(0,1fr) 68px;
+  grid-template-columns:82px minmax(0,1fr) 68px;
   gap:8px;
   margin:0 0 10px;
 }
@@ -5454,6 +5487,35 @@ if ('serviceWorker' in navigator) {
     height:46px !important;
     min-height:46px !important;
     font-size:16px !important;
+  }
+}
+
+.route-prefix-select{
+  width:82px;
+  min-width:82px;
+  height:44px;
+  padding:0 8px;
+  border:1px solid rgba(60,60,67,.18);
+  border-radius:12px;
+  outline:none;
+  background:#fff;
+  color:#111;
+  font-size:15px;
+  font-weight:600;
+  box-sizing:border-box;
+  -webkit-appearance:none;
+  appearance:none;
+  text-align:center;
+  text-align-last:center;
+}
+.route-prefix-select:focus{
+  border-color:#007aff;
+  box-shadow:0 0 0 2px rgba(0,122,255,.12);
+}
+@media (max-width:700px){
+  .route-prefix-select{
+    height:46px;
+    font-size:16px;
   }
 }
 </style>
