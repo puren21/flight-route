@@ -2311,6 +2311,31 @@ document.getElementById('memoDetailCancelBtn')?.addEventListener('click',closeMe
 document.getElementById('memoDetailSaveBtn')?.addEventListener('click',saveMemoDetail);
 document.getElementById('memoDetailDeleteBtn')?.addEventListener('click',deleteMemoDetail);
 
+function resolveMemoRouteKey(value){
+  const raw=String(value||'').trim();
+  if(!raw) return '';
+
+  if(routeIndex.has(raw)) return raw;
+
+  const isDolsan=raw.startsWith('돌산_');
+  const numericText=raw.replace(/^돌산_/,'').trim();
+  const numeric=parseInt(numericText,10);
+  if(Number.isNaN(numeric)) return '';
+
+  for(const key of routeIndex.keys()){
+    const keyText=String(key);
+    const keyIsDolsan=keyText.startsWith('돌산_');
+    if(keyIsDolsan!==isDolsan) continue;
+
+    const keyNumeric=parseInt(keyText.replace(/^돌산_/,'').trim(),10);
+    if(!Number.isNaN(keyNumeric) && keyNumeric===numeric){
+      return keyText;
+    }
+  }
+
+  return '';
+}
+
 function renderMemoList(){
   const list=document.getElementById('memoList');
   if(!list) return;
@@ -2364,7 +2389,8 @@ function renderMemoList(){
       e.preventDefault();
       e.stopPropagation();
 
-      if(!routeIndex.has(String(num))) return;
+      const routeKey=resolveMemoRouteKey(num);
+      if(!routeKey) return;
 
       // 마지막 메뉴 상태는 메모 목록으로 유지함.
       lastMenuState={pageId:'memoPage',title:'메모'};
@@ -2382,7 +2408,7 @@ function renderMemoList(){
       requestAnimationFrame(()=>{
         if(typeof map.relayout==='function') map.relayout();
         setTimeout(()=>{
-          focusRouteNumber(num);
+          focusRouteNumber(routeKey);
         },60);
       });
     };
