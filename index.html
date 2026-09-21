@@ -1410,6 +1410,7 @@ let currentLocationMarkerEl=null;
 let currentLocationHeadingEl=null;
 let currentHeading=null;
 let deviceHeading=null;
+let lastMovementPosition=null;
 let locationMoveAnimation=null;
 let deviceOrientationListening=false;
 
@@ -2892,7 +2893,7 @@ function normalizeHeading(value){
 
 function updateLocationHeadingVisual(){
   if(!currentLocationHeadingEl) return;
-  const heading=normalizeHeading(currentHeading ?? deviceHeading);
+  const heading=normalizeHeading(currentHeading);
   if(heading===null){
     currentLocationHeadingEl.classList.remove('visible');
     return;
@@ -2900,6 +2901,39 @@ function updateLocationHeadingVisual(){
 
   currentLocationHeadingEl.classList.add('visible');
   currentLocationHeadingEl.style.transform='translateX(-50%) rotate('+heading+'deg)';
+}
+
+function distanceMeters(lat1,lng1,lat2,lng2){
+  const R=6371000;
+  const toRad=v=>v*Math.PI/180;
+  const p1=toRad(lat1);
+  const p2=toRad(lat2);
+  const dp=toRad(lat2-lat1);
+  const dl=toRad(lng2-lng1);
+  const a=Math.sin(dp/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;
+  return 2*R*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function bearingBetween(lat1,lng1,lat2,lng2){
+  const toRad=v=>v*Math.PI/180;
+  const toDeg=v=>v*180/Math.PI;
+  const p1=toRad(lat1);
+  const p2=toRad(lat2);
+  const dl=toRad(lng2-lng1);
+
+  const y=Math.sin(dl)*Math.cos(p2);
+  const x=Math.cos(p1)*Math.sin(p2)-Math.sin(p1)*Math.cos(p2)*Math.cos(dl);
+  return normalizeHeading(toDeg(Math.atan2(y,x)));
+}
+
+function smoothHeading(previous,next){
+  const prev=normalizeHeading(previous);
+  const target=normalizeHeading(next);
+  if(target===null) return prev;
+  if(prev===null) return target;
+
+  let delta=((target-prev+540)%360)-180;
+  return normalizeHeading(prev+delta*0.35);
 }
 
 function ensureCurrentLocationMarker(loc){
@@ -3021,12 +3055,28 @@ function handleLocationUpdate(position){
   const lng=position.coords.longitude;
   const loc=new kakao.maps.LatLng(lat,lng);
 
-  const gpsHeading=normalizeHeading(position.coords.heading);
-  const speed=Number(position.coords.speed);
-  if(gpsHeading!==null && (!Number.isFinite(speed) || speed>0.4)){
-    currentHeading=gpsHeading;
+  // 화살표는 휴대폰이 바라보는 방향이 아니라 실제 GPS 이동 궤적을 기준으로 함.
+  if(lastMovementPosition){
+    const moved=distanceMeters(
+      lastMovementPosition.lat,
+      lastMovementPosition.lng,
+      lat,
+      lng
+    );
+
+    // GPS 흔들림은 방향으로 취급하지 않음.
+    if(moved>=2.5){
+      const movementBearing=bearingBetween(
+        lastMovementPosition.lat,
+        lastMovementPosition.lng,
+        lat,
+        lng
+      );
+      currentHeading=smoothHeading(currentHeading,movementBearing);
+      lastMovementPosition={lat,lng};
+    }
   }else{
-    currentHeading=null;
+    lastMovementPosition={lat,lng};
   }
 
   updateCurrentLocationMarker(loc);
@@ -3062,9 +3112,6 @@ async function locateMe(){
     return;
   }
 
-  // iPhone Safari에서는 사용자 터치 안에서 방향 센서 권한을 요청해야 함.
-  await enableDeviceHeading();
-
   // 이미 추적 중이면 새 추적을 만들지 않고 현재 위치로 즉시 복귀함.
   if(locationWatchId!==null){
     if(currentLocationLatLng) map.setCenter(currentLocationLatLng);
@@ -3074,6 +3121,8 @@ async function locateMe(){
 
   statusEl.textContent='현재 위치 확인 중...';
   locationTrackingStarted=false;
+  currentHeading=null;
+  lastMovementPosition=null;
 
   locationWatchId=navigator.geolocation.watchPosition(
     handleLocationUpdate,
