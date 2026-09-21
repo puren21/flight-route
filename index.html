@@ -6674,4 +6674,27 @@ if ('serviceWorker' in navigator) {
   transform-origin:center center !important;
   pointer-events:none !important;
 }
+
+/* Auto-fit settings panel height to visible content (2026-09-21) */
+#controlPanel:not(.collapsed){
+  height:var(--user-panel-height,auto) !important;
+  min-height:0 !important;
+  max-height:calc(100dvh - 24px) !important;
+}
+#controlPanel:not(.collapsed) .panel-body{
+  flex:0 1 auto !important;
+  min-height:0 !important;
+}
+@media (max-width:700px){
+  #controlPanel:not(.collapsed){
+    height:var(--user-panel-height,auto) !important;
+    min-height:0 !important;
+    max-height:calc(100dvh - 8px) !important;
+  }
+  #controlPanel:not(.collapsed) .panel-body{
+    flex:0 1 auto !important;
+    min-height:0 !important;
+    overflow-y:auto !important;
+  }
+}
 </style>
