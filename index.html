@@ -1085,6 +1085,11 @@
   .route-select-popup .route-select-title{
     margin:0 !important;
     padding:13px 18px !important;
+    min-height:48px;
+    width:100%;
+    display:flex;
+    align-items:center;
+    box-sizing:border-box;
     background:#a6a6a6;
     color:#fff;
     font-size:20px;
@@ -2056,7 +2061,7 @@ function showRouteSelectPopup(routeLine,position){
     content:box,
     clickable:true,
     xAnchor:0.5,
-    yAnchor:1.15,
+    yAnchor:1.32,
     zIndex:40
   });
 
@@ -2078,6 +2083,8 @@ function showRouteSelectPopup(routeLine,position){
     e.preventDefault();
     e.stopPropagation();
     kakao.maps.event.preventMap();
+
+    box.style.pointerEvents='auto';
 
     const projection=map.getProjection();
     const overlayPosition=routeSelectOverlay.getPosition();
