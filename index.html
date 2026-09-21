@@ -1074,6 +1074,13 @@
     font-weight:600;
     line-height:1.1;
     text-align:left;
+    cursor:grab;
+    user-select:none;
+    -webkit-user-select:none;
+    touch-action:none;
+  }
+  .route-select-popup .route-select-title:active{
+    cursor:grabbing;
   }
   .route-select-popup .route-select-actions{
     display:flex !important;
@@ -2032,6 +2039,58 @@ function showRouteSelectPopup(routeLine,position){
     yAnchor:1.15,
     zIndex:40
   });
+
+  // 상단 노선번호 영역을 드래그하면 팝업 위치를 지도 위에서 이동함.
+  let popupDragPointerId=null;
+  let popupDragStartX=0;
+  let popupDragStartY=0;
+  let popupDragStartPoint=null;
+
+  const stopPopupDrag=()=>{
+    popupDragPointerId=null;
+    popupDragStartPoint=null;
+  };
+
+  title.addEventListener('pointerdown',e=>{
+    if(e.button!==undefined && e.button!==0) return;
+    if(!routeSelectOverlay) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    kakao.maps.event.preventMap();
+
+    const projection=map.getProjection();
+    const overlayPosition=routeSelectOverlay.getPosition();
+    popupDragStartPoint=projection.containerPointFromCoords(overlayPosition);
+    popupDragPointerId=e.pointerId;
+    popupDragStartX=e.clientX;
+    popupDragStartY=e.clientY;
+
+    try{ title.setPointerCapture(e.pointerId); }catch(err){}
+  });
+
+  title.addEventListener('pointermove',e=>{
+    if(popupDragPointerId===null || e.pointerId!==popupDragPointerId || !popupDragStartPoint || !routeSelectOverlay) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    kakao.maps.event.preventMap();
+
+    const projection=map.getProjection();
+    const nextPoint=new kakao.maps.Point(
+      popupDragStartPoint.x+(e.clientX-popupDragStartX),
+      popupDragStartPoint.y+(e.clientY-popupDragStartY)
+    );
+    routeSelectOverlay.setPosition(projection.coordsFromContainerPoint(nextPoint));
+  });
+
+  title.addEventListener('pointerup',e=>{
+    if(popupDragPointerId!==e.pointerId) return;
+    try{ title.releasePointerCapture(e.pointerId); }catch(err){}
+    stopPopupDrag();
+  });
+
+  title.addEventListener('pointercancel',stopPopupDrag);
 }
 
 function isMobileRouteDevice(){
