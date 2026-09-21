@@ -1609,7 +1609,14 @@ panelToggleBtn.addEventListener('click',e=>{
 document.querySelector('.panel-header')?.addEventListener('click',e=>{
   if(e.target.closest('#panelToggleBtn')) return;
 
-  // 하위 메뉴에서는 상단 헤더 전체를 이전 메뉴 버튼처럼 사용함.
+  // 접힌 상태의 초기 아이콘을 누르면 뒤로가기로 처리하지 않고
+  // 마지막으로 보던 메뉴를 그대로 복원해서 열어야 함.
+  if(controlPanel.classList.contains('collapsed')){
+    toggleControlPanel();
+    return;
+  }
+
+  // 펼쳐진 하위 메뉴에서는 상단 헤더 전체를 이전 메뉴 버튼처럼 사용함.
   if(controlPanel.classList.contains('detail-view')){
     const activePage=document.querySelector('.menu-page.active');
     const parentPage=activePage?.dataset.parentPage;
