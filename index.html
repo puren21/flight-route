@@ -1263,8 +1263,16 @@
       </button>
       <button class="ios-menu-row" type="button" data-page="otherPage" data-title="기타기능">
         <span class="ios-menu-left">
-          <span class="ios-menu-icon ios-icon-other" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="18" cy="12" r="1.8"/></svg>
+          <span class="ios-menu-icon ios-icon-other ios-icon-apple-maps" aria-hidden="true">
+            <svg viewBox="0 0 29 29">
+              <rect x="1" y="1" width="27" height="27" rx="6.5" fill="#ffffff"/>
+              <path d="M1 18.5L10.5 9l7.2 7.2L28 6v15.5A6.5 6.5 0 0 1 21.5 28h-14A6.5 6.5 0 0 1 1 21.5Z" fill="#7ed957"/>
+              <path d="M1 7.5A6.5 6.5 0 0 1 7.5 1H22L13 10 7.5 6.5 1 13Z" fill="#5ac8fa"/>
+              <path d="M10.5 9L17.7 16.2" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/>
+              <path d="M12 1L16.5 28" stroke="#ffd60a" stroke-width="3"/>
+              <path d="M1 18.5L28 6" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>
+              <rect x="1" y="1" width="27" height="27" rx="6.5" fill="none" stroke="rgba(0,0,0,.08)" stroke-width=".7"/>
+            </svg>
           </span>
           <span class="ios-menu-text">기타기능</span>
         </span>
@@ -6321,6 +6329,20 @@ if ('serviceWorker' in navigator) {
   box-shadow:0 0 0 .5px rgba(60,60,67,.10);
 }
 .ios-icon-route svg{
+  width:29px !important;
+  height:29px !important;
+  display:block !important;
+  fill:none !important;
+  stroke:none !important;
+}
+
+/* Other functions: Apple Maps-style icon */
+.ios-icon-other.ios-icon-apple-maps{
+  background:transparent !important;
+  overflow:hidden;
+  box-shadow:0 0 0 .5px rgba(60,60,67,.10);
+}
+.ios-icon-other.ios-icon-apple-maps svg{
   width:29px !important;
   height:29px !important;
   display:block !important;
