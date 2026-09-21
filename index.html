@@ -1204,7 +1204,15 @@
 <div class="panel collapsed" id="controlPanel">
   <div class="panel-header">
     <button id="menuBackBtn" class="menu-back-btn" type="button" aria-label="이전 메뉴">‹</button>
-    <h1 id="panelTitle">설정</h1>
+    <h1 id="panelTitle">
+      <span class="settings-title-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <path d="M9.9 2.8h4.2l.6 2.2c.6.2 1.2.5 1.8.8l2.1-.7 2.1 3.6-1.6 1.5c.1.6.1 1.2 0 1.8l1.6 1.5-2.1 3.6-2.1-.7c-.6.4-1.2.6-1.8.8l-.6 2.2H9.9l-.6-2.2c-.6-.2-1.2-.5-1.8-.8l-2.1.7-2.1-3.6L4.9 12c-.1-.6-.1-1.2 0-1.8L3.3 8.7l2.1-3.6 2.1.7c.6-.4 1.2-.6 1.8-.8l.6-2.2Z"/>
+          <circle cx="12" cy="11.1" r="3.1"/>
+        </svg>
+      </span>
+      <span class="settings-title-text">설정</span>
+    </h1>
     <button id="panelToggleBtn" class="panel-toggle" type="button" aria-label="메뉴 펼치기">›</button>
   </div>
 
@@ -1501,7 +1509,7 @@ function updateStablePanelHeight(){
 
   menuHome.style.display='flex';
   menuPages.forEach(page=>page.classList.remove('active'));
-  panelTitle.textContent='설정';
+  panelTitle.innerHTML='<span class="settings-title-text">설정</span>';
   maxHeight=Math.max(maxHeight,Math.ceil(controlPanel.scrollHeight));
 
   menuHome.style.display='none';
@@ -1525,7 +1533,7 @@ function showMenuHome(){
   controlPanel.classList.remove('detail-view');
   menuHome.style.display='flex';
   document.querySelectorAll('.menu-page').forEach(page=>page.classList.remove('active'));
-  panelTitle.textContent='설정';
+  panelTitle.innerHTML='<span class="settings-title-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9.9 2.8h4.2l.6 2.2c.6.2 1.2.5 1.8.8l2.1-.7 2.1 3.6-1.6 1.5c.1.6.1 1.2 0 1.8l1.6 1.5-2.1 3.6-2.1-.7c-.6.4-1.2.6-1.8.8l-.6 2.2H9.9l-.6-2.2c-.6-.2-1.2-.5-1.8-.8l-2.1.7-2.1-3.6L4.9 12c-.1-.6-.1-1.2 0-1.8L3.3 8.7l2.1-3.6 2.1.7c.6-.4 1.2-.6 1.8-.8l.6-2.2Z"/><circle cx="12" cy="11.1" r="3.1"/></svg></span><span class="settings-title-text">설정</span>';
 }
 
 function openMenuPage(pageId,title){
@@ -3426,5 +3434,48 @@ if ('serviceWorker' in navigator) {
       min-height:58px;
       margin-bottom:0;
     }
+  }
+
+  .settings-title-icon{
+    display:none;
+    width:32px;
+    height:32px;
+    align-items:center;
+    justify-content:center;
+    border-radius:8px;
+    background:#8e8e93;
+    color:#fff;
+    box-shadow:0 0 0 .5px rgba(60,60,67,.18);
+  }
+  .settings-title-icon svg{
+    width:20px;
+    height:20px;
+    fill:none;
+    stroke:currentColor;
+    stroke-width:1.6;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+  }
+  .panel.collapsed .settings-title-icon{
+    display:inline-flex;
+  }
+  .panel.collapsed .settings-title-text{
+    display:none;
+  }
+  .panel.collapsed .panel-header{
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .panel.collapsed .panel-header h1{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin:0;
+  }
+  .panel.collapsed .menu-back-btn,
+  .panel.collapsed .panel-toggle{
+    display:none !important;
   }
 </style>
