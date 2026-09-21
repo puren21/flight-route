@@ -2405,10 +2405,6 @@ function showAddressPopup(latLng){
     addr.className='addr';
     addr.textContent=jibun;
 
-    const coord=document.createElement('div');
-    coord.className='coord';
-    coord.textContent=lat.toFixed(6)+', '+lng.toFixed(6);
-
     const navi=document.createElement('button');
     navi.className='navi-btn';
     navi.type='button';
@@ -2431,7 +2427,6 @@ function showAddressPopup(latLng){
     box.appendChild(close);
     box.appendChild(title);
     box.appendChild(addr);
-    box.appendChild(coord);
     const routeActions=document.createElement('div');
     routeActions.className='route-actions';
     routeActions.appendChild(naver);
@@ -2458,6 +2453,14 @@ kakao.maps.event.addListener(map,'click',function(){
 kakao.maps.event.addListener(map,'rightclick',function(mouseEvent){
   showAddressPopup(mouseEvent.latLng);
 });
+
+// 모바일 길게 누르기에서 Safari의 복사/찾아보기/번역 메뉴가 뜨지 않도록 기본 메뉴만 차단함.
+mapElement.addEventListener('contextmenu',event=>{
+  event.preventDefault();
+},{passive:false});
+mapElement.addEventListener('selectstart',event=>{
+  event.preventDefault();
+},{passive:false});
 
 function niceScaleDistance(meters){
   const exponent=Math.pow(10,Math.floor(Math.log10(meters)));
@@ -4443,5 +4446,25 @@ if ('serviceWorker' in navigator) {
 }
 .memo-page-heading{
   display:none !important;
+}
+
+/* Address popup: no coordinates, natural address wrapping, no iOS text-callout */
+.address-popup{
+  -webkit-user-select:none !important;
+  user-select:none !important;
+  -webkit-touch-callout:none !important;
+}
+.address-popup .addr{
+  white-space:normal !important;
+  word-break:keep-all !important;
+  overflow-wrap:anywhere !important;
+  line-height:1.45 !important;
+}
+.address-popup .coord{
+  display:none !important;
+}
+#map,
+#map *{
+  -webkit-touch-callout:none;
 }
 </style>
