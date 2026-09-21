@@ -2453,12 +2453,12 @@ function renderMemoList(){
   }
 
   keys.forEach(num=>{
-    const row=document.createElement('button');
-    row.type='button';
+    const row=document.createElement('div');
     row.className='memo-settings-row';
-    row.setAttribute('aria-label',num+' 메모 상세 보기');
+    row.setAttribute('role','group');
+    row.setAttribute('aria-label',num+' 메모');
 
-    const left=document.createElement('span');
+    const left=document.createElement('div');
     left.className='memo-settings-left';
 
     const icon=document.createElement('span');
@@ -2466,11 +2466,10 @@ function renderMemoList(){
     icon.setAttribute('aria-hidden','true');
     icon.innerHTML='<svg viewBox="0 0 29 29"><rect x="1" y="1" width="27" height="27" rx="6.5" fill="#fff"/><path d="M7.5 1h14A6.5 6.5 0 0 1 28 7.5V9H1V7.5A6.5 6.5 0 0 1 7.5 1Z" fill="#ffd60a"/><path d="M6 13.5h17M6 17.5h17M6 21.5h12" stroke="#c7c7cc" stroke-width="1.15" stroke-linecap="round"/></svg>';
 
-    const label=document.createElement('span');
+    const label=document.createElement('button');
+    label.type='button';
     label.className='memo-settings-label memo-route-link';
     label.textContent=num;
-    label.setAttribute('role','button');
-    label.setAttribute('tabindex','0');
     label.setAttribute('aria-label',num+' 경로 위치로 이동');
 
     const moveToMemoRoute=e=>{
@@ -2480,14 +2479,12 @@ function renderMemoList(){
       const routeKeys=resolveMemoRouteKeys(num);
       if(!routeKeys.length) return;
 
-      // 마지막 메뉴 상태는 메모 목록으로 유지함.
       lastMenuState={pageId:'memoPage',title:'메모'};
       try{
         localStorage.setItem(LAST_MENU_STORAGE_KEY,JSON.stringify(lastMenuState));
       }catch(err){}
 
-      // 메뉴를 먼저 접고 지도 영역을 다시 계산한 뒤 이동해야
-      // 두 번째 이후 선택에서도 위치 이동이 안정적으로 반복됨.
+      // 메뉴를 완전히 접은 뒤 지도 레이아웃을 두 번 보정하고 이동함.
       controlPanel.classList.remove('detail-view');
       ensureSettingsTitle();
       controlPanel.classList.add('collapsed');
@@ -2495,28 +2492,44 @@ function renderMemoList(){
 
       requestAnimationFrame(()=>{
         if(typeof map.relayout==='function') map.relayout();
-        setTimeout(()=>{
-          focusMemoRoute(num);
-        },80);
+
+        requestAnimationFrame(()=>{
+          if(typeof map.relayout==='function') map.relayout();
+
+          setTimeout(()=>{
+            focusMemoRoute(num);
+          },120);
+        });
       });
     };
 
     label.addEventListener('click',moveToMemoRoute);
-    label.addEventListener('keydown',e=>{
-      if(e.key==='Enter' || e.key===' '){
-        moveToMemoRoute(e);
-      }
-    });
+
+    const detailBtn=document.createElement('button');
+    detailBtn.type='button';
+    detailBtn.className='memo-settings-detail-btn';
+    detailBtn.setAttribute('aria-label',num+' 메모 상세 보기');
 
     const chevron=document.createElement('span');
     chevron.className='memo-settings-chevron';
     chevron.textContent='›';
 
+    detailBtn.appendChild(chevron);
+
     left.appendChild(icon);
     left.appendChild(label);
     row.appendChild(left);
-    row.appendChild(chevron);
-    row.addEventListener('click',()=>openMemoFromList(num));
+    row.appendChild(detailBtn);
+
+    icon.addEventListener('click',()=>openMemoFromList(num));
+    detailBtn.addEventListener('click',()=>openMemoFromList(num));
+
+    // 빈 공간을 눌러도 상세 메모를 열되, 번호 버튼은 이동만 수행함.
+    row.addEventListener('click',e=>{
+      if(e.target.closest('.memo-route-link,.memo-settings-detail-btn,.memo-note-icon')) return;
+      openMemoFromList(num);
+    });
+
     list.appendChild(row);
   });
 }
@@ -6503,5 +6516,65 @@ if ('serviceWorker' in navigator) {
   display:block !important;
   fill:none !important;
   stroke:none !important;
+}
+
+/* Memo list: stable repeated route navigation on mobile */
+.memo-settings-row{
+  cursor:default !important;
+}
+.memo-route-link{
+  min-width:0 !important;
+  margin:0 !important;
+  padding:8px 4px !important;
+  border:0 !important;
+  border-radius:8px !important;
+  background:transparent !important;
+  color:#1c1c1e !important;
+  text-align:left !important;
+  font:inherit !important;
+  font-size:inherit !important;
+  font-weight:inherit !important;
+  line-height:1.2 !important;
+  -webkit-appearance:none !important;
+  appearance:none !important;
+}
+.memo-route-link:active{
+  background:rgba(118,118,128,.10) !important;
+  opacity:.7 !important;
+}
+.memo-settings-detail-btn{
+  width:44px !important;
+  min-width:44px !important;
+  height:54px !important;
+  min-height:54px !important;
+  margin:0 !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  -webkit-appearance:none !important;
+  appearance:none !important;
+}
+.memo-note-icon{
+  cursor:pointer;
+}
+
+/* Hide visual scrollbars while keeping all menu scrolling enabled */
+.panel:not(.collapsed),
+.panel-body,
+.memo-settings-list{
+  scrollbar-width:none !important;
+  -ms-overflow-style:none !important;
+}
+.panel:not(.collapsed)::-webkit-scrollbar,
+.panel-body::-webkit-scrollbar,
+.memo-settings-list::-webkit-scrollbar{
+  width:0 !important;
+  height:0 !important;
+  display:none !important;
+  background:transparent !important;
 }
 </style>
