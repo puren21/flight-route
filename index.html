@@ -515,6 +515,219 @@
       button { padding:8px 6px; font-size:13px; }
       .status { font-size:11px; }
     }
+  
+    /* unified responsive menu */
+    .panel{
+      width:320px;
+      padding:12px;
+      border:1px solid rgba(0,0,0,.08);
+      border-radius:16px;
+      background:rgba(255,255,255,.97);
+      box-shadow:0 10px 30px rgba(0,0,0,.16);
+      backdrop-filter:blur(12px);
+      -webkit-backdrop-filter:blur(12px);
+    }
+    .panel-header{
+      margin-bottom:10px;
+      padding:2px 2px 8px;
+      border-bottom:1px solid #edf0f2;
+    }
+    .panel h1{
+      font-size:17px;
+      letter-spacing:-.3px;
+    }
+    .panel-toggle{
+      background:#f4f5f7;
+      border:1px solid #e6e8eb;
+    }
+    .panel-body{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .menu-section{
+      margin:0;
+      padding:11px;
+      border:1px solid #e7eaee;
+      border-radius:12px;
+      background:#fff;
+    }
+    .menu-section-title{
+      margin-bottom:8px;
+      font-size:12px;
+      font-weight:800;
+      color:#24292f;
+      letter-spacing:-.2px;
+    }
+    .quick-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:6px;
+      margin-bottom:8px;
+    }
+    .quick-btn{
+      min-height:40px;
+      padding:8px 5px;
+      border:1px solid #e2e5e9;
+      background:#f7f8fa;
+      font-size:12px;
+      font-weight:700;
+    }
+    .quick-btn.active{
+      background:#222;
+      border-color:#222;
+      color:#fff;
+    }
+    .airspace-card{
+      min-height:46px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:8px 9px;
+      border:1px solid #e8eaed;
+      border-radius:9px;
+      background:#fafbfc;
+      cursor:pointer;
+    }
+    .airspace-label{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      min-width:0;
+    }
+    .airspace-label > span:last-child{
+      display:flex;
+      flex-direction:column;
+      min-width:0;
+    }
+    .airspace-label strong{
+      font-size:12px;
+      color:#333;
+    }
+    .airspace-label small{
+      margin-top:2px;
+      font-size:10px;
+      color:#888;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .airspace-card input{
+      width:18px;
+      height:18px;
+      flex:0 0 auto;
+    }
+    .compact-link{
+      margin:7px 2px 0;
+      text-align:right;
+    }
+    .route-number-wrap{
+      margin:0;
+    }
+    .route-number-wrap label{
+      margin-bottom:6px;
+      font-size:11px;
+      color:#73777d;
+    }
+    .route-number-select{
+      height:42px;
+      padding:0 10px;
+      border-color:#dfe3e7;
+      border-radius:9px;
+      font-size:13px;
+    }
+    .style-section-toggle{
+      min-height:40px;
+      margin-top:6px;
+      padding:9px 10px;
+      border:1px solid #e6e8eb;
+      border-radius:9px;
+      background:#f7f8fa;
+      font-size:12px;
+    }
+    .style-section-toggle:first-of-type{
+      margin-top:0;
+    }
+    .style-section-toggle:hover{
+      background:#f0f2f4;
+    }
+    .style-section-body{
+      padding:4px 4px 2px;
+    }
+    .route-style-row{
+      grid-template-columns:50px 1fr 48px;
+      gap:8px;
+      margin-top:9px;
+    }
+    .route-style-row input[type="color"]{
+      height:32px;
+    }
+    .save-style-btn{
+      min-height:38px;
+      background:#222;
+      color:#fff;
+      font-weight:700;
+    }
+    .save-style-btn:hover{
+      background:#111;
+    }
+    .subtle-action{
+      width:100%;
+      min-height:38px;
+      margin-top:8px;
+      border:1px solid #e6e8eb;
+      background:#fff;
+      color:#6b7075;
+      font-size:11px;
+    }
+    .memo-item{
+      min-height:42px;
+      border-radius:9px;
+    }
+    .status{
+      margin:0;
+      padding:7px 3px 1px;
+      color:#7a7f85;
+      font-size:10px;
+      text-align:center;
+    }
+    .panel.collapsed{
+      width:auto;
+      padding:9px 10px;
+      border-radius:12px;
+    }
+    @media (max-width:700px){
+      .panel{
+        top:calc(env(safe-area-inset-top, 0px) + 62px);
+        left:10px;
+        right:10px;
+        width:auto;
+        max-height:calc(100dvh - env(safe-area-inset-top, 0px) - 76px);
+        padding:10px;
+        border-radius:16px;
+      }
+      .panel-header{
+        position:sticky;
+        top:-10px;
+        z-index:3;
+        margin:0 0 8px;
+        padding:7px 2px 9px;
+        background:rgba(255,255,255,.97);
+      }
+      .panel h1{font-size:16px;}
+      .panel-body{gap:8px;}
+      .menu-section{padding:10px;}
+      .menu-section-title{font-size:12px;}
+      .quick-grid{gap:5px;}
+      .quick-btn{min-height:44px;font-size:12px;}
+      .airspace-card{min-height:48px;}
+      .route-number-select{height:44px;}
+      .style-section-toggle{min-height:44px;}
+      .route-style-row{grid-template-columns:46px 1fr 46px;}
+      .save-style-btn,.subtle-action{min-height:44px;}
+    }
+
   </style>
   <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7ee4bab8cd4d6be6d0d68a49e9b4502b&libraries=services"></script>
   <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js"></script>
@@ -548,33 +761,39 @@
     <button id="panelToggleBtn" class="panel-toggle" type="button" aria-label="메뉴 펼치기">＋</button>
   </div>
   <div class="panel-body">
-    <div class="route-number-wrap">
-      <label for="routeNumberSelect">번호 선택</label>
-      <select id="routeNumberSelect" class="route-number-select">
-        <option value="">번호 선택</option>
-      </select>
-    </div>
-    <div class="route-style-controls">
-      <div class="route-style-title">메모</div>
-      <button class="style-section-toggle" type="button" data-target="memoListBody">
-        <span>메모된 번호</span><span>＋</span>
-      </button>
-      <div id="memoListBody" class="style-section-body">
-        <div id="memoList" class="memo-list"></div>
+    <section class="menu-section quick-section">
+      <div class="menu-section-title">빠른 기능</div>
+      <div class="quick-grid">
+        <button id="roadBtn" class="quick-btn active" type="button">일반지도</button>
+        <button id="skyBtn" class="quick-btn" type="button">위성지도</button>
+        <button id="menuLocBtn" class="quick-btn" type="button">현재 위치</button>
       </div>
-    </div>
-    <div class="route-style-controls">
-      <label class="geo-toggle-row" style="font-weight:700;">
+      <label class="airspace-card">
+        <span class="airspace-label">
+          <span class="geo-swatch" style="background:rgba(110,110,110,.15);border-color:#6e6e6e"></span>
+          <span>
+            <strong>장애물공역</strong>
+            <small id="krAirspaceStatus">드론원스톱 장애물공역</small>
+          </span>
+        </span>
         <input id="krAirspaceToggle" type="checkbox">
-        <span class="geo-swatch" style="background:rgba(110,110,110,.15);border-color:#6e6e6e"></span>
-        <span>장애물공역 표시</span>
       </label>
       <input class="krAirspaceCategory" type="checkbox" value="obstacle" checked hidden>
-      <div id="krAirspaceStatus" class="geo-note" style="margin-top:6px;">드론원스톱 장애물공역</div>
-      <a class="geo-link" href="https://drone.onestop.go.kr/common/flightArea" target="_blank" rel="noopener">공식 지도 열기 ↗</a>
-    </div>
-    <div class="route-style-controls">
-      <div class="route-style-title">라인 스타일</div>
+      <a class="geo-link compact-link" href="https://drone.onestop.go.kr/common/flightArea" target="_blank" rel="noopener">공식 지도 보기 ↗</a>
+    </section>
+
+    <section class="menu-section">
+      <div class="menu-section-title">경로 찾기</div>
+      <div class="route-number-wrap">
+        <label for="routeNumberSelect">비행경로 번호</label>
+        <select id="routeNumberSelect" class="route-number-select">
+          <option value="">번호 선택</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="menu-section">
+      <div class="menu-section-title">스타일 설정</div>
 
       <button class="style-section-toggle" type="button" data-target="defaultStyleBody">
         <span>기본 라인</span><span>＋</span>
@@ -633,14 +852,25 @@
           <span></span>
         </div>
         <div class="row">
-          <button id="saveLabelStyleBtn" type="button">라벨 설정 저장</button>
+          <button id="saveLabelStyleBtn" class="save-style-btn" type="button">라벨 설정 저장</button>
         </div>
       </div>
-    </div>
-    <div class="row"><button id="roadBtn" class="active">일반지도</button><button id="skyBtn">위성지도</button></div>
-    <div class="row"><button id="resetRouteStatesBtn" type="button">켜기·끄기 초기화</button></div>
+
+      <button id="resetRouteStatesBtn" class="subtle-action" type="button">켜기·끄기 상태 초기화</button>
+    </section>
+
+    <section class="menu-section">
+      <div class="menu-section-title">메모</div>
+      <button class="style-section-toggle" type="button" data-target="memoListBody">
+        <span>메모된 번호</span><span>＋</span>
+      </button>
+      <div id="memoListBody" class="style-section-body">
+        <div id="memoList" class="memo-list"></div>
+      </div>
+    </section>
+
     <div class="status" id="status">GeoJSON 불러오는 중...</div>
-  </div>
+  </div>  </div>
 </div>
 <script>
 const map=new kakao.maps.Map(document.getElementById('map'),{center:new kakao.maps.LatLng(35.16,126.84),level:8});
@@ -1529,8 +1759,18 @@ function applyOffRouteStyle(){
 document.querySelectorAll('.style-section-toggle').forEach(btn=>{
   btn.addEventListener('click',()=>{
     const body=document.getElementById(btn.dataset.target);
-    const open=body.classList.toggle('open');
-    btn.lastElementChild.textContent=open?'−':'＋';
+    const willOpen=!body.classList.contains('open');
+    document.querySelectorAll('.style-section-body.open').forEach(openBody=>{
+      openBody.classList.remove('open');
+      const otherBtn=document.querySelector('.style-section-toggle[data-target="'+openBody.id+'"]');
+      if(otherBtn?.lastElementChild) otherBtn.lastElementChild.textContent='＋';
+    });
+    if(willOpen){
+      body.classList.add('open');
+      btn.lastElementChild.textContent='−';
+    }else{
+      btn.lastElementChild.textContent='＋';
+    }
   });
 });
 
@@ -1771,6 +2011,7 @@ document.querySelectorAll('.krAirspaceCategory').forEach(el=>{
 });
 
 document.getElementById('floatingLocBtn')?.addEventListener('click',locateMe);
+document.getElementById('menuLocBtn')?.addEventListener('click',locateMe);
 document.getElementById('resetRouteStatesBtn')?.addEventListener('click',resetRouteStates);
 syncPanelToggle();
 renderMemoList();
