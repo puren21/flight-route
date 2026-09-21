@@ -1586,7 +1586,8 @@ function updateStablePanelHeight(){
   controlPanel.classList.toggle('collapsed',wasCollapsed);
   panelTitle.innerHTML=previousTitleHtml;
 
-  controlPanel.style.setProperty('--stable-panel-height',Math.ceil(maxHeight)+'px');
+  const reducedHeight=Math.max(220,Math.ceil(maxHeight*(2/3)));
+  controlPanel.style.setProperty('--stable-panel-height',reducedHeight+'px');
 }
 
 function showMenuHome(){
@@ -4244,5 +4245,11 @@ if ('serviceWorker' in navigator) {
   display:flex;
   flex-direction:column;
   gap:6px;
+}
+
+/* Common expanded-menu height reduced by one third; overflow scrolls inside */
+.panel:not(.collapsed){
+  overflow-y:auto !important;
+  overscroll-behavior:contain;
 }
 </style>
