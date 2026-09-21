@@ -1663,77 +1663,23 @@ if(panelResizeHandle){
   panelResizeHandle.addEventListener('pointercancel',stopPanelResize);
 }
 
-function restoreLastMenu(){
-  const pageId=String(lastMenuState?.pageId||'');
-  const title=String(lastMenuState?.title||'');
-
-  if(pageId && document.getElementById(pageId)){
-    openMenuPage(pageId,title||'설정');
-  }else{
-    showMenuHome();
-  }
-}
-
-function openSettingsPanel(){
-  if(!controlPanel.classList.contains('collapsed')) return;
-
-  controlPanel.classList.remove('collapsed');
-  restoreLastMenu();
-  syncPanelToggle();
-
-  requestAnimationFrame(()=>{
-    controlPanel.scrollTop=0;
-  });
-}
-
-function closeSettingsPanel(){
-  if(controlPanel.classList.contains('collapsed')) return;
-
-  const activePage=document.querySelector('.menu-page.active');
-  if(controlPanel.classList.contains('detail-view') && activePage){
-    lastMenuState={
-      pageId:String(activePage.id||''),
-      title:String(panelTitle.textContent||'')
-    };
-    try{
-      localStorage.setItem(LAST_MENU_STORAGE_KEY,JSON.stringify(lastMenuState));
-    }catch(e){}
-  }
-
-  controlPanel.classList.remove('detail-view');
-  ensureSettingsTitle();
-  controlPanel.classList.add('collapsed');
-  syncPanelToggle();
-}
-
-function toggleSettingsPanel(){
-  if(controlPanel.classList.contains('collapsed')){
-    openSettingsPanel();
-  }else{
-    closeSettingsPanel();
-  }
-}
-
 panelToggleBtn.addEventListener('click',e=>{
-  e.preventDefault();
   e.stopPropagation();
-  toggleSettingsPanel();
+  toggleControlPanel();
 });
 
 document.querySelector('.panel-header')?.addEventListener('click',e=>{
   if(e.target.closest('#panelToggleBtn')) return;
 
+  // 접힌 상태의 초기 아이콘을 누르면 뒤로가기로 처리하지 않고
+  // 마지막으로 보던 메뉴를 그대로 복원해서 열어야 함.
   if(controlPanel.classList.contains('collapsed')){
-    e.preventDefault();
-    e.stopPropagation();
-    openSettingsPanel();
+    toggleControlPanel();
     return;
   }
 
+  // 펼쳐진 하위 메뉴에서는 상단 헤더 전체를 이전 메뉴 버튼처럼 사용함.
   if(controlPanel.classList.contains('detail-view')){
-    e.preventDefault();
-    e.stopPropagation();
-
     const activePage=document.querySelector('.menu-page.active');
     const parentPage=activePage?.dataset.parentPage;
     const parentTitle=activePage?.dataset.parentTitle;
@@ -1746,64 +1692,160 @@ document.querySelector('.panel-header')?.addEventListener('click',e=>{
     return;
   }
 
+  // 메인 메뉴에서는 기존처럼 헤더 클릭으로 열기/닫기함.
   if(e.target.closest('#menuBackBtn')) return;
-
-  e.preventDefault();
-  e.stopPropagation();
-  closeSettingsPanel();
+  toggleControlPanel();
 });
 
-mobileMenuLauncher?.addEventListener('click',e=>{
-  e.preventDefault();
-  e.stopPropagation();
-  openSettingsPanel();
+mobileMenuLauncher.addEventListener('click',()=>{
+  toggleControlPanel();
 });
 
-// Menu navigation uses one delegated handler so dynamically changed icon markup
-// cannot affect mobile menu operation.
-menuHome.addEventListener('click',e=>{
-  const row=e.target.closest('.ios-menu-row[data-page]');
-  if(!row || !menuHome.contains(row)) return;
+function updateStablePanelWidth(){
+  if(window.matchMedia('(max-width:700px)').matches){
+    controlPanel.style.removeProperty('--stable-panel-width');
+    return;
+  }
 
-  e.preventDefault();
-  e.stopPropagation();
-  openMenuPage(row.dataset.page,row.dataset.title);
-});
+  const wasCollapsed=controlPanel.classList.contains('collapsed');
+  const wasDetail=controlPanel.classList.contains('detail-view');
+  const previousHomeDisplay=menuHome.style.display;
+  const previousActive=menuPages.map(page=>page.classList.contains('active'));
 
-document.querySelectorAll('.menu-page').forEach(page=>{
-  page.addEventListener('click',e=>{
-    const row=e.target.closest('.ios-menu-row[data-page]');
-    if(!row || !page.contains(row)) return;
+  controlPanel.classList.remove('collapsed');
+  controlPanel.classList.remove('detail-view');
+  controlPanel.style.setProperty('--stable-panel-width','320px');
 
-    e.preventDefault();
+  let maxWidth=320;
+
+  menuHome.style.display='flex';
+  menuPages.forEach(page=>page.classList.remove('active'));
+  maxWidth=Math.max(maxWidth,Math.ceil(controlPanel.scrollWidth));
+
+  menuHome.style.display='none';
+  menuPages.forEach((page,index)=>{
+    menuPages.forEach(p=>p.classList.remove('active'));
+    page.classList.add('active');
+    maxWidth=Math.max(maxWidth,Math.ceil(controlPanel.scrollWidth));
+  });
+
+  menuHome.style.display=previousHomeDisplay;
+  menuPages.forEach((page,index)=>page.classList.toggle('active',previousActive[index]));
+  controlPanel.classList.toggle('detail-view',wasDetail);
+  controlPanel.classList.toggle('collapsed',wasCollapsed);
+
+  maxWidth=Math.min(Math.max(maxWidth,320),420);
+  controlPanel.style.setProperty('--stable-panel-width',maxWidth+'px');
+}
+
+function updateStablePanelHeight(){
+  const isMobile=window.matchMedia('(max-width:700px)').matches;
+  const wasCollapsed=controlPanel.classList.contains('collapsed');
+  const wasDetail=controlPanel.classList.contains('detail-view');
+  const previousHomeDisplay=menuHome.style.display;
+  const previousActive=menuPages.map(page=>page.classList.contains('active'));
+  const previousTitleHtml=panelTitle.innerHTML;
+
+  controlPanel.classList.remove('collapsed');
+  controlPanel.classList.remove('detail-view');
+  controlPanel.style.removeProperty('--stable-panel-height');
+
+  let maxHeight=0;
+
+  menuHome.style.display='flex';
+  menuPages.forEach(page=>page.classList.remove('active'));
+  panelTitle.innerHTML=SETTINGS_TITLE_HTML;
+  maxHeight=Math.max(maxHeight,Math.ceil(controlPanel.scrollHeight));
+
+  menuHome.style.display='none';
+  menuPages.forEach(page=>{
+    menuPages.forEach(p=>p.classList.remove('active'));
+    page.classList.add('active');
+    controlPanel.classList.add('detail-view');
+    maxHeight=Math.max(maxHeight,Math.ceil(controlPanel.scrollHeight));
+  });
+
+  menuHome.style.display=previousHomeDisplay;
+  menuPages.forEach((page,index)=>page.classList.toggle('active',previousActive[index]));
+  controlPanel.classList.toggle('detail-view',wasDetail);
+  controlPanel.classList.toggle('collapsed',wasCollapsed);
+  panelTitle.innerHTML=previousTitleHtml;
+
+  const reducedHeight=Math.max(220,Math.ceil(maxHeight*(2/3)));
+  controlPanel.style.setProperty('--stable-panel-height',reducedHeight+'px');
+}
+
+function showMenuHome(){
+  controlPanel.classList.remove('detail-view');
+  menuHome.style.display='flex';
+  document.querySelectorAll('.menu-page').forEach(page=>page.classList.remove('active'));
+  panelTitle.innerHTML=SETTINGS_TITLE_HTML;
+
+  lastMenuState={pageId:'',title:''};
+  try{
+    localStorage.setItem(LAST_MENU_STORAGE_KEY,JSON.stringify(lastMenuState));
+  }catch(e){}
+}
+
+function openMenuPage(pageId,title){
+  menuHome.style.display='none';
+  document.querySelectorAll('.menu-page').forEach(page=>{
+    page.classList.toggle('active',page.id===pageId);
+  });
+  controlPanel.classList.add('detail-view');
+  panelTitle.textContent=title;
+
+  lastMenuState={pageId:String(pageId||''),title:String(title||'')};
+  try{
+    localStorage.setItem(LAST_MENU_STORAGE_KEY,JSON.stringify(lastMenuState));
+  }catch(e){}
+}
+
+document.querySelectorAll('.ios-menu-row').forEach(row=>{
+  row.addEventListener('click',e=>{
     e.stopPropagation();
     openMenuPage(row.dataset.page,row.dataset.title);
   });
 });
 
 menuBackBtn?.addEventListener('click',e=>{
-  e.preventDefault();
   e.stopPropagation();
-
   const activePage=document.querySelector('.menu-page.active');
   const parentPage=activePage?.dataset.parentPage;
   const parentTitle=activePage?.dataset.parentTitle;
-
   if(parentPage){
     openMenuPage(parentPage,parentTitle||'스타일 설정');
-  }else{
-    showMenuHome();
+    return;
   }
+  showMenuHome();
 });
 
 document.addEventListener('pointerdown',event=>{
   if(controlPanel.classList.contains('collapsed')) return;
 
   const target=event.target;
-  if(controlPanel.contains(target) || mobileMenuLauncher?.contains(target)) return;
+  if(controlPanel.contains(target) || mobileMenuLauncher.contains(target)) return;
 
-  closeSettingsPanel();
+  // 바깥을 눌러 닫을 때 현재 하위 메뉴 위치를 확실히 기억함.
+  const activePage=document.querySelector('.menu-page.active');
+  if(controlPanel.classList.contains('detail-view') && activePage){
+    lastMenuState={
+      pageId:String(activePage.id||''),
+      title:String(panelTitle.textContent||'')
+    };
+    try{
+      localStorage.setItem(LAST_MENU_STORAGE_KEY,JSON.stringify(lastMenuState));
+    }catch(e){}
+  }
+
+  // 화면만 접고 메뉴 위치는 그대로 보존함.
+  // 접힌 상태에서는 하위 메뉴 헤더가 남지 않도록 초기 설정 아이콘으로 복원함.
+  controlPanel.classList.remove('detail-view');
+  ensureSettingsTitle();
+  controlPanel.classList.add('collapsed');
+  syncPanelToggle();
 });
+
 
 
 
