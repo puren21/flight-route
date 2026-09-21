@@ -4002,4 +4002,89 @@ if ('serviceWorker' in navigator) {
   height:52px !important;
   min-height:52px !important;
 }
+
+/* Memo editor: match the route-selection popup design */
+.memo-modal-backdrop{
+  background:transparent !important;
+}
+.memo-modal{
+  width:220px !important;
+  max-width:calc(100vw - 16px) !important;
+  padding:0 !important;
+  overflow:hidden !important;
+  border:0 !important;
+  border-radius:18px !important;
+  background:#f2f2f7 !important;
+  box-shadow:0 10px 28px rgba(0,0,0,.22) !important;
+  color:#111 !important;
+}
+.memo-modal-title{
+  width:100% !important;
+  min-height:48px !important;
+  margin:0 !important;
+  padding:13px 18px !important;
+  box-sizing:border-box !important;
+  display:flex !important;
+  align-items:center !important;
+  background:#a6a6a6 !important;
+  color:#fff !important;
+  font-size:20px !important;
+  font-weight:600 !important;
+  line-height:1.1 !important;
+  text-align:left !important;
+  cursor:grab !important;
+  user-select:none !important;
+  -webkit-user-select:none !important;
+  touch-action:none !important;
+}
+.memo-modal-title:active{
+  cursor:grabbing !important;
+}
+.memo-modal textarea{
+  width:calc(100% - 16px) !important;
+  min-height:120px !important;
+  margin:8px 8px 0 !important;
+  padding:11px 12px !important;
+  box-sizing:border-box !important;
+  resize:vertical !important;
+  border:0 !important;
+  border-radius:16px !important;
+  background:#fff !important;
+  color:#111 !important;
+  font-size:14px !important;
+  line-height:1.45 !important;
+  outline:none !important;
+  box-shadow:none !important;
+}
+.memo-modal textarea:focus{
+  box-shadow:inset 0 0 0 2px rgba(0,122,255,.18) !important;
+}
+.memo-modal-actions{
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  gap:6px !important;
+  margin:0 !important;
+  padding:8px !important;
+}
+.memo-modal-actions button{
+  min-width:0 !important;
+  min-height:40px !important;
+  padding:8px 5px !important;
+  border:0 !important;
+  border-radius:12px !important;
+  background:#fff !important;
+  box-shadow:none !important;
+  font-size:13px !important;
+  font-weight:600 !important;
+}
+.memo-cancel-btn{
+  color:#222 !important;
+}
+.memo-delete-btn{
+  color:#c92a2a !important;
+}
+.memo-save-btn{
+  background:#34c759 !important;
+  color:#fff !important;
+}
 </style>
