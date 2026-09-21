@@ -1228,7 +1228,11 @@
       <button class="ios-menu-row" type="button" data-page="routePage" data-title="경로목록">
         <span class="ios-menu-left">
           <span class="ios-menu-icon ios-icon-route" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M7 6h11M7 12h11M7 18h11"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg>
+            <svg viewBox="0 0 29 29">
+              <rect x="1" y="1" width="27" height="27" rx="6.5" fill="#9a9aa1"/>
+              <circle cx="13" cy="13" r="5.3" fill="none" stroke="#fff" stroke-width="2"/>
+              <path d="M17 17l4.2 4.2" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+            </svg>
           </span>
           <span class="ios-menu-text">경로목록</span>
         </span>
@@ -2354,19 +2358,25 @@ function renderMemoList(){
 
       if(!routeIndex.has(String(num))) return;
 
-      focusRouteNumber(num);
-
-      // 모바일에서는 위치를 바로 확인할 수 있도록 메뉴를 접음.
-      // 마지막 메뉴 상태는 메모 목록으로 유지해서 다시 열면 메모가 나타남.
+      // 마지막 메뉴 상태는 메모 목록으로 유지함.
       lastMenuState={pageId:'memoPage',title:'메모'};
       try{
         localStorage.setItem(LAST_MENU_STORAGE_KEY,JSON.stringify(lastMenuState));
       }catch(err){}
 
+      // 메뉴를 먼저 접고 지도 영역을 다시 계산한 뒤 이동해야
+      // 두 번째 이후 선택에서도 위치 이동이 안정적으로 반복됨.
       controlPanel.classList.remove('detail-view');
       ensureSettingsTitle();
       controlPanel.classList.add('collapsed');
       syncPanelToggle();
+
+      requestAnimationFrame(()=>{
+        if(typeof map.relayout==='function') map.relayout();
+        setTimeout(()=>{
+          focusRouteNumber(num);
+        },60);
+      });
     };
 
     label.addEventListener('click',moveToMemoRoute);
@@ -6302,5 +6312,19 @@ if ('serviceWorker' in navigator) {
 }
 .memo-route-link:active{
   opacity:.55;
+}
+
+/* Route list icon: gray iOS-style search icon */
+.ios-icon-route{
+  background:transparent !important;
+  overflow:hidden;
+  box-shadow:0 0 0 .5px rgba(60,60,67,.10);
+}
+.ios-icon-route svg{
+  width:29px !important;
+  height:29px !important;
+  display:block !important;
+  fill:none !important;
+  stroke:none !important;
 }
 </style>
