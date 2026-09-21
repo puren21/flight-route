@@ -1203,6 +1203,7 @@
   </div>
 </div>
 <div id="scaleBar" class="scale-bar">축척 계산 중...</div>
+<div id="verticalScaleBar" class="vertical-scale-bar">축척 계산 중...</div>
 <button id="floatingLocBtn" class="floating-location" type="button" title="현재 위치" aria-label="현재 위치">◎</button>
 <div class="panel collapsed" id="controlPanel">
   <div class="panel-header">
@@ -2542,30 +2543,48 @@ function niceScaleDistance(meters){
 
 function updateScaleBar(){
   const scaleBar=document.getElementById('scaleBar');
-  if(!scaleBar) return;
+  const verticalScaleBar=document.getElementById('verticalScaleBar');
+  if(!scaleBar && !verticalScaleBar) return;
 
   const projection=map.getProjection();
   if(!projection) return;
 
-  // 하단 스케일바가 실제로 차지하는 전체 폭에 해당하는 거리를 계산함.
   const mapRect=mapElement.getBoundingClientRect();
-  const usableWidth=Math.max(80,mapRect.width-24);
   const center=map.getCenter();
   const centerPoint=projection.containerPointFromCoords(center);
-  const half=usableWidth/2;
 
-  const leftPoint=new kakao.maps.Point(centerPoint.x-half,centerPoint.y);
-  const rightPoint=new kakao.maps.Point(centerPoint.x+half,centerPoint.y);
-  const leftCoord=projection.coordsFromContainerPoint(leftPoint);
-  const rightCoord=projection.coordsFromContainerPoint(rightPoint);
+  // 하단 가로 스케일
+  if(scaleBar){
+    const usableWidth=Math.max(80,mapRect.width-24);
+    const halfWidth=usableWidth/2;
+    const leftPoint=new kakao.maps.Point(centerPoint.x-halfWidth,centerPoint.y);
+    const rightPoint=new kakao.maps.Point(centerPoint.x+halfWidth,centerPoint.y);
+    const leftCoord=projection.coordsFromContainerPoint(leftPoint);
+    const rightCoord=projection.coordsFromContainerPoint(rightPoint);
+    const horizontalLine=new kakao.maps.Polyline({path:[leftCoord,rightCoord]});
+    const horizontalMeters=horizontalLine.getLength();
 
-  const line=new kakao.maps.Polyline({path:[leftCoord,rightCoord]});
-  const meters=line.getLength();
+    scaleBar.style.removeProperty('width');
+    scaleBar.textContent=horizontalMeters>=1000
+      ? (horizontalMeters/1000).toFixed(horizontalMeters>=10000?0:1).replace(/\.0$/,'')+' km'
+      : Math.round(horizontalMeters)+' m';
+  }
 
-  scaleBar.style.removeProperty('width');
-  scaleBar.textContent=meters>=1000
-    ? (meters/1000).toFixed(meters>=10000?0:1).replace(/\.0$/,'')+' km'
-    : Math.round(meters)+' m';
+  // 우측 세로 스케일
+  if(verticalScaleBar){
+    const usableHeight=Math.max(120,mapRect.height-120);
+    const halfHeight=usableHeight/2;
+    const topPoint=new kakao.maps.Point(centerPoint.x,centerPoint.y-halfHeight);
+    const bottomPoint=new kakao.maps.Point(centerPoint.x,centerPoint.y+halfHeight);
+    const topCoord=projection.coordsFromContainerPoint(topPoint);
+    const bottomCoord=projection.coordsFromContainerPoint(bottomPoint);
+    const verticalLine=new kakao.maps.Polyline({path:[topCoord,bottomCoord]});
+    const verticalMeters=verticalLine.getLength();
+
+    verticalScaleBar.textContent=verticalMeters>=1000
+      ? (verticalMeters/1000).toFixed(verticalMeters>=10000?0:1).replace(/\.0$/,'')+' km'
+      : Math.round(verticalMeters)+' m';
+  }
 }
 
 kakao.maps.event.addListener(map,'zoom_changed',updateScaleBar);
@@ -4908,6 +4927,51 @@ if ('serviceWorker' in navigator) {
     bottom:calc(env(safe-area-inset-bottom,0px) + 6px) !important;
     height:22px !important;
     padding-top:5px !important;
+  }
+}
+
+/* Right-side vertical scale bar */
+.vertical-scale-bar{
+  position:fixed !important;
+  top:72px !important;
+  bottom:calc(env(safe-area-inset-bottom,0px) + 36px) !important;
+  right:8px !important;
+  width:28px !important;
+  z-index:2147483499 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  box-sizing:border-box !important;
+  border-right:2px solid rgba(20,20,20,.88) !important;
+  background:rgba(255,255,255,.72) !important;
+  color:#222 !important;
+  font-size:11px !important;
+  font-weight:600 !important;
+  line-height:1 !important;
+  writing-mode:vertical-rl;
+  text-orientation:mixed;
+  pointer-events:none !important;
+  backdrop-filter:blur(5px);
+  -webkit-backdrop-filter:blur(5px);
+}
+.vertical-scale-bar::before,
+.vertical-scale-bar::after{
+  content:"";
+  position:absolute;
+  right:-2px;
+  width:10px;
+  height:2px;
+  background:rgba(20,20,20,.88);
+}
+.vertical-scale-bar::before{ top:0; }
+.vertical-scale-bar::after{ bottom:0; }
+
+@media (max-width:700px){
+  .vertical-scale-bar{
+    top:calc(env(safe-area-inset-top,0px) + 64px) !important;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 34px) !important;
+    right:6px !important;
+    width:26px !important;
   }
 }
 </style>
