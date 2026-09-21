@@ -1,4 +1,4 @@
-const CACHE='flight-route-v9';
+const CACHE='flight-route-v10';
 const APP_SHELL=['./flight-route.geojson','./manifest.webmanifest','./icon.svg'];
 
 self.addEventListener('install',event=>{
@@ -30,7 +30,7 @@ self.addEventListener('fetch',event=>{
     url.pathname.endsWith('/flight-route/');
 
   if(isNavigation){
-    const freshUrl=new URL('./index.html?build=20260921-1243',self.registration.scope).href;
+    const freshUrl=new URL('./index.html?build=20260921-optimized',self.registration.scope).href;
     event.respondWith(
       fetch(freshUrl,{
         cache:'no-store',
