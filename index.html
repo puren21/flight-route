@@ -1425,6 +1425,7 @@ const panelToggleBtn=document.getElementById('panelToggleBtn');
 const mobileMenuLauncher=document.getElementById('mobileMenuLauncher');
 const menuBackBtn=document.getElementById('menuBackBtn');
 const panelTitle=document.getElementById('panelTitle');
+const SETTINGS_TITLE_HTML=`<span class="settings-title-icon apple-maps-title-icon" aria-hidden="true"><svg viewBox="0 0 64 64"><defs><clipPath id="appleMapsClipDyn"><rect x="2" y="2" width="60" height="60" rx="14" ry="14"/></clipPath></defs><g clip-path="url(#appleMapsClipDyn)"><rect x="0" y="0" width="64" height="64" fill="#f7f7f7"/><path d="M-4 9 L19 -2 L31 11 L17 27 L-4 24 Z" fill="#79df7b"/><path d="M35 -5 L68 -1 L68 18 L52 26 L39 14 Z" fill="#73df79"/><path d="M-5 40 L12 29 L28 36 L20 67 L-4 67 Z" fill="#f59ac5"/><path d="M42 38 L68 30 L68 67 L36 67 Z" fill="#ffd13b"/><path d="M11 -4 L25 -4 L25 31 L13 31 Z" fill="#1698f5"/><path d="M0 27 L20 23 L33 31 L53 18 L68 22 L68 34 L50 31 L34 44 L17 36 L0 41 Z" fill="#ffffff"/><path d="M47 -5 C49 3 52 8 60 12 C64 14 67 15 70 15" fill="none" stroke="#d9d9df" stroke-width="8"/></g><circle cx="31.5" cy="36" r="15.5" fill="#fff" opacity=".96"/><circle cx="31.5" cy="36" r="12.5" fill="#168ef0"/><path d="M31.5 25.5 L39 45 L31.5 40.4 L24 45 Z" fill="#fff"/></svg></span><span class="settings-title-text">설정</span>`;
 const menuHome=document.getElementById('menuHome');
 const menuPages=[...document.querySelectorAll('.menu-page')];
 const MEMO_STORAGE_KEY='flightRouteMemosV1';
@@ -1464,28 +1465,7 @@ try{
 
 function ensureSettingsTitle(){
   if(panelTitle.querySelector('.settings-title-icon')) return;
-  panelTitle.innerHTML='<span class="settings-title-icon apple-maps-title-icon" aria-hidden="true">
-        <svg viewBox="0 0 64 64">
-          <defs>
-            <clipPath id="appleMapsClip">
-              <rect x="2" y="2" width="60" height="60" rx="14" ry="14"/>
-            </clipPath>
-          </defs>
-          <g clip-path="url(#appleMapsClip)">
-            <rect x="0" y="0" width="64" height="64" fill="#f7f7f7"/>
-            <path d="M-4 9 L19 -2 L31 11 L17 27 L-4 24 Z" fill="#79df7b"/>
-            <path d="M35 -5 L68 -1 L68 18 L52 26 L39 14 Z" fill="#73df79"/>
-            <path d="M-5 40 L12 29 L28 36 L20 67 L-4 67 Z" fill="#f59ac5"/>
-            <path d="M42 38 L68 30 L68 67 L36 67 Z" fill="#ffd13b"/>
-            <path d="M11 -4 L25 -4 L25 31 L13 31 Z" fill="#1698f5"/>
-            <path d="M0 27 L20 23 L33 31 L53 18 L68 22 L68 34 L50 31 L34 44 L17 36 L0 41 Z" fill="#ffffff"/>
-            <path d="M47 -5 C49 3 52 8 60 12 C64 14 67 15 70 15" fill="none" stroke="#d9d9df" stroke-width="8"/>
-          </g>
-          <circle cx="31.5" cy="36" r="15.5" fill="#fff" opacity=".96"/>
-          <circle cx="31.5" cy="36" r="12.5" fill="#168ef0"/>
-          <path d="M31.5 25.5 L39 45 L31.5 40.4 L24 45 Z" fill="#fff"/>
-        </svg>
-      </span><span class="settings-title-text">설정</span>';
+  panelTitle.innerHTML=SETTINGS_TITLE_HTML;
 }
 
 function syncPanelToggle(){
@@ -1574,28 +1554,7 @@ function updateStablePanelHeight(){
 
   menuHome.style.display='flex';
   menuPages.forEach(page=>page.classList.remove('active'));
-  panelTitle.innerHTML='<span class="settings-title-icon apple-maps-title-icon" aria-hidden="true">
-        <svg viewBox="0 0 64 64">
-          <defs>
-            <clipPath id="appleMapsClip">
-              <rect x="2" y="2" width="60" height="60" rx="14" ry="14"/>
-            </clipPath>
-          </defs>
-          <g clip-path="url(#appleMapsClip)">
-            <rect x="0" y="0" width="64" height="64" fill="#f7f7f7"/>
-            <path d="M-4 9 L19 -2 L31 11 L17 27 L-4 24 Z" fill="#79df7b"/>
-            <path d="M35 -5 L68 -1 L68 18 L52 26 L39 14 Z" fill="#73df79"/>
-            <path d="M-5 40 L12 29 L28 36 L20 67 L-4 67 Z" fill="#f59ac5"/>
-            <path d="M42 38 L68 30 L68 67 L36 67 Z" fill="#ffd13b"/>
-            <path d="M11 -4 L25 -4 L25 31 L13 31 Z" fill="#1698f5"/>
-            <path d="M0 27 L20 23 L33 31 L53 18 L68 22 L68 34 L50 31 L34 44 L17 36 L0 41 Z" fill="#ffffff"/>
-            <path d="M47 -5 C49 3 52 8 60 12 C64 14 67 15 70 15" fill="none" stroke="#d9d9df" stroke-width="8"/>
-          </g>
-          <circle cx="31.5" cy="36" r="15.5" fill="#fff" opacity=".96"/>
-          <circle cx="31.5" cy="36" r="12.5" fill="#168ef0"/>
-          <path d="M31.5 25.5 L39 45 L31.5 40.4 L24 45 Z" fill="#fff"/>
-        </svg>
-      </span><span class="settings-title-text">설정</span>';
+  panelTitle.innerHTML=SETTINGS_TITLE_HTML;
   maxHeight=Math.max(maxHeight,Math.ceil(controlPanel.scrollHeight));
 
   menuHome.style.display='none';
@@ -1619,28 +1578,7 @@ function showMenuHome(){
   controlPanel.classList.remove('detail-view');
   menuHome.style.display='flex';
   document.querySelectorAll('.menu-page').forEach(page=>page.classList.remove('active'));
-  panelTitle.innerHTML='<span class="settings-title-icon apple-maps-title-icon" aria-hidden="true">
-        <svg viewBox="0 0 64 64">
-          <defs>
-            <clipPath id="appleMapsClip">
-              <rect x="2" y="2" width="60" height="60" rx="14" ry="14"/>
-            </clipPath>
-          </defs>
-          <g clip-path="url(#appleMapsClip)">
-            <rect x="0" y="0" width="64" height="64" fill="#f7f7f7"/>
-            <path d="M-4 9 L19 -2 L31 11 L17 27 L-4 24 Z" fill="#79df7b"/>
-            <path d="M35 -5 L68 -1 L68 18 L52 26 L39 14 Z" fill="#73df79"/>
-            <path d="M-5 40 L12 29 L28 36 L20 67 L-4 67 Z" fill="#f59ac5"/>
-            <path d="M42 38 L68 30 L68 67 L36 67 Z" fill="#ffd13b"/>
-            <path d="M11 -4 L25 -4 L25 31 L13 31 Z" fill="#1698f5"/>
-            <path d="M0 27 L20 23 L33 31 L53 18 L68 22 L68 34 L50 31 L34 44 L17 36 L0 41 Z" fill="#ffffff"/>
-            <path d="M47 -5 C49 3 52 8 60 12 C64 14 67 15 70 15" fill="none" stroke="#d9d9df" stroke-width="8"/>
-          </g>
-          <circle cx="31.5" cy="36" r="15.5" fill="#fff" opacity=".96"/>
-          <circle cx="31.5" cy="36" r="12.5" fill="#168ef0"/>
-          <path d="M31.5 25.5 L39 45 L31.5 40.4 L24 45 Z" fill="#fff"/>
-        </svg>
-      </span><span class="settings-title-text">설정</span>';
+  panelTitle.innerHTML=SETTINGS_TITLE_HTML;
 }
 
 function openMenuPage(pageId,title){
