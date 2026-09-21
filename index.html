@@ -1264,6 +1264,10 @@
     </div>
 
     <section id="routePage" class="menu-page">
+      <div class="route-direct-search">
+        <input id="routeNumberInput" class="route-number-input" type="text" inputmode="numeric" autocomplete="off" placeholder="번호 직접 입력" aria-label="비행경로 번호 직접 입력">
+        <button id="routeNumberGoBtn" class="route-number-go" type="button">이동</button>
+      </div>
       <div class="route-number-wrap route-wheel-wrap">
         <div id="routeNumberWheel" class="route-number-wheel" role="listbox" aria-label="비행경로 번호 선택"></div>
         <div class="route-wheel-highlight" aria-hidden="true"></div>
@@ -2986,6 +2990,57 @@ document.getElementById('routeNumberWheel')?.addEventListener('scroll',()=>{
     syncRouteWheelSelection(true);
   },500);
 },{passive:true});
+
+function normalizeRouteSearchValue(value){
+  const raw=String(value||'').trim();
+  if(!raw) return '';
+
+  if(routeIndex.has(raw)) return raw;
+
+  const numeric=Number(raw);
+  if(!Number.isNaN(numeric)){
+    const candidates=[
+      String(numeric),
+      String(numeric).padStart(2,'0'),
+      String(numeric).padStart(3,'0')
+    ];
+    for(const candidate of candidates){
+      if(routeIndex.has(candidate)) return candidate;
+    }
+  }
+
+  return '';
+}
+
+function goToRouteFromInput(){
+  const input=document.getElementById('routeNumberInput');
+  if(!input) return;
+
+  const num=normalizeRouteSearchValue(input.value);
+  if(!num){
+    input.classList.add('invalid');
+    setTimeout(()=>input.classList.remove('invalid'),700);
+    return;
+  }
+
+  input.classList.remove('invalid');
+  input.value=num;
+  scrollRouteWheelTo(num,false);
+
+  clearTimeout(routeWheelScrollTimer);
+  routeWheelScrollTimer=setTimeout(()=>{
+    focusRouteNumber(num);
+  },220);
+}
+
+document.getElementById('routeNumberGoBtn')?.addEventListener('click',goToRouteFromInput);
+document.getElementById('routeNumberInput')?.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){
+    e.preventDefault();
+    goToRouteFromInput();
+    e.currentTarget.blur();
+  }
+});
 
 function updateRouteLabelVisibility(){
   // 카카오 지도 level 값은 숫자가 클수록 더 멀리 축소된 상태임
@@ -5318,5 +5373,62 @@ if ('serviceWorker' in navigator) {
 }
 .route-memo-btn.memo-open .route-menu-chevron{
   font-size:22px !important;
+}
+
+/* Mobile-friendly direct route number search */
+.route-direct-search{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 68px;
+  gap:8px;
+  margin:0 0 10px;
+}
+.route-number-input{
+  width:100%;
+  min-width:0;
+  height:44px;
+  padding:0 13px;
+  border:1px solid rgba(60,60,67,.18);
+  border-radius:12px;
+  outline:none;
+  background:#fff;
+  color:#111;
+  font-size:16px;
+  font-weight:600;
+  box-sizing:border-box;
+  -webkit-appearance:none;
+  appearance:none;
+}
+.route-number-input:focus{
+  border-color:#007aff;
+  box-shadow:0 0 0 2px rgba(0,122,255,.12);
+}
+.route-number-input.invalid{
+  border-color:#ff3b30;
+  box-shadow:0 0 0 2px rgba(255,59,48,.10);
+}
+.route-number-go{
+  width:68px !important;
+  min-width:68px !important;
+  height:44px !important;
+  min-height:44px !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:12px !important;
+  background:#007aff !important;
+  color:#fff !important;
+  -webkit-text-fill-color:#fff !important;
+  font-size:15px !important;
+  font-weight:700 !important;
+}
+@media (max-width:700px){
+  .route-number-input{
+    height:46px;
+    font-size:17px;
+  }
+  .route-number-go{
+    height:46px !important;
+    min-height:46px !important;
+    font-size:16px !important;
+  }
 }
 </style>
