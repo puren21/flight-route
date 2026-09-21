@@ -1,4 +1,4 @@
-const CACHE='flight-route-v4';
+const CACHE='flight-route-v7';
 const APP_SHELL=['./flight-route.geojson','./manifest.webmanifest','./icon.svg'];
 
 self.addEventListener('install',event=>{
