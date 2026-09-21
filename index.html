@@ -1528,8 +1528,24 @@ panelToggleBtn.addEventListener('click',e=>{
 });
 
 document.querySelector('.panel-header')?.addEventListener('click',e=>{
-  if(e.target.closest('#menuBackBtn') || e.target.closest('#panelToggleBtn')) return;
-  if(controlPanel.classList.contains('detail-view')) return;
+  if(e.target.closest('#panelToggleBtn')) return;
+
+  // 하위 메뉴에서는 상단 헤더 전체를 이전 메뉴 버튼처럼 사용함.
+  if(controlPanel.classList.contains('detail-view')){
+    const activePage=document.querySelector('.menu-page.active');
+    const parentPage=activePage?.dataset.parentPage;
+    const parentTitle=activePage?.dataset.parentTitle;
+
+    if(parentPage){
+      openMenuPage(parentPage,parentTitle||'스타일 설정');
+    }else{
+      showMenuHome();
+    }
+    return;
+  }
+
+  // 메인 메뉴에서는 기존처럼 헤더 클릭으로 열기/닫기함.
+  if(e.target.closest('#menuBackBtn')) return;
   toggleControlPanel();
 });
 
@@ -4809,5 +4825,13 @@ if ('serviceWorker' in navigator) {
     height:46px;
     min-height:46px;
   }
+}
+
+/* Detail pages: make the whole top header feel like a back target */
+.panel.detail-view .panel-header{
+  cursor:pointer !important;
+}
+.panel.detail-view .panel-header h1{
+  pointer-events:none;
 }
 </style>
