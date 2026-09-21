@@ -3419,7 +3419,12 @@ if ('serviceWorker' in navigator) {
       box-sizing:border-box;
     }
     .panel.collapsed{
-      min-height:var(--stable-panel-height,0px);
+      min-height:0 !important;
+      height:auto !important;
+    }
+    .panel.collapsed .panel-header{
+      min-height:58px;
+      margin-bottom:0;
     }
   }
 </style>
