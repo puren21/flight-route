@@ -1236,6 +1236,15 @@
         </span>
         <span class="ios-chevron">›</span>
       </button>
+      <button class="ios-menu-row" type="button" data-page="memoPage" data-title="메모">
+        <span class="ios-menu-left">
+          <span class="ios-menu-icon ios-icon-memo" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M5 4h14v13H9l-4 3z"/><path d="M8 8h8M8 12h6"/></svg>
+          </span>
+          <span class="ios-menu-text">메모</span>
+        </span>
+        <span class="ios-chevron">›</span>
+      </button>
       <button class="ios-menu-row" type="button" data-page="otherPage" data-title="기타기능">
         <span class="ios-menu-left">
           <span class="ios-menu-icon ios-icon-other" aria-hidden="true">
@@ -1353,6 +1362,13 @@
       </div>
     </section>
 
+    <section id="memoPage" class="menu-page">
+      <div class="memo-page-card">
+        <div class="memo-page-heading">메모된 번호</div>
+        <div id="memoList" class="memo-list"></div>
+      </div>
+    </section>
+
     <section id="otherPage" class="menu-page">
       <div class="quick-grid">
         <button id="roadBtn" class="quick-btn active" type="button">일반지도</button>
@@ -1372,13 +1388,6 @@
       </label>
       <input class="krAirspaceCategory" type="checkbox" value="obstacle" checked hidden>
       <a class="geo-link compact-link" href="https://drone.onestop.go.kr/common/flightArea" target="_blank" rel="noopener">공식 지도 보기 ↗</a>
-
-      <button class="style-section-toggle" type="button" data-target="memoListBody">
-        <span>메모된 번호</span><span>›</span>
-      </button>
-      <div id="memoListBody" class="style-section-body">
-        <div id="memoList" class="memo-list"></div>
-      </div>
 
       <div class="status" id="status">GeoJSON 불러오는 중...</div>
     </section>
@@ -4203,5 +4212,34 @@ if ('serviceWorker' in navigator) {
 }
 #stylePage .nested-menu-row{
   width:100%;
+}
+
+.ios-icon-memo{
+  background:#34c759;
+}
+.ios-icon-memo svg{
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.8;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.memo-page-card{
+  width:100%;
+  box-sizing:border-box;
+  padding:10px;
+  border-radius:14px;
+  background:#fff;
+}
+.memo-page-heading{
+  padding:4px 6px 10px;
+  color:#8e8e93;
+  font-size:13px;
+  font-weight:600;
+}
+#memoPage .memo-list{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
 }
 </style>
