@@ -312,7 +312,7 @@
     .memo-modal-backdrop {
       position:fixed;
       inset:0;
-      z-index:1000;
+      z-index:2147483647;
       display:none;
       align-items:center;
       justify-content:center;
@@ -1298,10 +1298,16 @@ function renderMemoList(){
       focusRouteNumber(num);
       const entry=routeIndex.get(String(num));
       const routeLine=entry && entry.lines && entry.lines[0];
+
+      if(window.matchMedia('(max-width:700px)').matches){
+        controlPanel.classList.add('collapsed');
+        syncPanelToggle();
+      }
+
       if(routeLine){
-        setTimeout(()=>openMemoEditor(routeLine),100);
+        setTimeout(()=>openMemoEditor(routeLine),80);
       }else{
-        setTimeout(()=>alert(num+'번 메모\n\n'+routeMemos[num].memo),100);
+        setTimeout(()=>alert(num+'번 메모\n\n'+routeMemos[num].memo),80);
       }
     });
 
