@@ -2012,7 +2012,6 @@ function showRouteSelectPopup(routeLine,position){
 
   const openMemo=function(e){
     if(e){ e.preventDefault(); e.stopPropagation(); }
-    closeRouteSelectPopup();
     openMemoEditor(routeLine);
   };
   memoBtn.addEventListener('click',openMemo);
