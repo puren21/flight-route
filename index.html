@@ -2462,6 +2462,33 @@ mapElement.addEventListener('selectstart',event=>{
   event.preventDefault();
 },{passive:false});
 
+// iOS Safari에서 지도 위를 길게 눌렀을 때 주변 라벨/텍스트가 선택되지 않도록 전체 지도 영역의 선택 동작을 차단함.
+// 단, 입력창/버튼/링크 등 실제 조작 요소는 예외로 둠.
+const isInteractiveMapTarget=target=>{
+  if(!(target instanceof Element)) return false;
+  return !!target.closest('input, textarea, select, button, a, [contenteditable="true"]');
+};
+
+['pointerdown','touchstart'].forEach(eventName=>{
+  mapElement.addEventListener(eventName,event=>{
+    if(isInteractiveMapTarget(event.target)) return;
+    if(eventName==='touchstart' && event.touches && event.touches.length>1) return;
+    const sel=window.getSelection?.();
+    if(sel && !sel.isCollapsed) sel.removeAllRanges();
+  },{capture:true,passive:true});
+});
+
+document.addEventListener('selectionchange',()=>{
+  if(!window.matchMedia('(max-width:700px)').matches) return;
+  const sel=window.getSelection?.();
+  if(!sel || sel.isCollapsed || sel.rangeCount===0) return;
+  const node=sel.anchorNode;
+  const el=node?.nodeType===1 ? node : node?.parentElement;
+  if(el && mapElement.contains(el) && !isInteractiveMapTarget(el)){
+    sel.removeAllRanges();
+  }
+});
+
 function niceScaleDistance(meters){
   const exponent=Math.pow(10,Math.floor(Math.log10(meters)));
   const fraction=meters/exponent;
@@ -4466,5 +4493,43 @@ if ('serviceWorker' in navigator) {
 #map,
 #map *{
   -webkit-touch-callout:none;
+}
+
+/* Mobile map: prevent long-press text selection/copy menu across all map labels and overlays */
+@media (max-width:700px){
+  #map,
+  #map *,
+  .route-label,
+  .address-popup,
+  .address-popup *,
+  .route-select-popup,
+  .route-select-popup *,
+  .current-location-marker,
+  .current-location-marker *,
+  .north-compass,
+  .north-compass *{
+    -webkit-user-select:none !important;
+    user-select:none !important;
+    -webkit-touch-callout:none !important;
+  }
+
+  #map img,
+  #map canvas,
+  #map svg{
+    -webkit-user-drag:none !important;
+    user-drag:none !important;
+  }
+
+  /* Keep true controls editable/clickable */
+  #map input,
+  #map textarea,
+  #map select,
+  #map button,
+  #map a,
+  #map [contenteditable="true"]{
+    -webkit-user-select:auto !important;
+    user-select:auto !important;
+    -webkit-touch-callout:default !important;
+  }
 }
 </style>
