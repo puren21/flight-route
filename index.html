@@ -1380,7 +1380,10 @@
   </div>
 </div>
 <script>
-const map=new kakao.maps.Map(document.getElementById('map'),{center:new kakao.maps.LatLng(35.16,126.84),level:8});
+const mapElement=document.getElementById('map');
+mapElement.style.transform='none';
+mapElement.style.transformOrigin='';
+const map=new kakao.maps.Map(mapElement,{center:new kakao.maps.LatLng(35.16,126.84),level:8});
 
 let routePolylines=[],routeLabels=[],routeBounds=new kakao.maps.LatLngBounds(),currentMarker=null;
 let locationWatchId=null;
@@ -1394,9 +1397,7 @@ let locationMoveAnimation=null;
 let deviceOrientationListening=false;
 
 let mapRotation=0;
-let mapRotationTarget=0;
 let mapRotationGestureStart=null;
-let mapRotationRaf=null;
 const mapRotationPointers=new Map();
 const routeIndex=new Map();
 let selectedRoute=null;
@@ -2901,26 +2902,22 @@ function normalizeMapRotation(value){
   return n;
 }
 
-function shortestRotationDelta(from,to){
-  return normalizeMapRotation(to-from);
-}
-
 function mapRotationScale(angle){
   const rad=Math.abs(normalizeMapRotation(angle))*Math.PI/180;
   const c=Math.abs(Math.cos(rad));
   const s=Math.abs(Math.sin(rad));
-  return Math.max(1,Math.min(1.34,c+s));
+  return Math.max(1,Math.min(1.42,c+s));
 }
 
-function renderMapRotation(angle){
+function applyMapRotation(angle,animate=false){
   mapRotation=normalizeMapRotation(angle);
 
   const mapEl=document.getElementById('map');
   if(!mapEl) return;
 
-  // Always rotate around the exact visual center of the map viewport.
+  mapEl.style.transition=animate?'transform .28s ease':'none';
   mapEl.style.transformOrigin='50% 50%';
-  mapEl.style.transform='translateZ(0) rotate('+mapRotation+'deg) scale('+mapRotationScale(mapRotation)+')';
+  mapEl.style.transform='rotate('+mapRotation+'deg) scale('+mapRotationScale(mapRotation)+')';
 
   const compass=document.getElementById('northCompassBtn');
   const ring=compass?.querySelector('.north-compass-ring');
@@ -2933,30 +2930,8 @@ function renderMapRotation(angle){
   }
 }
 
-function stepMapRotation(){
-  const delta=shortestRotationDelta(mapRotation,mapRotationTarget);
-
-  if(Math.abs(delta)<0.08){
-    renderMapRotation(mapRotationTarget);
-    mapRotationRaf=null;
-    return;
-  }
-
-  // Apple Maps-like damping: follow the fingers softly rather than snapping.
-  const easedStep=delta*0.18;
-  renderMapRotation(mapRotation+easedStep);
-  mapRotationRaf=requestAnimationFrame(stepMapRotation);
-}
-
-function setMapRotationTarget(angle){
-  mapRotationTarget=normalizeMapRotation(angle);
-  if(mapRotationRaf===null){
-    mapRotationRaf=requestAnimationFrame(stepMapRotation);
-  }
-}
-
 function resetMapNorth(){
-  setMapRotationTarget(0);
+  applyMapRotation(0,true);
 }
 
 function angleBetweenPointers(){
@@ -2980,7 +2955,7 @@ function enableMobileMapRotation(){
       if(angle!==null){
         mapRotationGestureStart={
           angle:angle,
-          rotation:mapRotationTarget
+          rotation:mapRotation
         };
       }
     }
@@ -2993,23 +2968,13 @@ function enableMobileMapRotation(){
     if(mapRotationPointers.size===2 && mapRotationGestureStart){
       const angle=angleBetweenPointers();
       if(angle===null) return;
-
-      let delta=normalizeMapRotation(angle-mapRotationGestureStart.angle);
-
-      // Ignore tiny hand tremors and reduce sensitivity.
-      if(Math.abs(delta)<2.2) delta=0;
-      delta*=0.68;
-
-      setMapRotationTarget(mapRotationGestureStart.rotation+delta);
+      applyMapRotation(mapRotationGestureStart.rotation+(angle-mapRotationGestureStart.angle),false);
     }
   },{capture:true,passive:true});
 
   const endPointer=e=>{
     mapRotationPointers.delete(e.pointerId);
-    if(mapRotationPointers.size<2){
-      mapRotationGestureStart=null;
-      mapRotationTarget=mapRotation;
-    }
+    if(mapRotationPointers.size<2) mapRotationGestureStart=null;
   };
 
   mapEl.addEventListener('pointerup',endPointer,{capture:true,passive:true});
@@ -3231,7 +3196,7 @@ document.getElementById('floatingLocBtn')?.addEventListener('click',locateMe);
 document.getElementById('menuLocBtn')?.addEventListener('click',locateMe);
 document.getElementById('northCompassBtn')?.addEventListener('click',resetMapNorth);
 enableMobileMapRotation();
-renderMapRotation(0);
+applyMapRotation(0,false);
 document.getElementById('resetRouteStatesBtn')?.addEventListener('click',resetRouteStates);
 syncPanelToggle();
 updateStablePanelWidth();
@@ -4164,10 +4129,5 @@ if ('serviceWorker' in navigator) {
 .panel.collapsed .settings-title-icon.apple-maps-title-icon{
   width:42px !important;
   height:42px !important;
-}
-
-#map{
-  transform-origin:50% 50% !important;
-  will-change:transform;
 }
 </style>
