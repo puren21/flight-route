@@ -1201,6 +1201,12 @@
 </div>
 <div id="scaleBar" class="scale-bar">축척 계산 중...</div>
 <button id="floatingLocBtn" class="floating-location" type="button" title="현재 위치" aria-label="현재 위치">◎</button>
+<button id="northCompassBtn" class="north-compass" type="button" title="정북으로 돌리기" aria-label="정북으로 돌리기">
+  <span class="north-compass-ring">
+    <span class="north-compass-needle">▲</span>
+    <span class="north-compass-n">N</span>
+  </span>
+</button>
 <div class="panel collapsed" id="controlPanel">
   <div class="panel-header">
     <button id="menuBackBtn" class="menu-back-btn" type="button" aria-label="이전 메뉴">‹</button>
@@ -1371,6 +1377,10 @@ let currentHeading=null;
 let deviceHeading=null;
 let locationMoveAnimation=null;
 let deviceOrientationListening=false;
+
+let mapRotation=0;
+let mapRotationGestureStart=null;
+const mapRotationPointers=new Map();
 const routeIndex=new Map();
 let selectedRoute=null;
 let routeSelectOverlay=null;
@@ -2798,6 +2808,93 @@ async function loadKoreanAirspace(){
   }
 }
 
+function normalizeMapRotation(value){
+  let n=Number(value)||0;
+  n=((n%360)+360)%360;
+  if(n>180) n-=360;
+  return n;
+}
+
+function mapRotationScale(angle){
+  const rad=Math.abs(normalizeMapRotation(angle))*Math.PI/180;
+  const c=Math.abs(Math.cos(rad));
+  const s=Math.abs(Math.sin(rad));
+  return Math.max(1,Math.min(1.42,c+s));
+}
+
+function applyMapRotation(angle,animate=false){
+  mapRotation=normalizeMapRotation(angle);
+
+  const mapEl=document.getElementById('map');
+  if(!mapEl) return;
+
+  mapEl.style.transition=animate?'transform .28s ease':'none';
+  mapEl.style.transformOrigin='50% 50%';
+  mapEl.style.transform='rotate('+mapRotation+'deg) scale('+mapRotationScale(mapRotation)+')';
+
+  const compass=document.getElementById('northCompassBtn');
+  const ring=compass?.querySelector('.north-compass-ring');
+  if(ring){
+    ring.style.transform='rotate('+(-mapRotation)+'deg)';
+  }
+  if(compass){
+    compass.classList.toggle('rotated',Math.abs(mapRotation)>0.5);
+    compass.setAttribute('aria-label',Math.abs(mapRotation)>0.5?'정북으로 돌리기 · 현재 '+Math.round(mapRotation)+'도':'정북 방향');
+  }
+}
+
+function resetMapNorth(){
+  applyMapRotation(0,true);
+}
+
+function angleBetweenPointers(){
+  const pts=[...mapRotationPointers.values()];
+  if(pts.length<2) return null;
+  return Math.atan2(pts[1].y-pts[0].y,pts[1].x-pts[0].x)*180/Math.PI;
+}
+
+function enableMobileMapRotation(){
+  const mapEl=document.getElementById('map');
+  if(!mapEl) return;
+
+  mapEl.addEventListener('pointerdown',e=>{
+    if(!window.matchMedia('(max-width:700px)').matches) return;
+    if(e.pointerType==='mouse') return;
+
+    mapRotationPointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+
+    if(mapRotationPointers.size===2){
+      const angle=angleBetweenPointers();
+      if(angle!==null){
+        mapRotationGestureStart={
+          angle:angle,
+          rotation:mapRotation
+        };
+      }
+    }
+  },{capture:true,passive:true});
+
+  mapEl.addEventListener('pointermove',e=>{
+    if(!mapRotationPointers.has(e.pointerId)) return;
+    mapRotationPointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+
+    if(mapRotationPointers.size===2 && mapRotationGestureStart){
+      const angle=angleBetweenPointers();
+      if(angle===null) return;
+      applyMapRotation(mapRotationGestureStart.rotation+(angle-mapRotationGestureStart.angle),false);
+    }
+  },{capture:true,passive:true});
+
+  const endPointer=e=>{
+    mapRotationPointers.delete(e.pointerId);
+    if(mapRotationPointers.size<2) mapRotationGestureStart=null;
+  };
+
+  mapEl.addEventListener('pointerup',endPointer,{capture:true,passive:true});
+  mapEl.addEventListener('pointercancel',endPointer,{capture:true,passive:true});
+  mapEl.addEventListener('pointerleave',endPointer,{capture:true,passive:true});
+}
+
 function normalizeHeading(value){
   const n=Number(value);
   if(!Number.isFinite(n)) return null;
@@ -3010,6 +3107,9 @@ document.querySelectorAll('.krAirspaceCategory').forEach(el=>{
 
 document.getElementById('floatingLocBtn')?.addEventListener('click',locateMe);
 document.getElementById('menuLocBtn')?.addEventListener('click',locateMe);
+document.getElementById('northCompassBtn')?.addEventListener('click',resetMapNorth);
+enableMobileMapRotation();
+applyMapRotation(0,false);
 document.getElementById('resetRouteStatesBtn')?.addEventListener('click',resetRouteStates);
 syncPanelToggle();
 updateStablePanelWidth();
@@ -3827,5 +3927,100 @@ if ('serviceWorker' in navigator) {
 .panel.collapsed .panel-toggle,
 .panel.collapsed .panel-body{
   display:none !important;
+}
+
+/* Subtle Apple Maps-like current-position blink */
+.current-location-dot{
+  animation:currentLocationSoftBlink 2.1s ease-in-out infinite;
+}
+.current-location-dot::after{
+  animation:none !important;
+  opacity:0 !important;
+}
+@keyframes currentLocationSoftBlink{
+  0%,100%{
+    filter:brightness(1);
+    box-shadow:
+      0 1px 5px rgba(0,0,0,.35),
+      0 0 0 1px rgba(0,0,0,.08);
+  }
+  50%{
+    filter:brightness(1.14);
+    box-shadow:
+      0 1px 5px rgba(0,0,0,.30),
+      0 0 0 5px rgba(10,132,255,.10);
+  }
+}
+
+/* North compass */
+.north-compass{
+  position:fixed;
+  right:14px;
+  bottom:62px;
+  z-index:2147483600;
+  width:44px;
+  height:44px;
+  min-width:44px;
+  padding:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:0;
+  border-radius:22px;
+  background:rgba(255,255,255,.92);
+  box-shadow:0 2px 10px rgba(0,0,0,.20);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  color:#333;
+}
+.north-compass-ring{
+  position:relative;
+  width:32px;
+  height:32px;
+  display:block;
+  border:1px solid rgba(60,60,67,.28);
+  border-radius:50%;
+  transition:transform .12s linear;
+}
+.north-compass-needle{
+  position:absolute;
+  left:50%;
+  top:2px;
+  transform:translateX(-50%);
+  color:#ff3b30;
+  font-size:13px;
+  line-height:1;
+}
+.north-compass-n{
+  position:absolute;
+  left:50%;
+  bottom:2px;
+  transform:translateX(-50%);
+  color:#4a4a4d;
+  font-size:10px;
+  font-weight:700;
+  line-height:1;
+}
+.north-compass:not(.rotated){
+  opacity:.78;
+}
+.north-compass.rotated{
+  opacity:1;
+}
+
+@media (max-width:700px){
+  .north-compass{
+    right:12px;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 66px);
+    width:46px;
+    height:46px;
+    min-width:46px;
+    border-radius:23px;
+  }
+}
+
+@media (prefers-reduced-motion:reduce){
+  .current-location-dot{animation:none;}
+  #map{transition:none !important;}
 }
 </style>
