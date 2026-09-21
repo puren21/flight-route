@@ -5961,4 +5961,31 @@ if ('serviceWorker' in navigator) {
   }
 }
 
+
+/* Detail menu titles: left aligned like Settings (2026-09-21) */
+@media (max-width:700px){
+  /* Submenu headers such as 경로목록: align title to the left like 설정 */
+  .panel.detail-view .panel-header{
+    display:grid !important;
+    grid-template-columns:40px minmax(0,1fr) 40px !important;
+    align-items:center !important;
+  }
+
+  .panel.detail-view .panel-header .menu-back-btn,
+  .panel.detail-view .panel-header .panel-toggle{
+    grid-column:1 !important;
+    grid-row:1 !important;
+    justify-self:start !important;
+  }
+
+  .panel.detail-view .panel-header h1{
+    grid-column:2 !important;
+    grid-row:1 !important;
+    justify-self:start !important;
+    text-align:left !important;
+    margin:0 !important;
+    width:100% !important;
+  }
+}
+
 </style>
