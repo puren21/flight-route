@@ -2934,13 +2934,26 @@ function populateRouteNumberMenu(){
       ? String(num).startsWith('돌산_')
       : !String(num).startsWith('돌산_'))
     .sort((a,b)=>{
-      const getNumeric=value=>{
-        const match=String(value).match(/(\d+)$/);
-        return match ? Number(match[1]) : NaN;
+      const normalizeNumber=value=>{
+        const text=String(value).replace(/^돌산_/,'').trim();
+        const numeric=parseInt(text,10);
+        return Number.isNaN(numeric) ? null : numeric;
       };
-      const na=getNumeric(a), nb=getNumeric(b);
-      if(!Number.isNaN(na) && !Number.isNaN(nb)) return na-nb;
-      return String(a).localeCompare(String(b),'ko');
+
+      const na=normalizeNumber(a);
+      const nb=normalizeNumber(b);
+
+      // 1, 01, 001을 모두 같은 숫자 1로 판단해서 정렬함.
+      if(na!==null && nb!==null){
+        if(na!==nb) return na-nb;
+
+        // 같은 숫자라면 표기 형식만 안정적으로 정리함.
+        return String(a).localeCompare(String(b),'ko',{numeric:true});
+      }
+
+      if(na!==null) return -1;
+      if(nb!==null) return 1;
+      return String(a).localeCompare(String(b),'ko',{numeric:true});
     });
 
   wheel.innerHTML='';
