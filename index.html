@@ -1890,23 +1890,9 @@ async function deleteRemoteMemo(num){
 
 let memoEditingRoute=null;
 let memoEditingNumber='';
-let memoReturnRoute=null;
-let memoReturnPosition=null;
 
 function openMemoEditor(routeLine){
   const num=routeLine?._routeNumber || '';
-
-  // 노선 정보창에서 메모를 연 경우 현재 노선과 팝업 위치를 기억한 뒤
-  // 정보창은 숨기고 메모창만 표시함.
-  if(routeSelectOverlay && routeLine){
-    memoReturnRoute=routeLine;
-    memoReturnPosition=routeSelectOverlay.getPosition();
-    closeRouteSelectPopup();
-  }else{
-    memoReturnRoute=null;
-    memoReturnPosition=null;
-  }
-
   openMemoEditorByNumber(num,routeLine);
 }
 
@@ -1946,21 +1932,8 @@ function closeMemoEditor(){
   const backdrop=document.getElementById('memoModalBackdrop');
   backdrop.classList.remove('open');
   backdrop.setAttribute('aria-hidden','true');
-
-  const returnRoute=memoReturnRoute;
-  const returnPosition=memoReturnPosition;
-
   memoEditingRoute=null;
   memoEditingNumber='';
-  memoReturnRoute=null;
-  memoReturnPosition=null;
-
-  // 노선 정보창에서 열었던 메모라면 닫힌 뒤 같은 위치에 정보창을 복원함.
-  if(returnRoute && returnPosition){
-    requestAnimationFrame(()=>{
-      showRouteSelectPopup(returnRoute,returnPosition);
-    });
-  }
 }
 
 async function saveCurrentMemo(){
@@ -2295,14 +2268,118 @@ function showRouteSelectPopup(routeLine,position){
   memoBtn.appendChild(memoLabel);
   memoBtn.appendChild(memoChevron);
 
-  const openMemo=function(e){
-    if(e){ e.preventDefault(); e.stopPropagation(); }
-    openMemoEditor(routeLine);
+  const memoEditor=document.createElement('div');
+  memoEditor.className='route-inline-memo';
+
+  const memoTextarea=document.createElement('textarea');
+  memoTextarea.className='route-inline-memo-textarea';
+  memoTextarea.placeholder='메모를 입력하세요';
+  memoTextarea.value=routeMemos[routeLine._routeNumber]?.memo || '';
+
+  const memoActions=document.createElement('div');
+  memoActions.className='route-inline-memo-actions';
+
+  const memoCancel=document.createElement('button');
+  memoCancel.type='button';
+  memoCancel.className='route-inline-memo-cancel';
+  memoCancel.textContent='취소';
+
+  const memoDelete=document.createElement('button');
+  memoDelete.type='button';
+  memoDelete.className='route-inline-memo-delete';
+  memoDelete.textContent='삭제';
+
+  const memoSave=document.createElement('button');
+  memoSave.type='button';
+  memoSave.className='route-inline-memo-save';
+  memoSave.textContent='저장';
+
+  memoActions.appendChild(memoCancel);
+  memoActions.appendChild(memoDelete);
+  memoActions.appendChild(memoSave);
+  memoEditor.appendChild(memoTextarea);
+  memoEditor.appendChild(memoActions);
+
+  const setInlineMemoOpen=open=>{
+    memoEditor.classList.toggle('open',open);
+    memoBtn.classList.toggle('memo-open',open);
+    memoChevron.textContent=open?'⌄':'›';
+    if(open){
+      memoTextarea.value=routeMemos[routeLine._routeNumber]?.memo || '';
+      setTimeout(()=>{
+        memoTextarea.focus();
+        memoTextarea.setSelectionRange(memoTextarea.value.length,memoTextarea.value.length);
+      },60);
+    }
   };
-  memoBtn.addEventListener('click',openMemo);
+
+  memoBtn.addEventListener('click',e=>{
+    e.preventDefault();
+    e.stopPropagation();
+    setInlineMemoOpen(!memoEditor.classList.contains('open'));
+  });
+
+  memoCancel.addEventListener('click',e=>{
+    e.preventDefault();
+    e.stopPropagation();
+    setInlineMemoOpen(false);
+  });
+
+  memoSave.addEventListener('click',async e=>{
+    e.preventDefault();
+    e.stopPropagation();
+    const num=routeLine._routeNumber || '';
+    if(!num) return;
+    const memo=memoTextarea.value.trim();
+
+    try{
+      memoSave.disabled=true;
+      memoSave.textContent='저장 중';
+      if(memo){
+        const updated=new Date().toISOString();
+        await upsertRemoteMemo(num,memo,updated);
+        routeMemos[num]={memo:memo,updated:updated};
+      }else{
+        await deleteRemoteMemo(num);
+        delete routeMemos[num];
+      }
+      persistRouteMemos();
+      setInlineMemoOpen(false);
+    }catch(error){
+      console.error(error);
+      alert('온라인 메모 저장에 실패했습니다.\n\n'+error.message);
+    }finally{
+      memoSave.disabled=false;
+      memoSave.textContent='저장';
+    }
+  });
+
+  memoDelete.addEventListener('click',async e=>{
+    e.preventDefault();
+    e.stopPropagation();
+    const num=routeLine._routeNumber || '';
+    if(!num) return;
+
+    try{
+      memoDelete.disabled=true;
+      memoDelete.textContent='삭제 중';
+      await deleteRemoteMemo(num);
+      delete routeMemos[num];
+      persistRouteMemos();
+      memoTextarea.value='';
+      setInlineMemoOpen(false);
+    }catch(error){
+      console.error(error);
+      alert('온라인 메모 삭제에 실패했습니다.\n\n'+error.message);
+    }finally{
+      memoDelete.disabled=false;
+      memoDelete.textContent='삭제';
+    }
+  });
 
   actions.appendChild(toggleRow);
   actions.appendChild(memoBtn);
+  actions.appendChild(memoEditor);
 
   box.appendChild(title);
   box.appendChild(actions);
@@ -5180,5 +5257,66 @@ if ('serviceWorker' in navigator) {
   white-space:nowrap;
   opacity:.92;
   font-variant-numeric:tabular-nums;
+}
+
+/* Expand memo editor inside the selected-route popup */
+.route-inline-memo{
+  display:none;
+  margin:0;
+  padding:0;
+}
+.route-inline-memo.open{
+  display:block;
+}
+.route-inline-memo-textarea{
+  display:block;
+  width:100%;
+  min-height:112px;
+  max-height:180px;
+  margin:0 0 8px;
+  padding:10px 11px;
+  resize:vertical;
+  border:0;
+  border-radius:14px;
+  outline:none;
+  box-sizing:border-box;
+  background:#fff;
+  color:#111;
+  font:inherit;
+  font-size:14px;
+  line-height:1.4;
+  -webkit-user-select:text !important;
+  user-select:text !important;
+  -webkit-touch-callout:default !important;
+}
+.route-inline-memo-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:6px;
+}
+.route-select-popup .route-inline-memo-actions button{
+  width:100% !important;
+  min-height:40px !important;
+  padding:8px 4px !important;
+  border:0 !important;
+  border-radius:12px !important;
+  font-size:13px !important;
+  font-weight:600 !important;
+}
+.route-inline-memo-cancel{
+  background:#fff !important;
+  color:#222 !important;
+}
+.route-inline-memo-delete{
+  background:#fff !important;
+  color:#c92a2a !important;
+}
+.route-inline-memo-save{
+  background:#34c759 !important;
+  color:#fff !important;
+  -webkit-text-fill-color:#fff !important;
+}
+.route-memo-btn.memo-open .route-menu-chevron{
+  font-size:22px !important;
 }
 </style>
