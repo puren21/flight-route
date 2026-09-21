@@ -2818,7 +2818,7 @@ function scrollRouteWheelTo(num,focusMap=true){
 
   if(focusMap){
     clearTimeout(routeWheelScrollTimer);
-    routeWheelScrollTimer=setTimeout(()=>syncRouteWheelSelection(true),220);
+    routeWheelScrollTimer=setTimeout(()=>syncRouteWheelSelection(true),500);
   }else{
     requestAnimationFrame(()=>syncRouteWheelSelection(false));
   }
@@ -2826,7 +2826,14 @@ function scrollRouteWheelTo(num,focusMap=true){
 
 document.getElementById('routeNumberWheel')?.addEventListener('scroll',()=>{
   clearTimeout(routeWheelScrollTimer);
-  routeWheelScrollTimer=setTimeout(()=>syncRouteWheelSelection(true),120);
+
+  // 휠이 움직이는 동안에는 선택 표시만 갱신하고 지도는 이동하지 않음.
+  syncRouteWheelSelection(false);
+
+  // 스크롤이 완전히 멈춘 뒤 잠깐 여유를 두고 최종 선택 경로로 이동함.
+  routeWheelScrollTimer=setTimeout(()=>{
+    syncRouteWheelSelection(true);
+  },500);
 },{passive:true});
 
 function updateRouteLabelVisibility(){
