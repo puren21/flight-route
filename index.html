@@ -2970,7 +2970,7 @@ function populateRouteNumberMenu(){
     item.dataset.value=num;
     item.setAttribute('role','option');
     item.textContent=String(num).startsWith('돌산_')
-      ? String(num).replace(/^돌산_/,'').replace(/^0+(?=\d)/,'')
+      ? String(num)
       : String(num).replace(/^0+(?=\d)/,'');
     item.addEventListener('click',()=>{
       scrollRouteWheelTo(num,true);
