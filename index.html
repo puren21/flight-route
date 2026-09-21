@@ -1381,8 +1381,20 @@
     </section>
 
     <section id="memoPage" class="menu-page">
-      <div class="memo-page-card">
-        <div id="memoList" class="memo-list"></div>
+      <div class="memo-page-card memo-settings-card">
+        <div id="memoList" class="memo-settings-list"></div>
+      </div>
+    </section>
+
+    <section id="memoDetailPage" class="menu-page" data-parent-page="memoPage" data-parent-title="메모">
+      <div class="memo-detail-card">
+        <div class="memo-detail-number" id="memoDetailNumber"></div>
+        <textarea id="memoDetailTextarea" class="route-inline-memo-textarea" placeholder="메모를 입력하세요"></textarea>
+        <div class="route-inline-memo-actions memo-detail-actions">
+          <button id="memoDetailCancelBtn" type="button" class="route-inline-memo-cancel">취소</button>
+          <button id="memoDetailDeleteBtn" type="button" class="route-inline-memo-delete">삭제</button>
+          <button id="memoDetailSaveBtn" type="button" class="route-inline-memo-save">저장</button>
+        </div>
       </div>
     </section>
 
@@ -2185,118 +2197,163 @@ function showRouteProperties(routeLine){
   alert('번호: '+num+'\n\n메모:\n'+memo);
 }
 
-function openMemoFromList(num){
-  const entry=routeIndex.get(String(num));
-  const routeLine=entry && entry.lines && entry.lines[0];
-  const isMobile=window.matchMedia('(max-width:700px)').matches;
+let memoDetailNumber='';
 
-  if(isMobile){
-    // 메모 선택 후 접을 때 하위 메뉴 상태가 남지 않도록 메인 메뉴 상태로 복귀함.
-    showMenuHome();
-    controlPanel.classList.add('collapsed');
-    syncPanelToggle();
-
-    setTimeout(()=>{
-      if(typeof map.relayout==='function') map.relayout();
-      if(entry) focusRouteNumber(num);
-
-      setTimeout(()=>{
-        openMemoEditorByNumber(num,routeLine||null);
-      },180);
-    },120);
-    return;
-  }
-
-  if(entry) focusRouteNumber(num);
-  setTimeout(()=>openMemoEditorByNumber(num,routeLine||null),80);
+function normalizeMemoSortNumber(value){
+  const text=String(value||'').replace(/^돌산_/,'').trim();
+  const match=text.match(/\d+/);
+  return match ? Number(match[0]) : null;
 }
 
-async function deleteMemoFromList(num,button){
-  if(!confirm(num+'번 메모를 삭제하시겠습니까?')) return;
+function openMemoFromList(num){
+  num=String(num||'');
+  if(!num) return;
 
-  const originalText=button.textContent;
+  memoDetailNumber=num;
+  const title=document.getElementById('memoDetailNumber');
+  const textarea=document.getElementById('memoDetailTextarea');
+
+  if(title) title.textContent=num;
+  if(textarea) textarea.value=routeMemos[num]?.memo || '';
+
+  openMenuPage('memoDetailPage',num);
+
+  setTimeout(()=>{
+    textarea?.focus();
+    const length=textarea?.value?.length || 0;
+    textarea?.setSelectionRange(length,length);
+  },60);
+}
+
+function closeMemoDetail(){
+  memoDetailNumber='';
+  openMenuPage('memoPage','메모');
+}
+
+async function saveMemoDetail(){
+  if(!memoDetailNumber) return;
+
+  const num=memoDetailNumber;
+  const textarea=document.getElementById('memoDetailTextarea');
+  const saveBtn=document.getElementById('memoDetailSaveBtn');
+  const memo=(textarea?.value || '').trim();
+
   try{
-    button.disabled=true;
-    button.textContent='삭제 중';
+    if(saveBtn){
+      saveBtn.disabled=true;
+      saveBtn.textContent='저장 중';
+    }
+
+    if(memo){
+      const updated=new Date().toISOString();
+      await upsertRemoteMemo(num,memo,updated);
+      routeMemos[num]={memo:memo,updated:updated};
+    }else{
+      await deleteRemoteMemo(num);
+      delete routeMemos[num];
+    }
+
+    persistRouteMemos();
+    renderMemoList();
+    closeMemoDetail();
+  }catch(error){
+    console.error(error);
+    alert('온라인 메모 저장에 실패했습니다.\n\n'+error.message);
+  }finally{
+    if(saveBtn){
+      saveBtn.disabled=false;
+      saveBtn.textContent='저장';
+    }
+  }
+}
+
+async function deleteMemoDetail(){
+  if(!memoDetailNumber) return;
+
+  const num=memoDetailNumber;
+  const deleteBtn=document.getElementById('memoDetailDeleteBtn');
+
+  try{
+    if(deleteBtn){
+      deleteBtn.disabled=true;
+      deleteBtn.textContent='삭제 중';
+    }
+
     await deleteRemoteMemo(num);
     delete routeMemos[num];
     persistRouteMemos();
     renderMemoList();
-    requestAnimationFrame(()=>updateStablePanelHeight());
+    closeMemoDetail();
   }catch(error){
     console.error(error);
     alert('온라인 메모 삭제에 실패했습니다.\n\n'+error.message);
   }finally{
-    button.disabled=false;
-    button.textContent=originalText;
+    if(deleteBtn){
+      deleteBtn.disabled=false;
+      deleteBtn.textContent='삭제';
+    }
   }
 }
+
+document.getElementById('memoDetailCancelBtn')?.addEventListener('click',closeMemoDetail);
+document.getElementById('memoDetailSaveBtn')?.addEventListener('click',saveMemoDetail);
+document.getElementById('memoDetailDeleteBtn')?.addEventListener('click',deleteMemoDetail);
 
 function renderMemoList(){
   const list=document.getElementById('memoList');
   if(!list) return;
   list.innerHTML='';
 
-  const keys=Object.keys(routeMemos).filter(num=>routeMemos[num]?.memo).sort((a,b)=>{
-    const na=Number(a), nb=Number(b);
-    if(!Number.isNaN(na) && !Number.isNaN(nb)) return na-nb;
-    return a.localeCompare(b,'ko');
-  });
+  const keys=Object.keys(routeMemos)
+    .filter(num=>routeMemos[num]?.memo)
+    .sort((a,b)=>{
+      const na=normalizeMemoSortNumber(a);
+      const nb=normalizeMemoSortNumber(b);
+
+      if(na!==null && nb!==null){
+        if(na!==nb) return na-nb;
+        return String(a).localeCompare(String(b),'ko',{numeric:true});
+      }
+      if(na!==null) return -1;
+      if(nb!==null) return 1;
+      return String(a).localeCompare(String(b),'ko',{numeric:true});
+    });
 
   if(keys.length===0){
     const empty=document.createElement('div');
-    empty.className='memo-empty';
+    empty.className='memo-empty memo-settings-empty';
     empty.textContent='저장된 메모가 없습니다.';
     list.appendChild(empty);
     return;
   }
 
   keys.forEach(num=>{
-    const row=document.createElement('div');
-    row.className='memo-item';
+    const row=document.createElement('button');
+    row.type='button';
+    row.className='memo-settings-row';
+    row.setAttribute('aria-label',num+' 메모 상세 보기');
 
-    const main=document.createElement('button');
-    main.type='button';
-    main.className='memo-item-main';
-    main.setAttribute('aria-label',num+'번 메모 열기');
+    const left=document.createElement('span');
+    left.className='memo-settings-left';
 
-    const n=document.createElement('span');
-    n.className='memo-num';
-    n.textContent=num;
+    const icon=document.createElement('span');
+    icon.className='memo-note-icon';
+    icon.setAttribute('aria-hidden','true');
+    icon.innerHTML='<svg viewBox="0 0 29 29"><rect x="1" y="1" width="27" height="27" rx="6.5" fill="#fff"/><path d="M7.5 1h14A6.5 6.5 0 0 1 28 7.5V9H1V7.5A6.5 6.5 0 0 1 7.5 1Z" fill="#ffd60a"/><path d="M6 13.5h17M6 17.5h17M6 21.5h12" stroke="#c7c7cc" stroke-width="1.15" stroke-linecap="round"/></svg>';
 
-    const t=document.createElement('span');
-    t.className='memo-text';
-    t.textContent=routeMemos[num].memo;
+    const label=document.createElement('span');
+    label.className='memo-settings-label';
+    label.textContent=num;
 
-    main.appendChild(n);
-    main.appendChild(t);
-    main.addEventListener('click',()=>openMemoFromList(num));
+    const chevron=document.createElement('span');
+    chevron.className='memo-settings-chevron';
+    chevron.textContent='›';
 
-    const actions=document.createElement('div');
-    actions.className='memo-item-actions';
-
-    const editBtn=document.createElement('button');
-    editBtn.type='button';
-    editBtn.className='memo-list-edit';
-    editBtn.textContent='수정';
-    editBtn.addEventListener('click',e=>{
-      e.stopPropagation();
-      openMemoFromList(num);
-    });
-
-    const deleteBtn=document.createElement('button');
-    deleteBtn.type='button';
-    deleteBtn.className='memo-list-delete';
-    deleteBtn.textContent='삭제';
-    deleteBtn.addEventListener('click',e=>{
-      e.stopPropagation();
-      deleteMemoFromList(num,deleteBtn);
-    });
-
-    actions.appendChild(editBtn);
-    actions.appendChild(deleteBtn);
-    row.appendChild(main);
-    row.appendChild(actions);
+    left.appendChild(icon);
+    left.appendChild(label);
+    row.appendChild(left);
+    row.appendChild(chevron);
+    row.addEventListener('click',()=>openMemoFromList(num));
     list.appendChild(row);
   });
 }
@@ -6051,5 +6108,157 @@ if ('serviceWorker' in navigator) {
   fill:none !important;
   stroke:none !important;
   display:block;
+}
+
+/* Memo list: iPhone Settings-style rows */
+#memoPage.active{
+  gap:0 !important;
+}
+.memo-settings-card{
+  width:100% !important;
+  padding:0 !important;
+  overflow:hidden !important;
+  border-radius:18px !important;
+  background:#fff !important;
+  box-shadow:0 0 0 .5px rgba(60,60,67,.10) !important;
+}
+.memo-settings-list{
+  width:100%;
+  display:flex;
+  flex-direction:column;
+}
+.memo-settings-row{
+  position:relative;
+  width:100% !important;
+  min-height:58px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:12px !important;
+  margin:0 !important;
+  padding:0 14px !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:#fff !important;
+  color:#1c1c1e !important;
+  text-align:left !important;
+  box-shadow:none !important;
+}
+.memo-settings-row:not(:last-child)::after{
+  content:"";
+  position:absolute;
+  left:55px;
+  right:0;
+  bottom:0;
+  height:.5px;
+  background:rgba(60,60,67,.18);
+}
+.memo-settings-row:active{
+  background:#f2f2f7 !important;
+}
+.memo-settings-left{
+  min-width:0;
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.memo-note-icon{
+  width:29px;
+  height:29px;
+  flex:0 0 29px;
+  display:inline-flex;
+  overflow:hidden;
+  border-radius:7px;
+  box-shadow:0 0 0 .5px rgba(60,60,67,.10);
+}
+.memo-note-icon svg{
+  display:block;
+  width:29px;
+  height:29px;
+}
+.memo-settings-label{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:17px;
+  font-weight:400;
+  letter-spacing:-.2px;
+}
+.memo-settings-chevron{
+  flex:0 0 auto;
+  color:#c7c7cc;
+  font-size:30px;
+  font-weight:300;
+  line-height:1;
+}
+.memo-settings-empty{
+  padding:18px 14px !important;
+  color:#8e8e93 !important;
+  font-size:15px !important;
+  text-align:center;
+}
+
+/* Memo detail: same editor language as route-line memo */
+#memoDetailPage.active{
+  display:flex !important;
+}
+.memo-detail-card{
+  width:100%;
+  padding:10px;
+  box-sizing:border-box;
+  border-radius:18px;
+  background:#f2f2f7;
+}
+.memo-detail-number{
+  margin:0 2px 9px;
+  color:#1c1c1e;
+  font-size:18px;
+  font-weight:700;
+}
+#memoDetailTextarea{
+  width:100% !important;
+  min-height:140px !important;
+  max-height:260px !important;
+  margin:0 0 9px !important;
+  padding:12px !important;
+  border:0 !important;
+  border-radius:14px !important;
+  background:#fff !important;
+  color:#111 !important;
+  box-sizing:border-box !important;
+  resize:vertical !important;
+  outline:none !important;
+  font-size:16px !important;
+  line-height:1.45 !important;
+  -webkit-user-select:text !important;
+  user-select:text !important;
+  -webkit-touch-callout:default !important;
+}
+.memo-detail-actions{
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+}
+.memo-detail-actions button{
+  min-height:42px !important;
+  font-size:14px !important;
+}
+@media (max-width:700px){
+  .memo-settings-row{
+    min-height:62px !important;
+  }
+  .memo-settings-label{
+    font-size:18px !important;
+  }
+  .memo-detail-number{
+    font-size:20px;
+  }
+  #memoDetailTextarea{
+    min-height:160px !important;
+    font-size:17px !important;
+  }
+  .memo-detail-actions button{
+    min-height:46px !important;
+    font-size:15px !important;
+  }
 }
 </style>
