@@ -1178,8 +1178,11 @@
     background:#fff !important;
   }
 </style>
+  <link rel="preconnect" href="https://dapi.kakao.com" crossorigin>
+  <link rel="dns-prefetch" href="//dapi.kakao.com">
+  <link rel="preconnect" href="https://zdjuksmhtvhetzblczqq.supabase.co" crossorigin>
+  <link rel="preload" href="./flight-route.geojson" as="fetch">
   <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7ee4bab8cd4d6be6d0d68a49e9b4502b&libraries=services"></script>
-  <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js"></script>
   <link rel="manifest" href="./manifest.webmanifest">
   <meta name="theme-color" content="#ffffff">
   <meta name="mobile-web-app-capable" content="yes">
@@ -1681,9 +1684,6 @@ document.addEventListener('pointerdown',event=>{
 const geocoder=new kakao.maps.services.Geocoder();
 let addressOverlay=null;
 
-if(window.Kakao && !Kakao.isInitialized()){
-  Kakao.init('7ee4bab8cd4d6be6d0d68a49e9b4502b');
-}
 function setRouteState(routeLine,enabled,persist=true){
   routeLine._routeEnabled=enabled;
 
@@ -3457,7 +3457,6 @@ window.addEventListener('resize',()=>{
   updateStablePanelHeight();
 });
 renderMemoList();
-loadRemoteMemos();
 
 // 다른 기기에서 수정·삭제된 메모가 이 기기로 돌아왔을 때 즉시 반영되도록 갱신함.
 window.addEventListener('focus',()=>loadRemoteMemos());
@@ -3465,13 +3464,27 @@ document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='visible') loadRemoteMemos();
 });
 
+function runBackgroundSync(){
+  Promise.allSettled([
+    loadRemoteMemos(),
+    loadRemoteRouteStates()
+  ]).catch(console.error);
+}
+
 updateScaleBar();
-loadRoute().then(()=>loadRemoteRouteStates());
+loadRoute().then(()=>{
+  // 경로를 먼저 표시한 뒤 메모/클라우드 상태 동기화를 유휴시간에 처리함.
+  if('requestIdleCallback' in window){
+    requestIdleCallback(runBackgroundSync,{timeout:1500});
+  }else{
+    setTimeout(runBackgroundSync,300);
+  }
+});
 </script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js?v=8',{updateViaCache:'none'}).catch(console.error);
+    navigator.serviceWorker.register('./sw.js?v=9',{updateViaCache:'none'}).catch(console.error);
   });
 }
 </script>
