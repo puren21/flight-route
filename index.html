@@ -5765,4 +5765,78 @@ if ('serviceWorker' in navigator) {
   width:50px !important;
   height:50px !important;
 }
+
+/* Mobile readability: slightly larger text across controls and popups */
+@media (max-width:700px){
+  .panel h1,
+  .panel.detail-view .panel-header h1{
+    font-size:18px !important;
+  }
+
+  .ios-menu-row,
+  .route-menu-row{
+    font-size:17px !important;
+  }
+
+  .ios-menu-text,
+  .route-menu-label{
+    font-size:17px !important;
+  }
+
+  .style-section-toggle,
+  .quick-btn,
+  .airspace-label strong,
+  .route-style-row,
+  .status,
+  .memo-empty,
+  .memo-num,
+  .memo-text,
+  .geo-link{
+    font-size:14px !important;
+  }
+
+  .route-number-input,
+  .route-prefix-select{
+    font-size:18px !important;
+  }
+
+  .route-number-go{
+    font-size:17px !important;
+  }
+
+  .route-wheel-item{
+    font-size:24px !important;
+  }
+
+  .route-wheel-item.active{
+    font-size:28px !important;
+  }
+
+  .route-select-popup .route-select-title{
+    font-size:22px !important;
+  }
+
+  .route-select-title-length{
+    font-size:15px !important;
+  }
+
+  .route-inline-memo-textarea,
+  .memo-modal textarea{
+    font-size:16px !important;
+  }
+
+  .route-select-popup .route-inline-memo-actions button,
+  .memo-modal-actions button,
+  .memo-item-actions button{
+    font-size:14px !important;
+  }
+
+  .address-popup{
+    font-size:15px !important;
+  }
+
+  .address-popup .title{
+    font-size:16px !important;
+  }
+}
 </style>
