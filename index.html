@@ -2342,8 +2342,39 @@ function renderMemoList(){
     icon.innerHTML='<svg viewBox="0 0 29 29"><rect x="1" y="1" width="27" height="27" rx="6.5" fill="#fff"/><path d="M7.5 1h14A6.5 6.5 0 0 1 28 7.5V9H1V7.5A6.5 6.5 0 0 1 7.5 1Z" fill="#ffd60a"/><path d="M6 13.5h17M6 17.5h17M6 21.5h12" stroke="#c7c7cc" stroke-width="1.15" stroke-linecap="round"/></svg>';
 
     const label=document.createElement('span');
-    label.className='memo-settings-label';
+    label.className='memo-settings-label memo-route-link';
     label.textContent=num;
+    label.setAttribute('role','button');
+    label.setAttribute('tabindex','0');
+    label.setAttribute('aria-label',num+' 경로 위치로 이동');
+
+    const moveToMemoRoute=e=>{
+      e.preventDefault();
+      e.stopPropagation();
+
+      if(!routeIndex.has(String(num))) return;
+
+      focusRouteNumber(num);
+
+      // 모바일에서는 위치를 바로 확인할 수 있도록 메뉴를 접음.
+      // 마지막 메뉴 상태는 메모 목록으로 유지해서 다시 열면 메모가 나타남.
+      lastMenuState={pageId:'memoPage',title:'메모'};
+      try{
+        localStorage.setItem(LAST_MENU_STORAGE_KEY,JSON.stringify(lastMenuState));
+      }catch(err){}
+
+      controlPanel.classList.remove('detail-view');
+      ensureSettingsTitle();
+      controlPanel.classList.add('collapsed');
+      syncPanelToggle();
+    };
+
+    label.addEventListener('click',moveToMemoRoute);
+    label.addEventListener('keydown',e=>{
+      if(e.key==='Enter' || e.key===' '){
+        moveToMemoRoute(e);
+      }
+    });
 
     const chevron=document.createElement('span');
     chevron.className='memo-settings-chevron';
@@ -6260,5 +6291,16 @@ if ('serviceWorker' in navigator) {
     min-height:46px !important;
     font-size:15px !important;
   }
+}
+
+/* Memo route number: tap the number to move to that route */
+.memo-route-link{
+  position:relative;
+  z-index:2;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+.memo-route-link:active{
+  opacity:.55;
 }
 </style>
