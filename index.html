@@ -2325,25 +2325,38 @@ document.getElementById('memoDetailCancelBtn')?.addEventListener('click',closeMe
 document.getElementById('memoDetailSaveBtn')?.addEventListener('click',saveMemoDetail);
 document.getElementById('memoDetailDeleteBtn')?.addEventListener('click',deleteMemoDetail);
 
+function normalizeRouteIdentity(value){
+  let raw=String(value||'').trim();
+  if(!raw) return '';
+
+  const isDolsan=/^돌산_/i.test(raw);
+  raw=raw.replace(/^돌산_/i,'');
+
+  const parts=raw.split('_').filter(Boolean).map(part=>{
+    const trimmed=part.trim();
+    if(/^\d+$/.test(trimmed)) return String(Number(trimmed));
+    return trimmed.toLowerCase();
+  });
+
+  if(!parts.length) return '';
+  return (isDolsan?'돌산|':'일반|')+parts.join('|');
+}
+
 function resolveMemoRouteKey(value){
   const raw=String(value||'').trim();
   if(!raw) return '';
 
+  // 원본 명칭이 정확히 일치하면 그것을 최우선으로 사용함.
   if(routeIndex.has(raw)) return raw;
 
-  const isDolsan=raw.startsWith('돌산_');
-  const numericText=raw.replace(/^돌산_/,'').trim();
-  const numeric=parseInt(numericText,10);
-  if(Number.isNaN(numeric)) return '';
+  // 001 ↔ 1, 027_01 ↔ 27_1, 돌산_014_01 ↔ 돌산_14_1처럼
+  // 각 번호 구간을 개별적으로 정규화해서 전체 명칭을 비교함.
+  const identity=normalizeRouteIdentity(raw);
+  if(!identity) return '';
 
   for(const key of routeIndex.keys()){
-    const keyText=String(key);
-    const keyIsDolsan=keyText.startsWith('돌산_');
-    if(keyIsDolsan!==isDolsan) continue;
-
-    const keyNumeric=parseInt(keyText.replace(/^돌산_/,'').trim(),10);
-    if(!Number.isNaN(keyNumeric) && keyNumeric===numeric){
-      return keyText;
+    if(normalizeRouteIdentity(key)===identity){
+      return String(key);
     }
   }
 
