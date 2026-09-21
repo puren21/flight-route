@@ -5906,4 +5906,59 @@ if ('serviceWorker' in navigator) {
   }
 }
 
+
+/* Mobile detail typography — match main iPhone Settings scale (2026-09-21) */
+@media (max-width:700px){
+  /* Detail-page section headers and labels */
+  .panel.detail-view .menu-section-title,
+  .panel.detail-view .route-style-title,
+  .panel.detail-view .route-number-wrap label,
+  .panel.detail-view .geo-toggle-row,
+  .panel.detail-view .kr-airspace-legend,
+  .panel.detail-view .kr-airspace-row,
+  .panel.detail-view .route-toggle-label{
+    font-size:17px !important;
+    line-height:1.35 !important;
+  }
+
+  /* Detail controls */
+  .panel.detail-view .style-section-toggle,
+  .panel.detail-view .main-menu-toggle,
+  .panel.detail-view .quick-btn,
+  .panel.detail-view button,
+  .panel.detail-view select,
+  .panel.detail-view input,
+  .panel.detail-view .route-style-row,
+  .panel.detail-view .route-style-value{
+    font-size:18px !important;
+  }
+
+  /* Detail list rows / values */
+  .panel.detail-view .ios-menu-row,
+  .panel.detail-view .route-menu-row,
+  .panel.detail-view .ios-menu-text,
+  .panel.detail-view .route-menu-label,
+  .panel.detail-view .ios-menu-value,
+  .panel.detail-view .route-menu-value{
+    font-size:19px !important;
+  }
+
+  /* Descriptions / notes */
+  .panel.detail-view .status,
+  .panel.detail-view .geo-note,
+  .panel.detail-view .memo-empty,
+  .panel.detail-view .memo-text,
+  .panel.detail-view .airspace-label small{
+    font-size:15px !important;
+    line-height:1.45 !important;
+  }
+
+  /* Memo/list secondary text */
+  .panel.detail-view .memo-num,
+  .panel.detail-view .airspace-label strong,
+  .panel.detail-view .geo-link{
+    font-size:17px !important;
+  }
+}
+
 </style>
