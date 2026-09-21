@@ -5648,4 +5648,26 @@ if ('serviceWorker' in navigator) {
     height:5px;
   }
 }
+
+/* Mobile: attach the settings panel to the very top */
+@media (max-width:700px){
+  .panel:not(.collapsed){
+    top:0 !important;
+    left:8px !important;
+    right:8px !important;
+    border-radius:0 0 22px 22px !important;
+    max-height:calc(100dvh - 8px) !important;
+  }
+
+  .panel:not(.collapsed) .panel-header{
+    top:0 !important;
+    border-radius:0 !important;
+    padding-top:calc(env(safe-area-inset-top,0px) + 8px) !important;
+  }
+
+  /* Hide the right-side distance label while the settings menu is open */
+  body.menu-open .vertical-scale-bar{
+    display:none !important;
+  }
+}
 </style>
