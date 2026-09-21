@@ -762,81 +762,93 @@
   </div>
   <div class="panel-body">
     <section class="menu-section">
-      <div class="menu-section-title">경로찾기</div>
-      <div class="route-number-wrap">
-        <label for="routeNumberSelect">비행경로 번호</label>
-        <select id="routeNumberSelect" class="route-number-select">
-          <option value="">번호 선택</option>
-        </select>
+      <button class="style-section-toggle main-menu-toggle" type="button" data-target="routeMenuBody">
+        <span>경로찾기</span><span>＋</span>
+      </button>
+      <div id="routeMenuBody" class="style-section-body">
+        <div class="route-number-wrap">
+          <label for="routeNumberSelect">비행경로 번호</label>
+          <select id="routeNumberSelect" class="route-number-select">
+            <option value="">번호 선택</option>
+          </select>
+        </div>
       </div>
     </section>
 
     <section class="menu-section">
-      <div class="menu-section-title">스타일 설정</div>
-
-      <button class="style-section-toggle" type="button" data-target="defaultStyleBody">
-        <span>기본 라인</span><span>＋</span>
+      <button class="style-section-toggle main-menu-toggle" type="button" data-target="styleMenuBody">
+        <span>스타일 설정</span><span>＋</span>
       </button>
-      <div id="defaultStyleBody" class="style-section-body">
+      <div id="styleMenuBody" class="style-section-body">
+        <button class="style-section-toggle" type="button" data-target="defaultStyleBody">
+          <span>기본 라인</span><span>＋</span>
+        </button>
+        <div id="defaultStyleBody" class="style-section-body">
+          <div class="route-style-row">
+            <span>두께</span>
+            <input id="routeWeight" type="range" min="1" max="10" step="1" value="3">
+            <span id="routeWeightValue" class="route-style-value">3</span>
+          </div>
+          <div class="route-style-row">
+            <span>색상</span>
+            <input id="routeColor" type="color" value="#e53935">
+            <span></span>
+          </div>
+          <div class="route-style-row">
+            <span>투명도</span>
+            <input id="routeOpacity" type="range" min="0.1" max="1" step="0.1" value="0.9">
+            <span id="routeOpacityValue" class="route-style-value">90%</span>
+          </div>
+        </div>
+
+        <button class="style-section-toggle" type="button" data-target="offStyleBody">
+          <span>끄기 라인</span><span>＋</span>
+        </button>
+        <div id="offStyleBody" class="style-section-body">
+          <div class="route-style-row">
+            <span>두께</span>
+            <input id="offRouteWeight" type="range" min="1" max="10" step="1" value="2">
+            <span id="offRouteWeightValue" class="route-style-value">2</span>
+          </div>
+          <div class="route-style-row">
+            <span>색상</span>
+            <input id="offRouteColor" type="color" value="#6f7f95">
+            <span></span>
+          </div>
+          <div class="route-style-row">
+            <span>투명도</span>
+            <input id="offRouteOpacity" type="range" min="0.1" max="1" step="0.1" value="0.5">
+            <span id="offRouteOpacityValue" class="route-style-value">50%</span>
+          </div>
+        </div>
+        <button id="resetRouteStatesBtn" class="subtle-action" type="button">켜기·끄기 상태 초기화</button>
+      </div>
+    </section>
+
+    <section class="menu-section">
+      <button class="style-section-toggle main-menu-toggle" type="button" data-target="labelMenuBody">
+        <span>라벨</span><span>＋</span>
+      </button>
+      <div id="labelMenuBody" class="style-section-body">
         <div class="route-style-row">
-          <span>두께</span>
-          <input id="routeWeight" type="range" min="1" max="10" step="1" value="3">
-          <span id="routeWeightValue" class="route-style-value">3</span>
+          <span>크기</span>
+          <input id="labelSize" type="range" min="8" max="28" step="1" value="13">
+          <span id="labelSizeValue" class="route-style-value">13px</span>
         </div>
         <div class="route-style-row">
           <span>색상</span>
-          <input id="routeColor" type="color" value="#e53935">
+          <input id="labelColor" type="color" value="#0d47a1">
           <span></span>
         </div>
-        <div class="route-style-row">
-          <span>투명도</span>
-          <input id="routeOpacity" type="range" min="0.1" max="1" step="0.1" value="0.9">
-          <span id="routeOpacityValue" class="route-style-value">90%</span>
-        </div>
-      </div>
-
-      <button class="style-section-toggle" type="button" data-target="offStyleBody">
-        <span>끄기 라인</span><span>＋</span>
-      </button>
-      <div id="offStyleBody" class="style-section-body">
-        <div class="route-style-row">
-          <span>두께</span>
-          <input id="offRouteWeight" type="range" min="1" max="10" step="1" value="2">
-          <span id="offRouteWeightValue" class="route-style-value">2</span>
-        </div>
-        <div class="route-style-row">
-          <span>색상</span>
-          <input id="offRouteColor" type="color" value="#6f7f95">
-          <span></span>
-        </div>
-        <div class="route-style-row">
-          <span>투명도</span>
-          <input id="offRouteOpacity" type="range" min="0.1" max="1" step="0.1" value="0.5">
-          <span id="offRouteOpacityValue" class="route-style-value">50%</span>
+        <div class="row">
+          <button id="saveLabelStyleBtn" class="save-style-btn" type="button">라벨 설정 저장</button>
         </div>
       </div>
     </section>
 
     <section class="menu-section">
-      <div class="menu-section-title">라벨</div>
-      <div class="route-style-row">
-        <span>크기</span>
-        <input id="labelSize" type="range" min="8" max="28" step="1" value="13">
-        <span id="labelSizeValue" class="route-style-value">13px</span>
-      </div>
-      <div class="route-style-row">
-        <span>색상</span>
-        <input id="labelColor" type="color" value="#0d47a1">
-        <span></span>
-      </div>
-      <div class="row">
-        <button id="saveLabelStyleBtn" class="save-style-btn" type="button">라벨 설정 저장</button>
-      </div>
-    </section>
-
-    <section class="menu-section">
-      <button class="style-section-toggle" type="button" data-target="otherMenuBody">
-        <span>기타 기능</span><span>＋</span>
+      <button class="style-section-toggle main-menu-toggle" type="button" data-target="otherMenuBody">
+        <span>기타기능</span><span>＋</span>
       </button>
       <div id="otherMenuBody" class="style-section-body">
         <div class="quick-grid" style="margin-top:6px;">
@@ -865,12 +877,10 @@
           <div id="memoList" class="memo-list"></div>
         </div>
 
-        <button id="resetRouteStatesBtn" class="subtle-action" type="button">켜기·끄기 상태 초기화</button>
+        <div class="status" id="status">GeoJSON 불러오는 중...</div>
       </div>
     </section>
-
-    <div class="status" id="status">GeoJSON 불러오는 중...</div>
-  </div>  </div>
+  </div>
 </div>
 <script>
 const map=new kakao.maps.Map(document.getElementById('map'),{center:new kakao.maps.LatLng(35.16,126.84),level:8});
@@ -1165,15 +1175,22 @@ async function deleteRemoteMemo(num){
 }
 
 let memoEditingRoute=null;
+let memoEditingNumber='';
 
 function openMemoEditor(routeLine){
-  const num=routeLine._routeNumber || '';
+  const num=routeLine?._routeNumber || '';
+  openMemoEditorByNumber(num,routeLine);
+}
+
+function openMemoEditorByNumber(num,routeLine=null){
+  num=String(num||'');
   if(!num){
     alert('번호가 없는 라인에는 메모를 저장할 수 없습니다.');
     return;
   }
 
   memoEditingRoute=routeLine;
+  memoEditingNumber=num;
   const backdrop=document.getElementById('memoModalBackdrop');
   const title=document.getElementById('memoModalTitle');
   const textarea=document.getElementById('memoTextarea');
@@ -1194,11 +1211,12 @@ function closeMemoEditor(){
   backdrop.classList.remove('open');
   backdrop.setAttribute('aria-hidden','true');
   memoEditingRoute=null;
+  memoEditingNumber='';
 }
 
 async function saveCurrentMemo(){
-  if(!memoEditingRoute) return;
-  const num=memoEditingRoute._routeNumber || '';
+  if(!memoEditingNumber) return;
+  const num=memoEditingNumber;
   const memo=document.getElementById('memoTextarea').value.trim();
   const saveBtn=document.getElementById('memoSaveBtn');
 
@@ -1227,8 +1245,8 @@ async function saveCurrentMemo(){
 }
 
 async function deleteCurrentMemo(){
-  if(!memoEditingRoute) return;
-  const num=memoEditingRoute._routeNumber || '';
+  if(!memoEditingNumber) return;
+  const num=memoEditingNumber;
   const deleteBtn=document.getElementById('memoDeleteBtn');
 
   try{
@@ -1295,20 +1313,17 @@ function renderMemoList(){
     item.appendChild(n);
     item.appendChild(t);
     item.addEventListener('click',()=>{
-      focusRouteNumber(num);
       const entry=routeIndex.get(String(num));
       const routeLine=entry && entry.lines && entry.lines[0];
+
+      if(entry) focusRouteNumber(num);
 
       if(window.matchMedia('(max-width:700px)').matches){
         controlPanel.classList.add('collapsed');
         syncPanelToggle();
       }
 
-      if(routeLine){
-        setTimeout(()=>openMemoEditor(routeLine),80);
-      }else{
-        setTimeout(()=>alert(num+'번 메모\n\n'+routeMemos[num].memo),80);
-      }
+      setTimeout(()=>openMemoEditorByNumber(num,routeLine||null),80);
     });
 
     list.appendChild(item);
