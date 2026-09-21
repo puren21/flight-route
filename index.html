@@ -1399,6 +1399,7 @@ const mapElement=document.getElementById('map');
 mapElement.style.transform='none';
 mapElement.style.transformOrigin='';
 const map=new kakao.maps.Map(mapElement,{center:new kakao.maps.LatLng(35.16,126.84),level:8});
+map.setCopyrightPosition(kakao.maps.CopyrightPosition.BOTTOMRIGHT, false);
 
 let routePolylines=[],routeLabels=[],routeBounds=new kakao.maps.LatLngBounds(),currentMarker=null;
 let locationWatchId=null;
@@ -5006,5 +5007,32 @@ if ('serviceWorker' in navigator) {
   background:transparent !important;
   backdrop-filter:none !important;
   -webkit-backdrop-filter:none !important;
+}
+
+/* Remove Kakao's own bottom-left scale UI */
+#map .map_scale,
+#map .wrap_scale,
+#map [class*="map_scale"],
+#map [class*="wrap_scale"]{
+  display:none !important;
+}
+
+/* Thinner custom scale lines */
+.scale-bar{
+  border-top-width:1px !important;
+}
+.scale-bar::before,
+.scale-bar::after{
+  width:1px !important;
+  height:9px !important;
+  top:-1px !important;
+}
+.vertical-scale-bar{
+  border-right-width:1px !important;
+}
+.vertical-scale-bar::before,
+.vertical-scale-bar::after{
+  right:-1px !important;
+  height:1px !important;
 }
 </style>
