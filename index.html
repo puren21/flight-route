@@ -2762,13 +2762,10 @@ function startKakaoNavi(name,lat,lng){
   const destinationName=encodeURIComponent(name || '선택 위치');
   const webUrl='https://map.kakao.com/link/to/'+destinationName+','+lat+','+lng;
 
+  // 카카오 공식 길찾기 바로가기 URL을 직접 사용함.
+  // 모바일/PC 환경에서 카카오맵 길찾기 화면으로 연결됨.
   if(isMobileRouteDevice()){
-    // 현재 카카오맵 공식 URL Scheme 사용.
-    // 출발지는 사용자의 현재 위치로 두고 목적지만 전달함.
-    const appUrl='kakaomap://route?ep='+lat+','+lng+'&by=car';
-    const mobileWebUrl='https://m.map.kakao.com/scheme/route?ep='+lat+','+lng+'&by=car';
-
-    openAppWithWebFallback(appUrl,mobileWebUrl);
+    window.location.href=webUrl;
     return;
   }
 
