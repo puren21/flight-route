@@ -652,6 +652,45 @@
     .style-section-toggle:hover{
       background:#f0f2f4;
     }
+
+    .main-menu-toggle{
+      min-height:42px;
+      margin-top:0;
+      padding:9px 11px;
+      border:1px solid #d7dce2;
+      border-radius:10px;
+      background:#eef1f4;
+      color:#1f2328;
+      font-size:13px;
+      font-weight:800;
+      box-shadow:0 1px 0 rgba(0,0,0,.03);
+    }
+    .main-menu-toggle:hover{
+      background:#e6eaee;
+    }
+    .main-menu-toggle + .style-section-body{
+      margin-top:5px;
+      padding:6px 6px 4px 12px;
+      border-left:3px solid #dfe4e8;
+      background:#fafbfc;
+      border-radius:8px;
+    }
+    .main-menu-toggle + .style-section-body > .style-section-toggle{
+      min-height:34px;
+      margin-top:4px;
+      padding:6px 8px;
+      border:1px solid #e5e8eb;
+      border-radius:8px;
+      background:#fff;
+      color:#555;
+      font-size:11px;
+      font-weight:700;
+    }
+    .main-menu-toggle + .style-section-body > .style-section-body{
+      margin:2px 0 5px;
+      padding:2px 2px 2px 8px;
+      border-left:2px solid #edf0f2;
+    }
     .style-section-body{
       padding:2px 2px 1px;
     }
@@ -724,6 +763,8 @@
       .airspace-card{min-height:48px;}
       .route-number-select{height:44px;}
       .style-section-toggle{min-height:40px;}
+      .main-menu-toggle{min-height:44px;font-size:13px;padding:10px 11px;}
+      .main-menu-toggle + .style-section-body{padding-left:10px;}
       .route-style-row{grid-template-columns:46px 1fr 46px;}
       .save-style-btn,.subtle-action{min-height:44px;}
     }
