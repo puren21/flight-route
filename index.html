@@ -1810,12 +1810,14 @@ function setRouteState(routeLine,enabled,persist=true){
       strokeColor:routeStyle.color,
       strokeOpacity:routeStyle.opacity
     });
+    updateRouteOutline(routeLine,routeStyle.weight,routeStyle.opacity);
   }else{
     routeLine.setOptions({
       strokeWeight:offRouteStyle.weight,
       strokeColor:offRouteStyle.color,
       strokeOpacity:offRouteStyle.opacity
     });
+    updateRouteOutline(routeLine,offRouteStyle.weight,offRouteStyle.opacity);
   }
 
   if(routeLine._labelOverlay){
@@ -2876,6 +2878,20 @@ function smoothRoutePath(sourcePath,iterations=2,ratio=0.12){
   return points;
 }
 
+function getRouteOutlineWeight(weight){
+  return Math.max(Number(weight)+4,7);
+}
+
+function updateRouteOutline(routeLine,weight,opacity){
+  if(!routeLine?._outlineLine) return;
+  routeLine._outlineLine.setOptions({
+    strokeWeight:getRouteOutlineWeight(weight),
+    strokeColor:'#FFFFFF',
+    strokeOpacity:Math.min(1,Math.max(.82,Number(opacity)||.9)),
+    strokeStyle:'solid'
+  });
+}
+
 function drawLineString(coordinates,labelNumber){
   const localBounds=new kakao.maps.LatLngBounds();
   const path=coordinates.map(coord=>{
@@ -2885,6 +2901,18 @@ function drawLineString(coordinates,labelNumber){
     return latLng;
   });
   const displayPath=smoothRoutePath(path);
+
+  // 위성지도에서도 잘 보이도록 기존 컬러선 아래에 더 두꺼운 흰색 바탕선을 겹쳐 그림.
+  const outlineLine=new kakao.maps.Polyline({
+    map:map,
+    path:displayPath,
+    strokeWeight:getRouteOutlineWeight(routeStyle.weight),
+    strokeColor:'#FFFFFF',
+    strokeOpacity:.95,
+    strokeStyle:'solid',
+    clickable:false,
+    zIndex:4
+  });
 
   const routeLine=new kakao.maps.Polyline({
     map:map,
@@ -2896,6 +2924,8 @@ function drawLineString(coordinates,labelNumber){
     clickable:true,
     zIndex:5
   });
+
+  routeLine._outlineLine=outlineLine;
 
   routeLine._routeNumber=labelNumber!=='' ? String(labelNumber) : '';
   const savedEnabled=routeLine._routeNumber &&
@@ -2909,6 +2939,9 @@ function drawLineString(coordinates,labelNumber){
       strokeColor:offRouteStyle.color,
       strokeOpacity:offRouteStyle.opacity
     });
+    updateRouteOutline(routeLine,offRouteStyle.weight,offRouteStyle.opacity);
+  }else{
+    updateRouteOutline(routeLine,routeStyle.weight,routeStyle.opacity);
   }
 
   if(labelNumber!==''){
@@ -3256,6 +3289,7 @@ function applyRouteStyle(){
         strokeColor:routeStyle.color,
         strokeOpacity:routeStyle.opacity
       });
+      updateRouteOutline(line,routeStyle.weight,routeStyle.opacity);
       if(line._labelOverlay?._labelElement){
         line._labelOverlay._labelElement.style.opacity=String(routeStyle.opacity);
       }
@@ -3271,6 +3305,7 @@ function applyOffRouteStyle(){
         strokeColor:offRouteStyle.color,
         strokeOpacity:offRouteStyle.opacity
       });
+      updateRouteOutline(line,offRouteStyle.weight,offRouteStyle.opacity);
       if(line._labelOverlay?._labelElement){
         line._labelOverlay._labelElement.style.opacity=String(offRouteStyle.opacity);
       }
