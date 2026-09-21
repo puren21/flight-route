@@ -3818,17 +3818,23 @@
   }
 }
 
-/* Mobile: keep the memo menu within the upper half of the screen */
+/* Mobile memo page: allow the resize handle to travel to the viewport bottom */
 @media (max-width:700px){
   #controlPanel.detail-view:has(#memoPage.active){
-    height:min(var(--user-panel-height,var(--stable-panel-height,50dvh)),50dvh) !important;
-    max-height:50dvh !important;
+    height:var(--user-panel-height,auto) !important;
+    min-height:0 !important;
+    max-height:calc(100dvh - 8px) !important;
   }
 
   #controlPanel.detail-view:has(#memoPage.active) .panel-body{
     min-height:0 !important;
     overflow-y:auto !important;
+    overflow-x:hidden !important;
     -webkit-overflow-scrolling:touch !important;
+  }
+
+  #memoPage.active .memo-settings-list{
+    max-height:none !important;
   }
 }
 </style>
