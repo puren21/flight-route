@@ -1482,6 +1482,13 @@ const SETTINGS_TITLE_HTML=`<span class="settings-title-icon send-title-icon" ari
       </span><span class="settings-title-text">설정</span>`;
 const menuHome=document.getElementById('menuHome');
 const menuPages=[...document.querySelectorAll('.menu-page')];
+const LAST_MENU_STORAGE_KEY='flightRouteLastMenuV1';
+let lastMenuState={pageId:'',title:''};
+try{
+  lastMenuState=JSON.parse(localStorage.getItem(LAST_MENU_STORAGE_KEY)||'{}')||{};
+}catch(e){
+  lastMenuState={pageId:'',title:''};
+}
 const MEMO_STORAGE_KEY='flightRouteMemosV1';
 const ROUTE_STATE_STORAGE_KEY='flightRouteStatesV1';
 const ROUTE_STATE_CLOUD_KEY='__route_states__';
@@ -1532,7 +1539,19 @@ function syncPanelToggle(){
 function toggleControlPanel(){
   const willOpen=controlPanel.classList.contains('collapsed');
   controlPanel.classList.toggle('collapsed');
-  if(willOpen) showMenuHome();
+
+  if(willOpen){
+    const lastPageId=String(lastMenuState?.pageId||'');
+    const lastTitle=String(lastMenuState?.title||'');
+    const pageExists=lastPageId && document.getElementById(lastPageId);
+
+    if(pageExists){
+      openMenuPage(lastPageId,lastTitle||'설정');
+    }else{
+      showMenuHome();
+    }
+  }
+
   syncPanelToggle();
 }
 
@@ -1692,6 +1711,11 @@ function showMenuHome(){
   menuHome.style.display='flex';
   document.querySelectorAll('.menu-page').forEach(page=>page.classList.remove('active'));
   panelTitle.innerHTML=SETTINGS_TITLE_HTML;
+
+  lastMenuState={pageId:'',title:''};
+  try{
+    localStorage.setItem(LAST_MENU_STORAGE_KEY,JSON.stringify(lastMenuState));
+  }catch(e){}
 }
 
 function openMenuPage(pageId,title){
@@ -1701,6 +1725,11 @@ function openMenuPage(pageId,title){
   });
   controlPanel.classList.add('detail-view');
   panelTitle.textContent=title;
+
+  lastMenuState={pageId:String(pageId||''),title:String(title||'')};
+  try{
+    localStorage.setItem(LAST_MENU_STORAGE_KEY,JSON.stringify(lastMenuState));
+  }catch(e){}
 }
 
 document.querySelectorAll('.ios-menu-row').forEach(row=>{
