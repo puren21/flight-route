@@ -761,29 +761,8 @@
     <button id="panelToggleBtn" class="panel-toggle" type="button" aria-label="메뉴 펼치기">＋</button>
   </div>
   <div class="panel-body">
-    <section class="menu-section quick-section">
-      <div class="menu-section-title">빠른 기능</div>
-      <div class="quick-grid">
-        <button id="roadBtn" class="quick-btn active" type="button">일반지도</button>
-        <button id="skyBtn" class="quick-btn" type="button">위성지도</button>
-        <button id="menuLocBtn" class="quick-btn" type="button">현재 위치</button>
-      </div>
-      <label class="airspace-card">
-        <span class="airspace-label">
-          <span class="geo-swatch" style="background:rgba(110,110,110,.15);border-color:#6e6e6e"></span>
-          <span>
-            <strong>장애물공역</strong>
-            <small id="krAirspaceStatus">드론원스톱 장애물공역</small>
-          </span>
-        </span>
-        <input id="krAirspaceToggle" type="checkbox">
-      </label>
-      <input class="krAirspaceCategory" type="checkbox" value="obstacle" checked hidden>
-      <a class="geo-link compact-link" href="https://drone.onestop.go.kr/common/flightArea" target="_blank" rel="noopener">공식 지도 보기 ↗</a>
-    </section>
-
     <section class="menu-section">
-      <div class="menu-section-title">경로 찾기</div>
+      <div class="menu-section-title">경로찾기</div>
       <div class="route-number-wrap">
         <label for="routeNumberSelect">비행경로 번호</label>
         <select id="routeNumberSelect" class="route-number-select">
@@ -836,36 +815,57 @@
           <span id="offRouteOpacityValue" class="route-style-value">50%</span>
         </div>
       </div>
-
-      <button class="style-section-toggle" type="button" data-target="labelStyleBody">
-        <span>라벨</span><span>＋</span>
-      </button>
-      <div id="labelStyleBody" class="style-section-body">
-        <div class="route-style-row">
-          <span>크기</span>
-          <input id="labelSize" type="range" min="8" max="28" step="1" value="13">
-          <span id="labelSizeValue" class="route-style-value">13px</span>
-        </div>
-        <div class="route-style-row">
-          <span>색상</span>
-          <input id="labelColor" type="color" value="#0d47a1">
-          <span></span>
-        </div>
-        <div class="row">
-          <button id="saveLabelStyleBtn" class="save-style-btn" type="button">라벨 설정 저장</button>
-        </div>
-      </div>
-
-      <button id="resetRouteStatesBtn" class="subtle-action" type="button">켜기·끄기 상태 초기화</button>
     </section>
 
     <section class="menu-section">
-      <div class="menu-section-title">메모</div>
-      <button class="style-section-toggle" type="button" data-target="memoListBody">
-        <span>메모된 번호</span><span>＋</span>
+      <div class="menu-section-title">라벨</div>
+      <div class="route-style-row">
+        <span>크기</span>
+        <input id="labelSize" type="range" min="8" max="28" step="1" value="13">
+        <span id="labelSizeValue" class="route-style-value">13px</span>
+      </div>
+      <div class="route-style-row">
+        <span>색상</span>
+        <input id="labelColor" type="color" value="#0d47a1">
+        <span></span>
+      </div>
+      <div class="row">
+        <button id="saveLabelStyleBtn" class="save-style-btn" type="button">라벨 설정 저장</button>
+      </div>
+    </section>
+
+    <section class="menu-section">
+      <button class="style-section-toggle" type="button" data-target="otherMenuBody">
+        <span>기타 기능</span><span>＋</span>
       </button>
-      <div id="memoListBody" class="style-section-body">
-        <div id="memoList" class="memo-list"></div>
+      <div id="otherMenuBody" class="style-section-body">
+        <div class="quick-grid" style="margin-top:6px;">
+          <button id="roadBtn" class="quick-btn active" type="button">일반지도</button>
+          <button id="skyBtn" class="quick-btn" type="button">위성지도</button>
+          <button id="menuLocBtn" class="quick-btn" type="button">현재 위치</button>
+        </div>
+
+        <label class="airspace-card">
+          <span class="airspace-label">
+            <span class="geo-swatch" style="background:rgba(110,110,110,.15);border-color:#6e6e6e"></span>
+            <span>
+              <strong>장애물공역</strong>
+              <small id="krAirspaceStatus">드론원스톱 장애물공역</small>
+            </span>
+          </span>
+          <input id="krAirspaceToggle" type="checkbox">
+        </label>
+        <input class="krAirspaceCategory" type="checkbox" value="obstacle" checked hidden>
+        <a class="geo-link compact-link" href="https://drone.onestop.go.kr/common/flightArea" target="_blank" rel="noopener">공식 지도 보기 ↗</a>
+
+        <button class="style-section-toggle" type="button" data-target="memoListBody">
+          <span>메모된 번호</span><span>＋</span>
+        </button>
+        <div id="memoListBody" class="style-section-body">
+          <div id="memoList" class="memo-list"></div>
+        </div>
+
+        <button id="resetRouteStatesBtn" class="subtle-action" type="button">켜기·끄기 상태 초기화</button>
       </div>
     </section>
 
