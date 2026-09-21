@@ -1450,35 +1450,8 @@ function updateStablePanelWidth(){
     return;
   }
 
-  const wasCollapsed=controlPanel.classList.contains('collapsed');
-  const wasDetail=controlPanel.classList.contains('detail-view');
-  const previousHomeDisplay=menuHome.style.display;
-  const previousActive=menuPages.map(page=>page.classList.contains('active'));
-
-  controlPanel.classList.remove('collapsed');
-  controlPanel.classList.remove('detail-view');
-  controlPanel.style.setProperty('--stable-panel-width','320px');
-
-  let maxWidth=320;
-
-  menuHome.style.display='flex';
-  menuPages.forEach(page=>page.classList.remove('active'));
-  maxWidth=Math.max(maxWidth,Math.ceil(controlPanel.scrollWidth));
-
-  menuHome.style.display='none';
-  menuPages.forEach((page,index)=>{
-    menuPages.forEach(p=>p.classList.remove('active'));
-    page.classList.add('active');
-    maxWidth=Math.max(maxWidth,Math.ceil(controlPanel.scrollWidth));
-  });
-
-  menuHome.style.display=previousHomeDisplay;
-  menuPages.forEach((page,index)=>page.classList.toggle('active',previousActive[index]));
-  controlPanel.classList.toggle('detail-view',wasDetail);
-  controlPanel.classList.toggle('collapsed',wasCollapsed);
-
-  maxWidth=Math.min(Math.max(maxWidth,320),420);
-  controlPanel.style.setProperty('--stable-panel-width',maxWidth+'px');
+  // 기타기능 화면을 포함한 가장 긴 메뉴 기준 폭을 모든 화면에서 동일하게 유지함.
+  controlPanel.style.setProperty('--stable-panel-width','340px');
 }
 
 function showMenuHome(){
@@ -2853,14 +2826,14 @@ if ('serviceWorker' in navigator) {
 
   @media (min-width:701px){
     .panel{
-      width:var(--stable-panel-width,320px);
-      min-width:var(--stable-panel-width,320px);
-      max-width:var(--stable-panel-width,320px);
+      width:var(--stable-panel-width,340px);
+      min-width:var(--stable-panel-width,340px);
+      max-width:var(--stable-panel-width,340px);
     }
     .panel.collapsed{
-      width:var(--stable-panel-width,320px);
-      min-width:var(--stable-panel-width,320px);
-      max-width:var(--stable-panel-width,320px);
+      width:var(--stable-panel-width,340px);
+      min-width:var(--stable-panel-width,340px);
+      max-width:var(--stable-panel-width,340px);
     }
   }
 
