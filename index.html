@@ -5699,4 +5699,26 @@ if ('serviceWorker' in navigator) {
     display:none !important;
   }
 }
+
+/* Main settings header: < 설정 */
+.panel:not(.detail-view):not(.collapsed) .panel-header{
+  display:grid !important;
+  grid-template-columns:40px minmax(0,1fr) 40px !important;
+  align-items:center !important;
+}
+.panel:not(.detail-view):not(.collapsed) .panel-toggle{
+  grid-column:1 !important;
+  grid-row:1 !important;
+  justify-self:start !important;
+}
+.panel:not(.detail-view):not(.collapsed) .panel-header h1{
+  grid-column:2 !important;
+  grid-row:1 !important;
+  margin:0 !important;
+  text-align:left !important;
+  justify-self:start !important;
+}
+.panel:not(.detail-view):not(.collapsed) .menu-back-btn{
+  display:none !important;
+}
 </style>
