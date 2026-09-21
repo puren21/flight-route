@@ -4620,4 +4620,20 @@ if ('serviceWorker' in navigator) {
     -webkit-touch-callout:default !important;
   }
 }
+
+/* Keep the current menu title/back controls visible while menu content scrolls */
+.panel:not(.collapsed) .panel-header{
+  position:sticky !important;
+  top:0 !important;
+  z-index:100 !important;
+  flex:0 0 auto !important;
+  background:rgba(255,255,255,.98) !important;
+  -webkit-backdrop-filter:blur(12px) !important;
+  backdrop-filter:blur(12px) !important;
+}
+@media (max-width:700px){
+  .panel:not(.collapsed) .panel-header{
+    top:0 !important;
+  }
+}
 </style>
