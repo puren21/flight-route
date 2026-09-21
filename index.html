@@ -719,6 +719,15 @@ mobileMenuLauncher.addEventListener('click',()=>{
   controlPanel.classList.toggle('collapsed');
   syncPanelToggle();
 });
+
+document.addEventListener('pointerdown',event=>{
+  if(controlPanel.classList.contains('collapsed')) return;
+  const target=event.target;
+  if(controlPanel.contains(target) || mobileMenuLauncher.contains(target)) return;
+  controlPanel.classList.add('collapsed');
+  syncPanelToggle();
+});
+
 const geocoder=new kakao.maps.services.Geocoder();
 let addressOverlay=null;
 
