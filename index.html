@@ -1364,6 +1364,12 @@ let routePolylines=[],routeLabels=[],routeBounds=new kakao.maps.LatLngBounds(),c
 let locationWatchId=null;
 let currentLocationLatLng=null;
 let locationTrackingStarted=false;
+let currentLocationMarkerEl=null;
+let currentLocationHeadingEl=null;
+let currentHeading=null;
+let deviceHeading=null;
+let locationMoveAnimation=null;
+let deviceOrientationListening=false;
 const routeIndex=new Map();
 let selectedRoute=null;
 let routeSelectOverlay=null;
@@ -2791,25 +2797,135 @@ async function loadKoreanAirspace(){
   }
 }
 
+function normalizeHeading(value){
+  const n=Number(value);
+  if(!Number.isFinite(n)) return null;
+  return ((n%360)+360)%360;
+}
+
+function updateLocationHeadingVisual(){
+  if(!currentLocationHeadingEl) return;
+  const heading=normalizeHeading(currentHeading ?? deviceHeading);
+  if(heading===null){
+    currentLocationHeadingEl.classList.remove('visible');
+    return;
+  }
+
+  currentLocationHeadingEl.classList.add('visible');
+  currentLocationHeadingEl.style.transform='translateX(-50%) rotate('+heading+'deg)';
+}
+
+function ensureCurrentLocationMarker(loc){
+  if(currentMarker) return;
+
+  const markerEl=document.createElement('div');
+  markerEl.className='current-location-marker';
+  markerEl.setAttribute('aria-label','현재 위치');
+
+  const headingEl=document.createElement('div');
+  headingEl.className='current-location-heading';
+
+  const dotEl=document.createElement('div');
+  dotEl.className='current-location-dot';
+
+  markerEl.appendChild(headingEl);
+  markerEl.appendChild(dotEl);
+
+  currentLocationMarkerEl=markerEl;
+  currentLocationHeadingEl=headingEl;
+
+  currentMarker=new kakao.maps.CustomOverlay({
+    map:map,
+    position:loc,
+    content:markerEl,
+    xAnchor:0.5,
+    yAnchor:0.5,
+    zIndex:80
+  });
+
+  updateLocationHeadingVisual();
+}
+
+function animateCurrentLocationTo(loc){
+  ensureCurrentLocationMarker(loc);
+
+  if(locationMoveAnimation){
+    cancelAnimationFrame(locationMoveAnimation);
+    locationMoveAnimation=null;
+  }
+
+  const from=currentLocationLatLng || loc;
+  const fromLat=from.getLat();
+  const fromLng=from.getLng();
+  const toLat=loc.getLat();
+  const toLng=loc.getLng();
+  const duration=650;
+  const started=performance.now();
+
+  const ease=t=>1-Math.pow(1-t,3);
+
+  const frame=now=>{
+    const p=Math.min(1,(now-started)/duration);
+    const ep=ease(p);
+    const lat=fromLat+(toLat-fromLat)*ep;
+    const lng=fromLng+(toLng-fromLng)*ep;
+    const point=new kakao.maps.LatLng(lat,lng);
+
+    currentMarker.setPosition(point);
+
+    if(p<1){
+      locationMoveAnimation=requestAnimationFrame(frame);
+    }else{
+      currentLocationLatLng=loc;
+      locationMoveAnimation=null;
+    }
+  };
+
+  locationMoveAnimation=requestAnimationFrame(frame);
+}
+
 function updateCurrentLocationMarker(loc){
-  currentLocationLatLng=loc;
-
-  if(!currentMarker){
-    const markerEl=document.createElement('div');
-    markerEl.className='current-location-dot';
-    markerEl.setAttribute('aria-label','현재 위치');
-
-    currentMarker=new kakao.maps.CustomOverlay({
-      map:map,
-      position:loc,
-      content:markerEl,
-      xAnchor:0.5,
-      yAnchor:0.5,
-      zIndex:80
-    });
-  }else{
+  if(!currentLocationLatLng){
+    currentLocationLatLng=loc;
+    ensureCurrentLocationMarker(loc);
     currentMarker.setPosition(loc);
-    currentMarker.setMap(map);
+    return;
+  }
+
+  animateCurrentLocationTo(loc);
+  currentMarker.setMap(map);
+}
+
+function handleDeviceOrientation(event){
+  let heading=null;
+
+  if(Number.isFinite(event.webkitCompassHeading)){
+    heading=event.webkitCompassHeading;
+  }else if(Number.isFinite(event.alpha)){
+    heading=360-event.alpha;
+  }
+
+  heading=normalizeHeading(heading);
+  if(heading===null) return;
+
+  deviceHeading=heading;
+  if(currentHeading===null) updateLocationHeadingVisual();
+}
+
+async function enableDeviceHeading(){
+  if(deviceOrientationListening || typeof DeviceOrientationEvent==='undefined') return;
+
+  try{
+    if(typeof DeviceOrientationEvent.requestPermission==='function'){
+      const permission=await DeviceOrientationEvent.requestPermission();
+      if(permission!=='granted') return;
+    }
+
+    window.addEventListener('deviceorientationabsolute',handleDeviceOrientation,true);
+    window.addEventListener('deviceorientation',handleDeviceOrientation,true);
+    deviceOrientationListening=true;
+  }catch(error){
+    console.warn('방향 센서 사용 불가',error);
   }
 }
 
@@ -2818,12 +2934,22 @@ function handleLocationUpdate(position){
   const lng=position.coords.longitude;
   const loc=new kakao.maps.LatLng(lat,lng);
 
+  const gpsHeading=normalizeHeading(position.coords.heading);
+  const speed=Number(position.coords.speed);
+  if(gpsHeading!==null && (!Number.isFinite(speed) || speed>0.4)){
+    currentHeading=gpsHeading;
+  }else{
+    currentHeading=null;
+  }
+
   updateCurrentLocationMarker(loc);
+  updateLocationHeadingVisual();
 
-  // 위치 추적이 켜져 있는 동안 실제 이동에 맞춰 지도 중심도 계속 따라감.
-  map.setCenter(loc);
-
-  if(!locationTrackingStarted){
+  // 실제 이동을 따라가되 현재 줌 수준은 유지함.
+  if(locationTrackingStarted){
+    map.panTo(loc);
+  }else{
+    map.setCenter(loc);
     map.setLevel(4);
     locationTrackingStarted=true;
   }
@@ -2843,11 +2969,14 @@ function handleLocationError(error){
   alert(message);
 }
 
-function locateMe(){
+async function locateMe(){
   if(!navigator.geolocation){
     alert('이 브라우저에서는 현재 위치 기능을 사용할 수 없습니다.');
     return;
   }
+
+  // iPhone Safari에서는 사용자 터치 안에서 방향 센서 권한을 요청해야 함.
+  await enableDeviceHeading();
 
   // 이미 추적 중이면 새 추적을 만들지 않고 현재 위치로 즉시 복귀함.
   if(locationWatchId!==null){
@@ -3540,6 +3669,83 @@ if ('serviceWorker' in navigator) {
   pointer-events:none;
 }
 @media (max-width:700px){
+  .current-location-dot{
+    width:24px;
+    height:24px;
+    border-width:4px;
+  }
+}
+
+.current-location-marker{
+  position:relative;
+  width:54px;
+  height:54px;
+  pointer-events:none;
+}
+.current-location-heading{
+  position:absolute;
+  left:50%;
+  top:-34px;
+  width:42px;
+  height:58px;
+  opacity:0;
+  transform-origin:50% 61px;
+  transition:opacity .18s ease, transform .16s linear;
+  pointer-events:none;
+}
+.current-location-heading.visible{
+  opacity:1;
+}
+.current-location-heading::before{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:0;
+  width:0;
+  height:0;
+  transform:translateX(-50%);
+  border-left:19px solid transparent;
+  border-right:19px solid transparent;
+  border-bottom:58px solid rgba(10,132,255,.16);
+  filter:drop-shadow(0 1px 2px rgba(10,132,255,.10));
+}
+.current-location-dot{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:22px;
+  height:22px;
+  box-sizing:border-box;
+  transform:translate(-50%,-50%);
+  border:4px solid #fff;
+  border-radius:50%;
+  background:#0a84ff;
+  box-shadow:
+    0 1px 5px rgba(0,0,0,.35),
+    0 0 0 1px rgba(0,0,0,.08);
+}
+.current-location-dot::after{
+  content:"";
+  position:absolute;
+  inset:-8px;
+  border-radius:50%;
+  border:2px solid rgba(10,132,255,.18);
+  opacity:.85;
+  animation:currentLocationPulse 2s ease-out infinite;
+}
+@keyframes currentLocationPulse{
+  0%{transform:scale(.72);opacity:.5;}
+  70%,100%{transform:scale(1.35);opacity:0;}
+}
+@media (prefers-reduced-motion:reduce){
+  .current-location-dot::after{animation:none;}
+  .current-location-heading{transition:none;}
+}
+@media (max-width:700px){
+  .current-location-marker{
+    width:58px;
+    height:58px;
+  }
   .current-location-dot{
     width:24px;
     height:24px;
