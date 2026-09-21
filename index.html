@@ -1270,6 +1270,11 @@
         <span>기본 라인</span><span>›</span>
       </button>
       <div id="defaultStyleBody" class="style-section-body">
+        <div class="size-preset-group" data-target="routeWeight" aria-label="기본 라인 두께 빠른 선택">
+          <button type="button" data-value="3">표준</button>
+          <button type="button" data-value="5">크게</button>
+          <button type="button" data-value="7">더 크게</button>
+        </div>
         <div class="route-style-row">
           <span>두께</span>
           <input id="routeWeight" type="range" min="1" max="10" step="1" value="3">
@@ -1291,6 +1296,11 @@
         <span>끄기 라인</span><span>›</span>
       </button>
       <div id="offStyleBody" class="style-section-body">
+        <div class="size-preset-group" data-target="offRouteWeight" aria-label="끄기 라인 두께 빠른 선택">
+          <button type="button" data-value="2">표준</button>
+          <button type="button" data-value="4">크게</button>
+          <button type="button" data-value="6">더 크게</button>
+        </div>
         <div class="route-style-row">
           <span>두께</span>
           <input id="offRouteWeight" type="range" min="1" max="10" step="1" value="2">
@@ -1311,6 +1321,11 @@
     </section>
 
     <section id="labelPage" class="menu-page">
+      <div class="size-preset-group" data-target="labelSize" aria-label="라벨 크기 빠른 선택">
+        <button type="button" data-value="13">표준</button>
+        <button type="button" data-value="17">크게</button>
+        <button type="button" data-value="21">더 크게</button>
+      </div>
       <div class="route-style-row">
         <span>크기</span>
         <input id="labelSize" type="range" min="8" max="28" step="1" value="13">
@@ -2632,12 +2647,38 @@ const saveLabelStyleBtn=document.getElementById('saveLabelStyleBtn');
 
 labelSizeInput.value=String(labelStyle.size);
 labelSizeValue.textContent=labelStyle.size+'px';
+
 labelColorInput.value=labelStyle.color.toLowerCase();
+
+function refreshSizePresetGroups(){
+  document.querySelectorAll('.size-preset-group').forEach(group=>{
+    const target=document.getElementById(group.dataset.target);
+    if(!target) return;
+    const current=Number(target.value);
+    group.querySelectorAll('button').forEach(btn=>{
+      btn.classList.toggle('active',Number(btn.dataset.value)===current);
+    });
+  });
+}
+
+document.querySelectorAll('.size-preset-group button').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const group=btn.closest('.size-preset-group');
+    const target=document.getElementById(group?.dataset.target||'');
+    if(!target) return;
+    target.value=btn.dataset.value;
+    target.dispatchEvent(new Event('input',{bubbles:true}));
+    refreshSizePresetGroups();
+  });
+});
+
+refreshSizePresetGroups();
 
 routeWeightInput.addEventListener('input',()=>{
   routeStyle.weight=Number(routeWeightInput.value);
   routeWeightValue.textContent=routeWeightInput.value;
   applyRouteStyle();
+  refreshSizePresetGroups();
 });
 
 routeColorInput.addEventListener('input',()=>{
@@ -2655,6 +2696,7 @@ offRouteWeightInput.addEventListener('input',()=>{
   offRouteStyle.weight=Number(offRouteWeightInput.value);
   offRouteWeightValue.textContent=offRouteWeightInput.value;
   applyOffRouteStyle();
+  refreshSizePresetGroups();
 });
 
 offRouteColorInput.addEventListener('input',()=>{
@@ -2676,6 +2718,7 @@ labelSizeInput.addEventListener('input',()=>{
       overlay._labelElement.style.fontSize=labelStyle.size+'px';
     }
   });
+  refreshSizePresetGroups();
 });
 
 labelColorInput.addEventListener('input',()=>{
@@ -4104,5 +4147,30 @@ if ('serviceWorker' in navigator) {
   color:#222 !important;
   -webkit-text-fill-color:#222 !important;
   opacity:1 !important;
+}
+
+.size-preset-group{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:6px;
+  margin:0 0 8px;
+  padding:4px;
+  border-radius:12px;
+  background:#e5e5ea;
+}
+.size-preset-group button{
+  min-height:36px;
+  padding:6px 8px;
+  border:0;
+  border-radius:9px;
+  background:transparent;
+  color:#3a3a3c;
+  font-size:13px;
+  font-weight:600;
+}
+.size-preset-group button.active{
+  background:#fff;
+  color:#007aff;
+  box-shadow:0 1px 3px rgba(0,0,0,.12);
 }
 </style>
