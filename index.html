@@ -2804,7 +2804,7 @@ function syncRouteWheelSelection(focusMap=true){
     el.setAttribute('aria-selected',active?'true':'false');
   });
 
-  if(changed && focusMap) focusRouteNumber(num);
+  if(focusMap) focusRouteNumber(num);
 }
 
 function scrollRouteWheelTo(num,focusMap=true){
