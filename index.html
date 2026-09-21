@@ -1183,6 +1183,7 @@
   <link rel="preconnect" href="https://zdjuksmhtvhetzblczqq.supabase.co" crossorigin>
   <link rel="preload" href="./flight-route.geojson" as="fetch">
   <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7ee4bab8cd4d6be6d0d68a49e9b4502b&libraries=services"></script>
+  <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.8.3/kakao.min.js" crossorigin="anonymous"></script>
   <link rel="manifest" href="./manifest.webmanifest">
   <meta name="theme-color" content="#ffffff">
   <meta name="mobile-web-app-capable" content="yes">
@@ -2759,12 +2760,28 @@ function openAppWithWebFallback(appUrl,webUrl){
 }
 
 function startKakaoNavi(name,lat,lng){
-  const destinationName=encodeURIComponent(name || '선택 위치');
+  const rawName=name || '선택 위치';
+  const destinationName=encodeURIComponent(rawName);
   const webUrl='https://map.kakao.com/link/to/'+destinationName+','+lat+','+lng;
 
   if(isMobileRouteDevice()){
-    const appUrl='kakaomap://route?ep='+lat+','+lng+'&by=car';
-    openAppWithWebFallback(appUrl,webUrl);
+    try{
+      if(!window.Kakao || !Kakao.Navi){
+        throw new Error('카카오내비 SDK를 불러오지 못했습니다.');
+      }
+      if(!Kakao.isInitialized()){
+        Kakao.init('7ee4bab8cd4d6be6d0d68a49e9b4502b');
+      }
+      Kakao.Navi.start({
+        name:rawName,
+        x:Number(lng),
+        y:Number(lat),
+        coordType:'wgs84'
+      });
+    }catch(error){
+      console.error('카카오내비 실행 오류',error);
+      alert('카카오내비 앱을 실행하지 못했습니다. 잠시 후 다시 시도해 주세요.');
+    }
     return;
   }
 
