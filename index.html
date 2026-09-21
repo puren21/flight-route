@@ -3115,7 +3115,7 @@ loadRoute().then(()=>loadRemoteRouteStates());
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js?v=5',{updateViaCache:'none'}).catch(console.error);
+    navigator.serviceWorker.register('./sw.js?v=7',{updateViaCache:'none'}).catch(console.error);
   });
 }
 </script>
