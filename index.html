@@ -2763,7 +2763,12 @@ if ('serviceWorker' in navigator) {
   .ios-icon-other{background:#8e8e93;}
 
   @media (min-width:701px){
-    .panel:not(.collapsed){
+    .panel{
+      width:var(--stable-panel-width,320px);
+      min-width:var(--stable-panel-width,320px);
+      max-width:var(--stable-panel-width,320px);
+    }
+    .panel.collapsed{
       width:var(--stable-panel-width,320px);
       min-width:var(--stable-panel-width,320px);
       max-width:var(--stable-panel-width,320px);
