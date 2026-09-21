@@ -1890,9 +1890,23 @@ async function deleteRemoteMemo(num){
 
 let memoEditingRoute=null;
 let memoEditingNumber='';
+let memoReturnRoute=null;
+let memoReturnPosition=null;
 
 function openMemoEditor(routeLine){
   const num=routeLine?._routeNumber || '';
+
+  // 노선 정보창에서 메모를 연 경우 현재 노선과 팝업 위치를 기억한 뒤
+  // 정보창은 숨기고 메모창만 표시함.
+  if(routeSelectOverlay && routeLine){
+    memoReturnRoute=routeLine;
+    memoReturnPosition=routeSelectOverlay.getPosition();
+    closeRouteSelectPopup();
+  }else{
+    memoReturnRoute=null;
+    memoReturnPosition=null;
+  }
+
   openMemoEditorByNumber(num,routeLine);
 }
 
@@ -1932,8 +1946,21 @@ function closeMemoEditor(){
   const backdrop=document.getElementById('memoModalBackdrop');
   backdrop.classList.remove('open');
   backdrop.setAttribute('aria-hidden','true');
+
+  const returnRoute=memoReturnRoute;
+  const returnPosition=memoReturnPosition;
+
   memoEditingRoute=null;
   memoEditingNumber='';
+  memoReturnRoute=null;
+  memoReturnPosition=null;
+
+  // 노선 정보창에서 열었던 메모라면 닫힌 뒤 같은 위치에 정보창을 복원함.
+  if(returnRoute && returnPosition){
+    requestAnimationFrame(()=>{
+      showRouteSelectPopup(returnRoute,returnPosition);
+    });
+  }
 }
 
 async function saveCurrentMemo(){
