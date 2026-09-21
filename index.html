@@ -2029,6 +2029,51 @@ function showRouteProperties(routeLine){
   alert('번호: '+num+'\n\n메모:\n'+memo);
 }
 
+function openMemoFromList(num){
+  const entry=routeIndex.get(String(num));
+  const routeLine=entry && entry.lines && entry.lines[0];
+  const isMobile=window.matchMedia('(max-width:700px)').matches;
+
+  if(isMobile){
+    controlPanel.classList.add('collapsed');
+    syncPanelToggle();
+
+    setTimeout(()=>{
+      if(typeof map.relayout==='function') map.relayout();
+      if(entry) focusRouteNumber(num);
+
+      setTimeout(()=>{
+        openMemoEditorByNumber(num,routeLine||null);
+      },180);
+    },120);
+    return;
+  }
+
+  if(entry) focusRouteNumber(num);
+  setTimeout(()=>openMemoEditorByNumber(num,routeLine||null),80);
+}
+
+async function deleteMemoFromList(num,button){
+  if(!confirm(num+'번 메모를 삭제하시겠습니까?')) return;
+
+  const originalText=button.textContent;
+  try{
+    button.disabled=true;
+    button.textContent='삭제 중';
+    await deleteRemoteMemo(num);
+    delete routeMemos[num];
+    persistRouteMemos();
+    renderMemoList();
+    requestAnimationFrame(()=>updateStablePanelHeight());
+  }catch(error){
+    console.error(error);
+    alert('온라인 메모 삭제에 실패했습니다.\n\n'+error.message);
+  }finally{
+    button.disabled=false;
+    button.textContent=originalText;
+  }
+}
+
 function renderMemoList(){
   const list=document.getElementById('memoList');
   if(!list) return;
@@ -2049,9 +2094,13 @@ function renderMemoList(){
   }
 
   keys.forEach(num=>{
-    const item=document.createElement('button');
-    item.type='button';
-    item.className='memo-item';
+    const row=document.createElement('div');
+    row.className='memo-item';
+
+    const main=document.createElement('button');
+    main.type='button';
+    main.className='memo-item-main';
+    main.setAttribute('aria-label',num+'번 메모 열기');
 
     const n=document.createElement('span');
     n.className='memo-num';
@@ -2061,33 +2110,36 @@ function renderMemoList(){
     t.className='memo-text';
     t.textContent=routeMemos[num].memo;
 
-    item.appendChild(n);
-    item.appendChild(t);
-    item.addEventListener('click',()=>{
-      const entry=routeIndex.get(String(num));
-      const routeLine=entry && entry.lines && entry.lines[0];
-      const isMobile=window.matchMedia('(max-width:700px)').matches;
+    main.appendChild(n);
+    main.appendChild(t);
+    main.addEventListener('click',()=>openMemoFromList(num));
 
-      if(isMobile){
-        controlPanel.classList.add('collapsed');
-        syncPanelToggle();
+    const actions=document.createElement('div');
+    actions.className='memo-item-actions';
 
-        setTimeout(()=>{
-          if(typeof map.relayout==='function') map.relayout();
-          if(entry) focusRouteNumber(num);
-
-          setTimeout(()=>{
-            openMemoEditorByNumber(num,routeLine||null);
-          },180);
-        },120);
-        return;
-      }
-
-      if(entry) focusRouteNumber(num);
-      setTimeout(()=>openMemoEditorByNumber(num,routeLine||null),80);
+    const editBtn=document.createElement('button');
+    editBtn.type='button';
+    editBtn.className='memo-list-edit';
+    editBtn.textContent='수정';
+    editBtn.addEventListener('click',e=>{
+      e.stopPropagation();
+      openMemoFromList(num);
     });
 
-    list.appendChild(item);
+    const deleteBtn=document.createElement('button');
+    deleteBtn.type='button';
+    deleteBtn.className='memo-list-delete';
+    deleteBtn.textContent='삭제';
+    deleteBtn.addEventListener('click',e=>{
+      e.stopPropagation();
+      deleteMemoFromList(num,deleteBtn);
+    });
+
+    actions.appendChild(editBtn);
+    actions.appendChild(deleteBtn);
+    row.appendChild(main);
+    row.appendChild(actions);
+    list.appendChild(row);
   });
 }
 
@@ -4300,5 +4352,74 @@ if ('serviceWorker' in navigator) {
 .panel:not(.collapsed){
   overflow-y:auto !important;
   overscroll-behavior:contain;
+}
+
+/* Memo list: right-side edit/delete actions */
+.memo-item{
+  width:100% !important;
+  min-height:52px !important;
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) auto !important;
+  gap:0 !important;
+  align-items:stretch !important;
+  padding:0 !important;
+  overflow:hidden !important;
+  border-bottom:.5px solid var(--ios-separator) !important;
+  background:transparent !important;
+}
+.memo-item-main{
+  min-width:0 !important;
+  min-height:52px !important;
+  margin:0 !important;
+  padding:8px 10px 8px 0 !important;
+  display:grid !important;
+  grid-template-columns:42px minmax(0,1fr) !important;
+  gap:7px !important;
+  align-items:center !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  text-align:left !important;
+}
+.memo-item-actions{
+  display:flex;
+  align-items:stretch;
+  justify-content:flex-end;
+  flex:0 0 auto;
+}
+.memo-item-actions button{
+  width:58px !important;
+  min-width:58px !important;
+  min-height:52px !important;
+  margin:0 !important;
+  padding:0 8px !important;
+  border:0 !important;
+  border-radius:0 !important;
+  font-size:13px !important;
+  font-weight:600 !important;
+  line-height:1 !important;
+}
+.memo-list-edit{
+  background:#8e8e93 !important;
+  color:#fff !important;
+}
+.memo-list-delete{
+  background:#ff2d55 !important;
+  color:#fff !important;
+}
+.memo-list-edit:disabled,
+.memo-list-delete:disabled{
+  opacity:.65;
+}
+@media (max-width:700px){
+  .memo-item-actions button{
+    width:62px !important;
+    min-width:62px !important;
+    min-height:54px !important;
+    font-size:14px !important;
+  }
+  .memo-item-main{
+    min-height:54px !important;
+  }
 }
 </style>
