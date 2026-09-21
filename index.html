@@ -1584,14 +1584,24 @@ function renderMemoList(){
     item.addEventListener('click',()=>{
       const entry=routeIndex.get(String(num));
       const routeLine=entry && entry.lines && entry.lines[0];
+      const isMobile=window.matchMedia('(max-width:700px)').matches;
 
-      if(entry) focusRouteNumber(num);
-
-      if(window.matchMedia('(max-width:700px)').matches){
+      if(isMobile){
         controlPanel.classList.add('collapsed');
         syncPanelToggle();
+
+        setTimeout(()=>{
+          if(typeof map.relayout==='function') map.relayout();
+          if(entry) focusRouteNumber(num);
+
+          setTimeout(()=>{
+            openMemoEditorByNumber(num,routeLine||null);
+          },180);
+        },120);
+        return;
       }
 
+      if(entry) focusRouteNumber(num);
       setTimeout(()=>openMemoEditorByNumber(num,routeLine||null),80);
     });
 
