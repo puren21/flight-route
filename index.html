@@ -1817,15 +1817,20 @@ document.querySelectorAll('.style-section-toggle').forEach(btn=>{
   btn.addEventListener('click',()=>{
     const body=document.getElementById(btn.dataset.target);
     const willOpen=!body.classList.contains('open');
-    document.querySelectorAll('.style-section-body.open').forEach(openBody=>{
+    const scope=btn.parentElement;
+
+    scope.querySelectorAll(':scope > .style-section-body.open').forEach(openBody=>{
+      if(openBody===body) return;
       openBody.classList.remove('open');
-      const otherBtn=document.querySelector('.style-section-toggle[data-target="'+openBody.id+'"]');
+      const otherBtn=scope.querySelector(':scope > .style-section-toggle[data-target="'+openBody.id+'"]');
       if(otherBtn?.lastElementChild) otherBtn.lastElementChild.textContent='＋';
     });
+
     if(willOpen){
       body.classList.add('open');
       btn.lastElementChild.textContent='−';
     }else{
+      body.classList.remove('open');
       btn.lastElementChild.textContent='＋';
     }
   });
