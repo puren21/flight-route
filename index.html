@@ -632,6 +632,9 @@
           <input id="labelColor" type="color" value="#0d47a1">
           <span></span>
         </div>
+        <div class="row">
+          <button id="saveLabelStyleBtn" type="button">라벨 설정 저장</button>
+        </div>
       </div>
     </div>
     <div class="row"><button id="roadBtn" class="active">일반지도</button><button id="skyBtn">위성지도</button></div>
@@ -651,7 +654,19 @@ const statusEl=document.getElementById('status');
 const routeToggle={checked:true};
 const routeStyle={weight:3,color:'#E53935',opacity:.9};
 const offRouteStyle={weight:2,color:'#6F7F95',opacity:.5};
+const LABEL_STYLE_STORAGE_KEY='flightRouteLabelStyleV1';
 const labelStyle={size:13,color:'#0D47A1'};
+try{
+  const savedLabelStyle=JSON.parse(localStorage.getItem(LABEL_STYLE_STORAGE_KEY)||'null');
+  if(savedLabelStyle){
+    const savedSize=Number(savedLabelStyle.size);
+    const savedColor=String(savedLabelStyle.color||'');
+    if(Number.isFinite(savedSize) && savedSize>=8 && savedSize<=28) labelStyle.size=savedSize;
+    if(/^#[0-9a-fA-F]{6}$/.test(savedColor)) labelStyle.color=savedColor;
+  }
+}catch(e){
+  console.error('라벨 설정 불러오기 오류',e);
+}
 const controlPanel=document.getElementById('controlPanel');
 const panelToggleBtn=document.getElementById('panelToggleBtn');
 const mobileMenuLauncher=document.getElementById('mobileMenuLauncher');
@@ -1523,6 +1538,11 @@ const offRouteColorInput=document.getElementById('offRouteColor');
 const offRouteOpacityInput=document.getElementById('offRouteOpacity');
 const offRouteWeightValue=document.getElementById('offRouteWeightValue');
 const offRouteOpacityValue=document.getElementById('offRouteOpacityValue');
+const saveLabelStyleBtn=document.getElementById('saveLabelStyleBtn');
+
+labelSizeInput.value=String(labelStyle.size);
+labelSizeValue.textContent=labelStyle.size+'px';
+labelColorInput.value=labelStyle.color.toLowerCase();
 
 routeWeightInput.addEventListener('input',()=>{
   routeStyle.weight=Number(routeWeightInput.value);
@@ -1575,6 +1595,19 @@ labelColorInput.addEventListener('input',()=>{
       overlay._labelElement.style.color=labelStyle.color;
     }
   });
+});
+
+saveLabelStyleBtn?.addEventListener('click',()=>{
+  try{
+    localStorage.setItem(LABEL_STYLE_STORAGE_KEY,JSON.stringify({
+      size:labelStyle.size,
+      color:labelStyle.color
+    }));
+    statusEl.textContent='라벨 색상·크기를 기본값으로 저장했습니다.';
+  }catch(error){
+    console.error(error);
+    statusEl.textContent='라벨 설정을 저장하지 못했습니다.';
+  }
 });
 
 kakao.maps.event.addListener(map,'zoom_changed',updateRouteLabelVisibility);
