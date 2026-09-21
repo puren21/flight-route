@@ -1427,7 +1427,20 @@ function startKakaoNavi(name,lat,lng){
   const webUrl='https://map.kakao.com/link/to/'+destinationName+','+lat+','+lng;
 
   if(isMobileRouteDevice()){
-    const appUrl='kakaomap://route?ep='+lat+','+lng+'&by=car';
+    if(window.Kakao && Kakao.isInitialized() && Kakao.Navi){
+      Kakao.Navi.start({
+        name: name || '선택 위치',
+        x: lng,
+        y: lat,
+        coordType: 'wgs84'
+      });
+      return;
+    }
+
+    const appUrl='kakaonavi://navigate?name='+destinationName+
+      '&x='+lng+
+      '&y='+lat+
+      '&coord_type=wgs84';
     openAppWithWebFallback(appUrl,webUrl);
     return;
   }
@@ -1508,7 +1521,7 @@ function showAddressPopup(latLng){
     const navi=document.createElement('button');
     navi.className='navi-btn';
     navi.type='button';
-    navi.textContent='카카오맵 길찾기';
+    navi.textContent='카카오 길찾기';
     navi.addEventListener('click',()=>startKakaoNavi(jibun,lat,lng));
 
     const naver=document.createElement('button');
