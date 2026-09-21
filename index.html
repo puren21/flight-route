@@ -1558,11 +1558,6 @@ function updateStablePanelHeight(){
   controlPanel.classList.toggle('collapsed',wasCollapsed);
   panelTitle.innerHTML=previousTitleHtml;
 
-  if(isMobile){
-    const viewportLimit=Math.max(260,window.innerHeight-90);
-    maxHeight=Math.min(maxHeight,viewportLimit);
-  }
-
   controlPanel.style.setProperty('--stable-panel-height',Math.ceil(maxHeight)+'px');
 }
 
@@ -3946,5 +3941,20 @@ if ('serviceWorker' in navigator) {
   height:44px !important;
   min-height:44px !important;
   max-height:44px !important;
+}
+
+/* Use the true tallest menu as the common height on every device */
+.panel:not(.collapsed){
+  height:var(--stable-panel-height,auto) !important;
+  min-height:var(--stable-panel-height,0px) !important;
+  max-height:none !important;
+  overflow-y:auto !important;
+}
+@media (max-width:700px){
+  .panel:not(.collapsed){
+    height:var(--stable-panel-height,auto) !important;
+    min-height:var(--stable-panel-height,0px) !important;
+    max-height:none !important;
+  }
 }
 </style>
