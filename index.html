@@ -1663,13 +1663,13 @@ menuBackBtn?.addEventListener('click',e=>{
 });
 
 document.addEventListener('pointerdown',event=>{
-  if(!window.matchMedia('(max-width:700px)').matches) return;
   if(controlPanel.classList.contains('collapsed')) return;
-  // 하위 메뉴에 들어간 동안에는 바깥을 눌러도 왼쪽 메뉴를 유지함.
-  // 사용자가 뒤로가기 버튼을 눌러 메인 메뉴로 돌아온 뒤에만 바깥 터치로 닫힘.
-  if(controlPanel.classList.contains('detail-view')) return;
+
   const target=event.target;
   if(controlPanel.contains(target) || mobileMenuLauncher.contains(target)) return;
+
+  // 메인/하위 메뉴 구분 없이 설정 패널 바깥을 누르면 즉시 접고
+  // 초기 런처 아이콘만 남김.
   controlPanel.classList.add('collapsed');
   syncPanelToggle();
 });
