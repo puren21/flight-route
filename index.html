@@ -2448,6 +2448,10 @@ kakao.maps.event.addListener(map,'click',function(){
   if(routeSelectOverlay && Date.now()-routePopupOpenedAt>250){
     closeRouteSelectPopup();
   }
+  if(addressOverlay){
+    addressOverlay.setMap(null);
+    addressOverlay=null;
+  }
 });
 
 kakao.maps.event.addListener(map,'rightclick',function(mouseEvent){
