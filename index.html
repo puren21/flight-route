@@ -2198,7 +2198,21 @@ function showRouteSelectPopup(routeLine,position){
 
   const title=document.createElement('div');
   title.className='route-select-title';
-  title.textContent=routeLine._routeNumber || '번호 없음';
+
+  const titleNumber=document.createElement('span');
+  titleNumber.className='route-select-title-number';
+  titleNumber.textContent=routeLine._routeNumber || '번호 없음';
+
+  const titleLength=document.createElement('span');
+  titleLength.className='route-select-title-length';
+  const routeLengthMeters=typeof routeLine.getLength==='function' ? routeLine.getLength() : 0;
+  const routeLengthKm=routeLengthMeters/1000;
+  titleLength.textContent=routeLengthKm>=10
+    ? routeLengthKm.toFixed(1).replace(/\.0$/,'')+' km'
+    : routeLengthKm.toFixed(2).replace(/0$/,'').replace(/\.0$/,'')+' km';
+
+  title.appendChild(titleNumber);
+  title.appendChild(titleLength);
 
   const actions=document.createElement('div');
   actions.className='route-select-actions';
@@ -5119,5 +5133,25 @@ if ('serviceWorker' in navigator) {
     font-size:22px !important;
     padding:3px 6px !important;
   }
+}
+
+/* Route popup: show selected line length at top-right */
+.route-select-popup .route-select-title{
+  justify-content:space-between !important;
+  gap:12px !important;
+}
+.route-select-title-number{
+  flex:1 1 auto;
+  min-width:0;
+}
+.route-select-title-length{
+  flex:0 0 auto;
+  margin-left:auto;
+  font-size:13px;
+  font-weight:600;
+  line-height:1;
+  white-space:nowrap;
+  opacity:.92;
+  font-variant-numeric:tabular-nums;
 }
 </style>
