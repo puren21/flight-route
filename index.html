@@ -1204,7 +1204,7 @@
 <div class="panel collapsed" id="controlPanel">
   <div class="panel-header">
     <button id="menuBackBtn" class="menu-back-btn" type="button" aria-label="이전 메뉴">‹</button>
-    <h1 id="panelTitle">비행경로</h1>
+    <h1 id="panelTitle">설정</h1>
     <button id="panelToggleBtn" class="panel-toggle" type="button" aria-label="메뉴 펼치기">›</button>
   </div>
 
@@ -1450,15 +1450,82 @@ function updateStablePanelWidth(){
     return;
   }
 
-  // 기타기능 화면을 포함한 가장 긴 메뉴 기준 폭을 모든 화면에서 동일하게 유지함.
-  controlPanel.style.setProperty('--stable-panel-width','340px');
+  const wasCollapsed=controlPanel.classList.contains('collapsed');
+  const wasDetail=controlPanel.classList.contains('detail-view');
+  const previousHomeDisplay=menuHome.style.display;
+  const previousActive=menuPages.map(page=>page.classList.contains('active'));
+
+  controlPanel.classList.remove('collapsed');
+  controlPanel.classList.remove('detail-view');
+  controlPanel.style.setProperty('--stable-panel-width','320px');
+
+  let maxWidth=320;
+
+  menuHome.style.display='flex';
+  menuPages.forEach(page=>page.classList.remove('active'));
+  maxWidth=Math.max(maxWidth,Math.ceil(controlPanel.scrollWidth));
+
+  menuHome.style.display='none';
+  menuPages.forEach((page,index)=>{
+    menuPages.forEach(p=>p.classList.remove('active'));
+    page.classList.add('active');
+    maxWidth=Math.max(maxWidth,Math.ceil(controlPanel.scrollWidth));
+  });
+
+  menuHome.style.display=previousHomeDisplay;
+  menuPages.forEach((page,index)=>page.classList.toggle('active',previousActive[index]));
+  controlPanel.classList.toggle('detail-view',wasDetail);
+  controlPanel.classList.toggle('collapsed',wasCollapsed);
+
+  maxWidth=Math.min(Math.max(maxWidth,320),420);
+  controlPanel.style.setProperty('--stable-panel-width',maxWidth+'px');
+}
+
+function updateStablePanelHeight(){
+  if(window.matchMedia('(max-width:700px)').matches){
+    controlPanel.style.removeProperty('--stable-panel-height');
+    return;
+  }
+
+  const wasCollapsed=controlPanel.classList.contains('collapsed');
+  const wasDetail=controlPanel.classList.contains('detail-view');
+  const previousHomeDisplay=menuHome.style.display;
+  const previousActive=menuPages.map(page=>page.classList.contains('active'));
+  const previousTitle=panelTitle.textContent;
+
+  controlPanel.classList.remove('collapsed');
+  controlPanel.classList.remove('detail-view');
+  controlPanel.style.removeProperty('--stable-panel-height');
+
+  let maxHeight=0;
+
+  menuHome.style.display='flex';
+  menuPages.forEach(page=>page.classList.remove('active'));
+  panelTitle.textContent='설정';
+  maxHeight=Math.max(maxHeight,Math.ceil(controlPanel.scrollHeight));
+
+  menuHome.style.display='none';
+  menuPages.forEach(page=>{
+    menuPages.forEach(p=>p.classList.remove('active'));
+    page.classList.add('active');
+    controlPanel.classList.add('detail-view');
+    maxHeight=Math.max(maxHeight,Math.ceil(controlPanel.scrollHeight));
+  });
+
+  menuHome.style.display=previousHomeDisplay;
+  menuPages.forEach((page,index)=>page.classList.toggle('active',previousActive[index]));
+  controlPanel.classList.toggle('detail-view',wasDetail);
+  controlPanel.classList.toggle('collapsed',wasCollapsed);
+  panelTitle.textContent=previousTitle;
+
+  controlPanel.style.setProperty('--stable-panel-height',maxHeight+'px');
 }
 
 function showMenuHome(){
   controlPanel.classList.remove('detail-view');
   menuHome.style.display='flex';
   document.querySelectorAll('.menu-page').forEach(page=>page.classList.remove('active'));
-  panelTitle.textContent='비행경로';
+  panelTitle.textContent='설정';
 }
 
 function openMenuPage(pageId,title){
@@ -2760,7 +2827,11 @@ document.getElementById('menuLocBtn')?.addEventListener('click',locateMe);
 document.getElementById('resetRouteStatesBtn')?.addEventListener('click',resetRouteStates);
 syncPanelToggle();
 updateStablePanelWidth();
-window.addEventListener('resize',updateStablePanelWidth);
+updateStablePanelHeight();
+window.addEventListener('resize',()=>{
+  updateStablePanelWidth();
+  updateStablePanelHeight();
+});
 renderMemoList();
 loadRemoteMemos();
 
@@ -2826,14 +2897,14 @@ if ('serviceWorker' in navigator) {
 
   @media (min-width:701px){
     .panel{
-      width:var(--stable-panel-width,340px);
-      min-width:var(--stable-panel-width,340px);
-      max-width:var(--stable-panel-width,340px);
+      width:var(--stable-panel-width,320px);
+      min-width:var(--stable-panel-width,320px);
+      max-width:var(--stable-panel-width,320px);
     }
     .panel.collapsed{
-      width:var(--stable-panel-width,340px);
-      min-width:var(--stable-panel-width,340px);
-      max-width:var(--stable-panel-width,340px);
+      width:var(--stable-panel-width,320px);
+      min-width:var(--stable-panel-width,320px);
+      max-width:var(--stable-panel-width,320px);
     }
   }
 
@@ -3341,4 +3412,14 @@ if ('serviceWorker' in navigator) {
   .quick-btn,.airspace-card,.style-section-toggle{min-height:54px;}
 }
 
+
+  @media (min-width:701px){
+    .panel{
+      min-height:var(--stable-panel-height,0px);
+      box-sizing:border-box;
+    }
+    .panel.collapsed{
+      min-height:var(--stable-panel-height,0px);
+    }
+  }
 </style>
