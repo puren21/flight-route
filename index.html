@@ -1367,7 +1367,6 @@
 
     <section id="memoPage" class="menu-page">
       <div class="memo-page-card">
-        <div class="memo-page-heading">메모된 번호</div>
         <div id="memoList" class="memo-list"></div>
       </div>
     </section>
@@ -2106,7 +2105,7 @@ function renderMemoList(){
 
     const n=document.createElement('span');
     n.className='memo-num';
-    n.textContent=num+'번';
+    n.textContent=num;
 
     const t=document.createElement('span');
     t.className='memo-text';
@@ -4437,5 +4436,12 @@ if ('serviceWorker' in navigator) {
     min-width:50px !important;
     padding:0 4px !important;
   }
+}
+
+.memo-num{
+  color:#1c1c1e !important;
+}
+.memo-page-heading{
+  display:none !important;
 }
 </style>
