@@ -2035,6 +2035,8 @@ function openMemoFromList(num){
   const isMobile=window.matchMedia('(max-width:700px)').matches;
 
   if(isMobile){
+    // 메모 선택 후 접을 때 하위 메뉴 상태가 남지 않도록 메인 메뉴 상태로 복귀함.
+    showMenuHome();
     controlPanel.classList.add('collapsed');
     syncPanelToggle();
 
