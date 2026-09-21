@@ -2763,21 +2763,12 @@ function startKakaoNavi(name,lat,lng){
   const webUrl='https://map.kakao.com/link/to/'+destinationName+','+lat+','+lng;
 
   if(isMobileRouteDevice()){
-    if(window.Kakao && Kakao.isInitialized() && Kakao.Navi){
-      Kakao.Navi.start({
-        name: name || '선택 위치',
-        x: lng,
-        y: lat,
-        coordType: 'wgs84'
-      });
-      return;
-    }
+    // 현재 카카오맵 공식 URL Scheme 사용.
+    // 출발지는 사용자의 현재 위치로 두고 목적지만 전달함.
+    const appUrl='kakaomap://route?ep='+lat+','+lng+'&by=car';
+    const mobileWebUrl='https://m.map.kakao.com/scheme/route?ep='+lat+','+lng+'&by=car';
 
-    const appUrl='kakaonavi://navigate?name='+destinationName+
-      '&x='+lng+
-      '&y='+lat+
-      '&coord_type=wgs84';
-    openAppWithWebFallback(appUrl,webUrl);
+    openAppWithWebFallback(appUrl,mobileWebUrl);
     return;
   }
 
