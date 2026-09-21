@@ -378,8 +378,11 @@
     .memo-modal-title {
       font-size:15px;
       font-weight:700;
-      margin-bottom:10px;
-      padding:2px 28px 6px 2px;
+      margin:-4px -4px 10px;
+      padding:10px 32px 10px 10px;
+      min-height:40px;
+      display:flex;
+      align-items:center;
       cursor:grab;
       user-select:none;
       -webkit-user-select:none;
@@ -1841,8 +1844,9 @@ document.getElementById('memoModalBackdrop').addEventListener('click',function(e
     startLeft=rect.left;
     startTop=rect.top;
 
-    handle.setPointerCapture?.(e.pointerId);
+    try{ handle.setPointerCapture?.(e.pointerId); }catch(err){}
     e.preventDefault();
+    e.stopPropagation();
   });
 
   handle.addEventListener('pointermove',e=>{
@@ -1857,12 +1861,14 @@ document.getElementById('memoModalBackdrop').addEventListener('click',function(e
     modal.style.left=nextLeft+'px';
     modal.style.top=nextTop+'px';
     e.preventDefault();
+    e.stopPropagation();
   });
 
   const endDrag=e=>{
     if(!dragging) return;
     dragging=false;
-    handle.releasePointerCapture?.(e.pointerId);
+    try{ handle.releasePointerCapture?.(e.pointerId); }catch(err){}
+    e.stopPropagation();
   };
 
   handle.addEventListener('pointerup',endDrag);
