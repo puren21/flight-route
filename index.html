@@ -1757,8 +1757,19 @@ document.addEventListener('pointerdown',event=>{
   const target=event.target;
   if(controlPanel.contains(target) || mobileMenuLauncher.contains(target)) return;
 
-  // 메인/하위 메뉴 구분 없이 설정 패널 바깥을 누르면 즉시 접고
-  // 초기 런처 아이콘만 남김.
+  // 바깥을 눌러 닫을 때 현재 하위 메뉴 위치를 확실히 기억함.
+  const activePage=document.querySelector('.menu-page.active');
+  if(controlPanel.classList.contains('detail-view') && activePage){
+    lastMenuState={
+      pageId:String(activePage.id||''),
+      title:String(panelTitle.textContent||'')
+    };
+    try{
+      localStorage.setItem(LAST_MENU_STORAGE_KEY,JSON.stringify(lastMenuState));
+    }catch(e){}
+  }
+
+  // 화면만 접고 메뉴 위치는 그대로 보존함.
   controlPanel.classList.add('collapsed');
   syncPanelToggle();
 });
