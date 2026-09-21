@@ -1211,11 +1211,26 @@
   <div class="panel-header">
     <button id="menuBackBtn" class="menu-back-btn" type="button" aria-label="이전 메뉴">‹</button>
     <h1 id="panelTitle">
-      <span class="settings-title-icon" aria-hidden="true">
-        <svg viewBox="0 0 32 32">
-          <path d="M16 2.8l2.1.3.7 2.6c.7.2 1.4.5 2 .9l2.3-1.3 1.7 1.3-1 2.5c.5.5.9 1.1 1.3 1.8l2.7.1.7 2-2.1 1.7c.1.4.1.9.1 1.3s0 .9-.1 1.3l2.1 1.7-.7 2-2.7.1c-.4.7-.8 1.3-1.3 1.8l1 2.5-1.7 1.3-2.3-1.3c-.6.4-1.3.7-2 .9l-.7 2.6-2.1.3-1.1-2.5c-.7 0-1.4-.1-2.1-.3l-1.8 2-1.9-.9.4-2.7c-.6-.4-1.1-.9-1.6-1.4l-2.6.7-1.1-1.8 1.7-2.1c-.3-.7-.5-1.4-.6-2.1L2.8 16l.3-2.1 2.6-.7c.2-.7.5-1.4.9-2L5.3 8.9l1.3-1.7 2.5 1c.5-.5 1.1-.9 1.8-1.3l.1-2.7 2-.7 1.7 2.1c.4-.1.9-.1 1.3-.1Z"/>
-          <circle cx="16" cy="16" r="6.1"/>
-          <circle cx="16" cy="16" r="2.6"/>
+      <span class="settings-title-icon apple-maps-title-icon" aria-hidden="true">
+        <svg viewBox="0 0 64 64">
+          <defs>
+            <clipPath id="appleMapsClip">
+              <rect x="2" y="2" width="60" height="60" rx="14" ry="14"/>
+            </clipPath>
+          </defs>
+          <g clip-path="url(#appleMapsClip)">
+            <rect x="0" y="0" width="64" height="64" fill="#f7f7f7"/>
+            <path d="M-4 9 L19 -2 L31 11 L17 27 L-4 24 Z" fill="#79df7b"/>
+            <path d="M35 -5 L68 -1 L68 18 L52 26 L39 14 Z" fill="#73df79"/>
+            <path d="M-5 40 L12 29 L28 36 L20 67 L-4 67 Z" fill="#f59ac5"/>
+            <path d="M42 38 L68 30 L68 67 L36 67 Z" fill="#ffd13b"/>
+            <path d="M11 -4 L25 -4 L25 31 L13 31 Z" fill="#1698f5"/>
+            <path d="M0 27 L20 23 L33 31 L53 18 L68 22 L68 34 L50 31 L34 44 L17 36 L0 41 Z" fill="#ffffff"/>
+            <path d="M47 -5 C49 3 52 8 60 12 C64 14 67 15 70 15" fill="none" stroke="#d9d9df" stroke-width="8"/>
+          </g>
+          <circle cx="31.5" cy="36" r="15.5" fill="#fff" opacity=".96"/>
+          <circle cx="31.5" cy="36" r="12.5" fill="#168ef0"/>
+          <path d="M31.5 25.5 L39 45 L31.5 40.4 L24 45 Z" fill="#fff"/>
         </svg>
       </span>
       <span class="settings-title-text">설정</span>
@@ -1446,7 +1461,28 @@ try{
 
 function ensureSettingsTitle(){
   if(panelTitle.querySelector('.settings-title-icon')) return;
-  panelTitle.innerHTML='<span class="settings-title-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M16 2.8l2.1.3.7 2.6c.7.2 1.4.5 2 .9l2.3-1.3 1.7 1.3-1 2.5c.5.5.9 1.1 1.3 1.8l2.7.1.7 2-2.1 1.7c.1.4.1.9.1 1.3s0 .9-.1 1.3l2.1 1.7-.7 2-2.7.1c-.4.7-.8 1.3-1.3 1.8l1 2.5-1.7 1.3-2.3-1.3c-.6.4-1.3.7-2 .9l-.7 2.6-2.1.3-1.1-2.5c-.7 0-1.4-.1-2.1-.3l-1.8 2-1.9-.9.4-2.7c-.6-.4-1.1-.9-1.6-1.4l-2.6.7-1.1-1.8 1.7-2.1c-.3-.7-.5-1.4-.6-2.1L2.8 16l.3-2.1 2.6-.7c.2-.7.5-1.4.9-2L5.3 8.9l1.3-1.7 2.5 1c.5-.5 1.1-.9 1.8-1.3l.1-2.7 2-.7 1.7 2.1c.4-.1.9-.1 1.3-.1Z"/><circle cx="16" cy="16" r="6.1"/><circle cx="16" cy="16" r="2.6"/></svg></span><span class="settings-title-text">설정</span>';
+  panelTitle.innerHTML='<span class="settings-title-icon apple-maps-title-icon" aria-hidden="true">
+        <svg viewBox="0 0 64 64">
+          <defs>
+            <clipPath id="appleMapsClip">
+              <rect x="2" y="2" width="60" height="60" rx="14" ry="14"/>
+            </clipPath>
+          </defs>
+          <g clip-path="url(#appleMapsClip)">
+            <rect x="0" y="0" width="64" height="64" fill="#f7f7f7"/>
+            <path d="M-4 9 L19 -2 L31 11 L17 27 L-4 24 Z" fill="#79df7b"/>
+            <path d="M35 -5 L68 -1 L68 18 L52 26 L39 14 Z" fill="#73df79"/>
+            <path d="M-5 40 L12 29 L28 36 L20 67 L-4 67 Z" fill="#f59ac5"/>
+            <path d="M42 38 L68 30 L68 67 L36 67 Z" fill="#ffd13b"/>
+            <path d="M11 -4 L25 -4 L25 31 L13 31 Z" fill="#1698f5"/>
+            <path d="M0 27 L20 23 L33 31 L53 18 L68 22 L68 34 L50 31 L34 44 L17 36 L0 41 Z" fill="#ffffff"/>
+            <path d="M47 -5 C49 3 52 8 60 12 C64 14 67 15 70 15" fill="none" stroke="#d9d9df" stroke-width="8"/>
+          </g>
+          <circle cx="31.5" cy="36" r="15.5" fill="#fff" opacity=".96"/>
+          <circle cx="31.5" cy="36" r="12.5" fill="#168ef0"/>
+          <path d="M31.5 25.5 L39 45 L31.5 40.4 L24 45 Z" fill="#fff"/>
+        </svg>
+      </span><span class="settings-title-text">설정</span>';
 }
 
 function syncPanelToggle(){
@@ -1535,7 +1571,28 @@ function updateStablePanelHeight(){
 
   menuHome.style.display='flex';
   menuPages.forEach(page=>page.classList.remove('active'));
-  panelTitle.innerHTML='<span class="settings-title-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M16 2.8l2.1.3.7 2.6c.7.2 1.4.5 2 .9l2.3-1.3 1.7 1.3-1 2.5c.5.5.9 1.1 1.3 1.8l2.7.1.7 2-2.1 1.7c.1.4.1.9.1 1.3s0 .9-.1 1.3l2.1 1.7-.7 2-2.7.1c-.4.7-.8 1.3-1.3 1.8l1 2.5-1.7 1.3-2.3-1.3c-.6.4-1.3.7-2 .9l-.7 2.6-2.1.3-1.1-2.5c-.7 0-1.4-.1-2.1-.3l-1.8 2-1.9-.9.4-2.7c-.6-.4-1.1-.9-1.6-1.4l-2.6.7-1.1-1.8 1.7-2.1c-.3-.7-.5-1.4-.6-2.1L2.8 16l.3-2.1 2.6-.7c.2-.7.5-1.4.9-2L5.3 8.9l1.3-1.7 2.5 1c.5-.5 1.1-.9 1.8-1.3l.1-2.7 2-.7 1.7 2.1c.4-.1.9-.1 1.3-.1Z"/><circle cx="16" cy="16" r="6.1"/><circle cx="16" cy="16" r="2.6"/></svg></span><span class="settings-title-text">설정</span>';
+  panelTitle.innerHTML='<span class="settings-title-icon apple-maps-title-icon" aria-hidden="true">
+        <svg viewBox="0 0 64 64">
+          <defs>
+            <clipPath id="appleMapsClip">
+              <rect x="2" y="2" width="60" height="60" rx="14" ry="14"/>
+            </clipPath>
+          </defs>
+          <g clip-path="url(#appleMapsClip)">
+            <rect x="0" y="0" width="64" height="64" fill="#f7f7f7"/>
+            <path d="M-4 9 L19 -2 L31 11 L17 27 L-4 24 Z" fill="#79df7b"/>
+            <path d="M35 -5 L68 -1 L68 18 L52 26 L39 14 Z" fill="#73df79"/>
+            <path d="M-5 40 L12 29 L28 36 L20 67 L-4 67 Z" fill="#f59ac5"/>
+            <path d="M42 38 L68 30 L68 67 L36 67 Z" fill="#ffd13b"/>
+            <path d="M11 -4 L25 -4 L25 31 L13 31 Z" fill="#1698f5"/>
+            <path d="M0 27 L20 23 L33 31 L53 18 L68 22 L68 34 L50 31 L34 44 L17 36 L0 41 Z" fill="#ffffff"/>
+            <path d="M47 -5 C49 3 52 8 60 12 C64 14 67 15 70 15" fill="none" stroke="#d9d9df" stroke-width="8"/>
+          </g>
+          <circle cx="31.5" cy="36" r="15.5" fill="#fff" opacity=".96"/>
+          <circle cx="31.5" cy="36" r="12.5" fill="#168ef0"/>
+          <path d="M31.5 25.5 L39 45 L31.5 40.4 L24 45 Z" fill="#fff"/>
+        </svg>
+      </span><span class="settings-title-text">설정</span>';
   maxHeight=Math.max(maxHeight,Math.ceil(controlPanel.scrollHeight));
 
   menuHome.style.display='none';
@@ -1559,7 +1616,28 @@ function showMenuHome(){
   controlPanel.classList.remove('detail-view');
   menuHome.style.display='flex';
   document.querySelectorAll('.menu-page').forEach(page=>page.classList.remove('active'));
-  panelTitle.innerHTML='<span class="settings-title-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M16 2.8l2.1.3.7 2.6c.7.2 1.4.5 2 .9l2.3-1.3 1.7 1.3-1 2.5c.5.5.9 1.1 1.3 1.8l2.7.1.7 2-2.1 1.7c.1.4.1.9.1 1.3s0 .9-.1 1.3l2.1 1.7-.7 2-2.7.1c-.4.7-.8 1.3-1.3 1.8l1 2.5-1.7 1.3-2.3-1.3c-.6.4-1.3.7-2 .9l-.7 2.6-2.1.3-1.1-2.5c-.7 0-1.4-.1-2.1-.3l-1.8 2-1.9-.9.4-2.7c-.6-.4-1.1-.9-1.6-1.4l-2.6.7-1.1-1.8 1.7-2.1c-.3-.7-.5-1.4-.6-2.1L2.8 16l.3-2.1 2.6-.7c.2-.7.5-1.4.9-2L5.3 8.9l1.3-1.7 2.5 1c.5-.5 1.1-.9 1.8-1.3l.1-2.7 2-.7 1.7 2.1c.4-.1.9-.1 1.3-.1Z"/><circle cx="16" cy="16" r="6.1"/><circle cx="16" cy="16" r="2.6"/></svg></span><span class="settings-title-text">설정</span>';
+  panelTitle.innerHTML='<span class="settings-title-icon apple-maps-title-icon" aria-hidden="true">
+        <svg viewBox="0 0 64 64">
+          <defs>
+            <clipPath id="appleMapsClip">
+              <rect x="2" y="2" width="60" height="60" rx="14" ry="14"/>
+            </clipPath>
+          </defs>
+          <g clip-path="url(#appleMapsClip)">
+            <rect x="0" y="0" width="64" height="64" fill="#f7f7f7"/>
+            <path d="M-4 9 L19 -2 L31 11 L17 27 L-4 24 Z" fill="#79df7b"/>
+            <path d="M35 -5 L68 -1 L68 18 L52 26 L39 14 Z" fill="#73df79"/>
+            <path d="M-5 40 L12 29 L28 36 L20 67 L-4 67 Z" fill="#f59ac5"/>
+            <path d="M42 38 L68 30 L68 67 L36 67 Z" fill="#ffd13b"/>
+            <path d="M11 -4 L25 -4 L25 31 L13 31 Z" fill="#1698f5"/>
+            <path d="M0 27 L20 23 L33 31 L53 18 L68 22 L68 34 L50 31 L34 44 L17 36 L0 41 Z" fill="#ffffff"/>
+            <path d="M47 -5 C49 3 52 8 60 12 C64 14 67 15 70 15" fill="none" stroke="#d9d9df" stroke-width="8"/>
+          </g>
+          <circle cx="31.5" cy="36" r="15.5" fill="#fff" opacity=".96"/>
+          <circle cx="31.5" cy="36" r="12.5" fill="#168ef0"/>
+          <path d="M31.5 25.5 L39 45 L31.5 40.4 L24 45 Z" fill="#fff"/>
+        </svg>
+      </span><span class="settings-title-text">설정</span>';
 }
 
 function openMenuPage(pageId,title){
@@ -4028,5 +4106,25 @@ if ('serviceWorker' in navigator) {
 @media (prefers-reduced-motion:reduce){
   .current-location-dot{animation:none;}
   #map{transition:none !important;}
+}
+
+/* Locked initial icon: Apple Maps-style app icon */
+.settings-title-icon.apple-maps-title-icon{
+  background:transparent !important;
+  box-shadow:none !important;
+  border-radius:0 !important;
+  color:initial !important;
+}
+.settings-title-icon.apple-maps-title-icon svg{
+  width:40px !important;
+  height:40px !important;
+  fill:initial !important;
+  stroke:initial !important;
+  filter:drop-shadow(0 1px 3px rgba(0,0,0,.24)) !important;
+  border-radius:10px;
+}
+.panel.collapsed .settings-title-icon.apple-maps-title-icon{
+  width:42px !important;
+  height:42px !important;
 }
 </style>
