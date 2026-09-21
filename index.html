@@ -2387,14 +2387,11 @@ function resolveMemoRouteKeys(value){
   return primaryMatches;
 }
 
+let memoRouteFocusTimer=null;
+
 function focusMemoRoute(value){
   const keys=resolveMemoRouteKeys(value);
   if(!keys.length) return false;
-
-  if(keys.length===1){
-    focusRouteNumber(keys[0]);
-    return true;
-  }
 
   const bounds=new kakao.maps.LatLngBounds();
   let hasPoint=false;
@@ -2416,10 +2413,14 @@ function focusMemoRoute(value){
 
   if(!hasPoint) return false;
 
+  clearTimeout(memoRouteFocusTimer);
+
+  // 메모 선택 때마다 이전 이동/확대 예약을 취소하고 새 경로 범위로 즉시 이동함.
   map.setBounds(bounds);
-  setTimeout(()=>{
+
+  memoRouteFocusTimer=setTimeout(()=>{
     map.setLevel(Math.max(1,map.getLevel()-1));
-  },0);
+  },40);
 
   return true;
 }
@@ -2453,12 +2454,12 @@ function renderMemoList(){
   }
 
   keys.forEach(num=>{
-    const row=document.createElement('div');
+    const row=document.createElement('button');
+    row.type='button';
     row.className='memo-settings-row';
-    row.setAttribute('role','group');
-    row.setAttribute('aria-label',num+' 메모');
+    row.setAttribute('aria-label',num+' 메모 열기 및 경로 위치로 이동');
 
-    const left=document.createElement('div');
+    const left=document.createElement('span');
     left.className='memo-settings-left';
 
     const icon=document.createElement('span');
@@ -2466,67 +2467,22 @@ function renderMemoList(){
     icon.setAttribute('aria-hidden','true');
     icon.innerHTML='<svg viewBox="0 0 29 29"><rect x="1" y="1" width="27" height="27" rx="6.5" fill="#fff"/><path d="M7.5 1h14A6.5 6.5 0 0 1 28 7.5V9H1V7.5A6.5 6.5 0 0 1 7.5 1Z" fill="#ffd60a"/><path d="M6 13.5h17M6 17.5h17M6 21.5h12" stroke="#c7c7cc" stroke-width="1.15" stroke-linecap="round"/></svg>';
 
-    const label=document.createElement('button');
-    label.type='button';
-    label.className='memo-settings-label memo-route-link';
+    const label=document.createElement('span');
+    label.className='memo-settings-label';
     label.textContent=num;
-    label.setAttribute('aria-label',num+' 경로 위치로 이동');
-
-    const moveToMemoRoute=e=>{
-      e.preventDefault();
-      e.stopPropagation();
-
-      const routeKeys=resolveMemoRouteKeys(num);
-      if(!routeKeys.length) return;
-
-      lastMenuState={pageId:'memoPage',title:'메모'};
-      try{
-        localStorage.setItem(LAST_MENU_STORAGE_KEY,JSON.stringify(lastMenuState));
-      }catch(err){}
-
-      // 메뉴를 완전히 접은 뒤 지도 레이아웃을 두 번 보정하고 이동함.
-      controlPanel.classList.remove('detail-view');
-      ensureSettingsTitle();
-      controlPanel.classList.add('collapsed');
-      syncPanelToggle();
-
-      requestAnimationFrame(()=>{
-        if(typeof map.relayout==='function') map.relayout();
-
-        requestAnimationFrame(()=>{
-          if(typeof map.relayout==='function') map.relayout();
-
-          setTimeout(()=>{
-            focusMemoRoute(num);
-          },120);
-        });
-      });
-    };
-
-    label.addEventListener('click',moveToMemoRoute);
-
-    const detailBtn=document.createElement('button');
-    detailBtn.type='button';
-    detailBtn.className='memo-settings-detail-btn';
-    detailBtn.setAttribute('aria-label',num+' 메모 상세 보기');
 
     const chevron=document.createElement('span');
     chevron.className='memo-settings-chevron';
     chevron.textContent='›';
 
-    detailBtn.appendChild(chevron);
-
     left.appendChild(icon);
     left.appendChild(label);
     row.appendChild(left);
-    row.appendChild(detailBtn);
+    row.appendChild(chevron);
 
-    icon.addEventListener('click',()=>openMemoFromList(num));
-    detailBtn.addEventListener('click',()=>openMemoFromList(num));
-
-    // 빈 공간을 눌러도 상세 메모를 열되, 번호 버튼은 이동만 수행함.
-    row.addEventListener('click',e=>{
-      if(e.target.closest('.memo-route-link,.memo-settings-detail-btn,.memo-note-icon')) return;
+    row.addEventListener('click',()=>{
+      // 한 번의 선택으로 지도 이동과 메모 상세 열기를 항상 함께 실행함.
+      focusMemoRoute(num);
       openMemoFromList(num);
     });
 
@@ -6576,5 +6532,18 @@ if ('serviceWorker' in navigator) {
   height:0 !important;
   display:none !important;
   background:transparent !important;
+}
+
+/* Memo row: one tap always opens detail and moves map */
+.memo-settings-row{
+  cursor:pointer !important;
+  -webkit-appearance:none !important;
+  appearance:none !important;
+}
+.memo-settings-row .memo-settings-left{
+  pointer-events:none !important;
+}
+.memo-settings-row .memo-settings-chevron{
+  pointer-events:none !important;
 }
 </style>
