@@ -2788,10 +2788,10 @@ function startNaverMapRoute(name,lat,lng){
       '&dlng='+lng+
       '&dname='+destinationName+
       '&appname='+appName;
-    const p=wgs84ToWebMercator(lat,lng);
-    const webUrl='https://map.naver.com/p/directions/-/'+
-      p.x+','+p.y+','+destinationName+',,ADDRESS_POI/-/car';
-    openAppWithWebFallback(appUrl,webUrl);
+
+    // 모바일에서는 현재 사이트를 유지한 채 네이버지도 앱만 호출함.
+    // 네이버 웹 길찾기로 자동 전환하지 않음.
+    window.location.href=appUrl;
     return;
   }
 
