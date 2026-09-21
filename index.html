@@ -2927,11 +2927,21 @@ function populateRouteNumberMenu(){
   const wheel=document.getElementById('routeNumberWheel');
   if(!wheel) return;
 
-  routeWheelNumbers=[...routeIndex.keys()].sort((a,b)=>{
-    const na=Number(a), nb=Number(b);
-    if(!Number.isNaN(na) && !Number.isNaN(nb)) return na-nb;
-    return a.localeCompare(b,'ko');
-  });
+  const prefix=document.getElementById('routePrefixSelect')?.value || 'normal';
+
+  routeWheelNumbers=[...routeIndex.keys()]
+    .filter(num=>prefix==='dolsan'
+      ? String(num).startsWith('돌산_')
+      : !String(num).startsWith('돌산_'))
+    .sort((a,b)=>{
+      const getNumeric=value=>{
+        const match=String(value).match(/(\d+)$/);
+        return match ? Number(match[1]) : NaN;
+      };
+      const na=getNumeric(a), nb=getNumeric(b);
+      if(!Number.isNaN(na) && !Number.isNaN(nb)) return na-nb;
+      return String(a).localeCompare(String(b),'ko');
+    });
 
   wheel.innerHTML='';
 
@@ -2946,7 +2956,9 @@ function populateRouteNumberMenu(){
     item.className='route-wheel-item';
     item.dataset.value=num;
     item.setAttribute('role','option');
-    item.textContent=num;
+    item.textContent=String(num).startsWith('돌산_')
+      ? String(num).replace(/^돌산_/,'').replace(/^0+(?=\d)/,'')
+      : String(num).replace(/^0+(?=\d)/,'');
     item.addEventListener('click',()=>{
       scrollRouteWheelTo(num,true);
     });
@@ -3135,6 +3147,11 @@ document.getElementById('routeNumberInput')?.addEventListener('keydown',e=>{
 
 document.getElementById('routePrefixSelect')?.addEventListener('change',()=>{
   clearTimeout(routeNumberInputTimer);
+
+  // 구분을 바꾸면 아래 휠도 즉시 해당 그룹만 표시함.
+  routeWheelSelected='';
+  populateRouteNumberMenu();
+
   const input=document.getElementById('routeNumberInput');
   if(!input || !input.value.trim()) return;
 
