@@ -1526,11 +1526,7 @@ function updateStablePanelWidth(){
 }
 
 function updateStablePanelHeight(){
-  if(window.matchMedia('(max-width:700px)').matches){
-    controlPanel.style.removeProperty('--stable-panel-height');
-    return;
-  }
-
+  const isMobile=window.matchMedia('(max-width:700px)').matches;
   const wasCollapsed=controlPanel.classList.contains('collapsed');
   const wasDetail=controlPanel.classList.contains('detail-view');
   const previousHomeDisplay=menuHome.style.display;
@@ -1562,7 +1558,12 @@ function updateStablePanelHeight(){
   controlPanel.classList.toggle('collapsed',wasCollapsed);
   panelTitle.innerHTML=previousTitleHtml;
 
-  controlPanel.style.setProperty('--stable-panel-height',maxHeight+'px');
+  if(isMobile){
+    const viewportLimit=Math.max(260,window.innerHeight-90);
+    maxHeight=Math.min(maxHeight,viewportLimit);
+  }
+
+  controlPanel.style.setProperty('--stable-panel-height',Math.ceil(maxHeight)+'px');
 }
 
 function showMenuHome(){
@@ -3925,5 +3926,25 @@ if ('serviceWorker' in navigator) {
   opacity:1 !important;
   width:40px !important;
   height:40px !important;
+}
+
+/* Keep every expanded settings page the same vertical length */
+.panel:not(.collapsed){
+  height:var(--stable-panel-height,auto) !important;
+  min-height:var(--stable-panel-height,0px) !important;
+  box-sizing:border-box !important;
+  overflow-y:auto !important;
+}
+@media (max-width:700px){
+  .panel:not(.collapsed){
+    height:var(--stable-panel-height,auto) !important;
+    min-height:var(--stable-panel-height,0px) !important;
+    max-height:calc(100dvh - env(safe-area-inset-top,0px) - 70px) !important;
+  }
+}
+.panel.collapsed{
+  height:44px !important;
+  min-height:44px !important;
+  max-height:44px !important;
 }
 </style>
