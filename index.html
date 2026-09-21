@@ -1054,6 +1054,94 @@
       text-align:center;
     }
   }
+
+  /* Route popup - compact iOS card style */
+  .route-select-popup{
+    width:220px !important;
+    padding:0 !important;
+    overflow:hidden;
+    background:#f2f2f7 !important;
+    border-radius:18px !important;
+    box-shadow:0 10px 28px rgba(0,0,0,.22) !important;
+    color:#111;
+  }
+  .route-select-popup .route-select-title{
+    margin:0 !important;
+    padding:13px 18px !important;
+    background:#a6a6a6;
+    color:#fff;
+    font-size:20px;
+    font-weight:600;
+    line-height:1.1;
+    text-align:left;
+  }
+  .route-select-popup .route-select-actions{
+    display:flex !important;
+    flex-direction:column;
+    gap:8px !important;
+    padding:8px !important;
+  }
+  .route-menu-row{
+    width:100%;
+    min-height:54px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:0 15px;
+    border:0;
+    border-radius:16px;
+    background:#fff;
+    color:#111;
+    font-size:16px;
+    font-weight:600;
+    text-align:left;
+  }
+  .route-menu-label{
+    flex:1;
+    min-width:0;
+  }
+  .route-menu-chevron{
+    flex:0 0 auto;
+    color:#c7c7cc;
+    font-size:28px;
+    font-weight:300;
+    line-height:1;
+  }
+  .route-select-popup .route-toggle-switch{
+    width:51px !important;
+    min-width:51px !important;
+    max-width:51px !important;
+    height:31px !important;
+    min-height:31px !important;
+    flex:0 0 51px !important;
+    padding:0 !important;
+    border:0 !important;
+    border-radius:16px !important;
+    background:#d1d1d6;
+    box-shadow:none !important;
+  }
+  .route-select-popup .route-toggle-switch::after{
+    top:2px !important;
+    left:2px !important;
+    width:27px !important;
+    height:27px !important;
+    box-shadow:0 1px 3px rgba(0,0,0,.22) !important;
+  }
+  .route-select-popup .route-toggle-switch.on{
+    background:#34c759 !important;
+  }
+  .route-select-popup .route-toggle-switch.on::after{
+    transform:translateX(20px) !important;
+  }
+  .route-select-popup .route-memo-btn{
+    background:#fff !important;
+    border:0 !important;
+    color:#111 !important;
+  }
+  .route-select-popup .route-memo-btn:hover{
+    background:#fff !important;
+  }
 </style>
   <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7ee4bab8cd4d6be6d0d68a49e9b4502b&libraries=services"></script>
   <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js"></script>
@@ -1801,7 +1889,7 @@ function showRouteSelectPopup(routeLine,position){
 
   const title=document.createElement('div');
   title.className='route-select-title';
-  title.textContent='비행경로 · '+(routeLine._routeNumber || '번호 없음');
+  title.textContent=routeLine._routeNumber || '번호 없음';
 
   const actions=document.createElement('div');
   actions.className='route-select-actions';
@@ -1814,11 +1902,11 @@ function showRouteSelectPopup(routeLine,position){
   });
 
   const toggleRow=document.createElement('div');
-  toggleRow.className='route-toggle-row';
+  toggleRow.className='route-menu-row';
 
   const toggleLabel=document.createElement('span');
-  toggleLabel.className='route-toggle-label';
-  toggleLabel.textContent='경로 표시';
+  toggleLabel.className='route-menu-label';
+  toggleLabel.textContent='경로표시';
 
   const toggleSwitch=document.createElement('button');
   toggleSwitch.className='route-toggle-switch';
@@ -1843,19 +1931,30 @@ function showRouteSelectPopup(routeLine,position){
   toggleRow.appendChild(toggleSwitch);
 
   const memoBtn=document.createElement('button');
-  memoBtn.className='route-memo-btn';
+  memoBtn.className='route-menu-row route-memo-btn';
   memoBtn.type='button';
-  memoBtn.textContent='메모';
+
+  const memoLabel=document.createElement('span');
+  memoLabel.className='route-menu-label';
+  memoLabel.textContent='메모추가';
+
+  const memoChevron=document.createElement('span');
+  memoChevron.className='route-menu-chevron';
+  memoChevron.textContent='›';
+
+  memoBtn.appendChild(memoLabel);
+  memoBtn.appendChild(memoChevron);
+
   const openMemo=function(e){
     if(e){ e.preventDefault(); e.stopPropagation(); }
     closeRouteSelectPopup();
     openMemoEditor(routeLine);
   };
   memoBtn.addEventListener('click',openMemo);
-  memoBtn.addEventListener('touchend',openMemo,{passive:false});
 
   actions.appendChild(toggleRow);
   actions.appendChild(memoBtn);
+
   box.appendChild(title);
   box.appendChild(actions);
 
