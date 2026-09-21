@@ -3839,6 +3839,20 @@
 }
 </style>
 <style>
+/* Satellite / hybrid map label contrast */
+body.satellite-map .route-label{
+  color:#ffffff !important;
+  text-shadow:
+    -1px -1px 0 #000000,
+     1px -1px 0 #000000,
+    -1px  1px 0 #000000,
+     1px  1px 0 #000000,
+     0   -1px 0 #000000,
+     0    1px 0 #000000,
+    -1px  0   0 #000000,
+     1px  0   0 #000000 !important;
+}
+
 /* Mobile initial top icon: 150% visual scale */
 @media (max-width:700px){
   .panel.collapsed .settings-title-icon.send-title-icon,
@@ -6334,8 +6348,18 @@ saveLabelStyleBtn?.addEventListener('click',()=>{
 });
 
 kakao.maps.event.addListener(map,'zoom_changed',updateRouteLabelVisibility);
-document.getElementById('roadBtn').addEventListener('click',()=>{map.setMapTypeId(kakao.maps.MapTypeId.ROADMAP);roadBtn.classList.add('active');skyBtn.classList.remove('active');});
-document.getElementById('skyBtn').addEventListener('click',()=>{map.setMapTypeId(kakao.maps.MapTypeId.HYBRID);skyBtn.classList.add('active');roadBtn.classList.remove('active');});
+document.getElementById('roadBtn').addEventListener('click',()=>{
+  map.setMapTypeId(kakao.maps.MapTypeId.ROADMAP);
+  document.body.classList.remove('satellite-map');
+  roadBtn.classList.add('active');
+  skyBtn.classList.remove('active');
+});
+document.getElementById('skyBtn').addEventListener('click',()=>{
+  map.setMapTypeId(kakao.maps.MapTypeId.HYBRID);
+  document.body.classList.add('satellite-map');
+  skyBtn.classList.add('active');
+  roadBtn.classList.remove('active');
+});
 function mercatorToWgs84Point(pt){
   if(!Array.isArray(pt) || pt.length<2) return null;
   const x=Number(pt[0]), y=Number(pt[1]);
