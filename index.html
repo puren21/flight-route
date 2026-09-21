@@ -1260,10 +1260,9 @@
     </div>
 
     <section id="routePage" class="menu-page">
-      <div class="route-number-wrap">
-        <select id="routeNumberSelect" class="route-number-select">
-          <option value="">번호 선택</option>
-        </select>
+      <div class="route-number-wrap route-wheel-wrap">
+        <div id="routeNumberWheel" class="route-number-wheel" role="listbox" aria-label="비행경로 번호 선택"></div>
+        <div class="route-wheel-highlight" aria-hidden="true"></div>
       </div>
     </section>
 
@@ -2698,27 +2697,50 @@ function drawLineString(coordinates,labelNumber){
   }
 }
 
+let routeWheelNumbers=[];
+let routeWheelSelected='';
+let routeWheelScrollTimer=null;
+
 function populateRouteNumberMenu(){
-  const select=document.getElementById('routeNumberSelect');
-  if(!select) return;
+  const wheel=document.getElementById('routeNumberWheel');
+  if(!wheel) return;
 
-  const current=select.value;
-  select.innerHTML='<option value="">번호 선택</option>';
-
-  const nums=[...routeIndex.keys()].sort((a,b)=>{
+  routeWheelNumbers=[...routeIndex.keys()].sort((a,b)=>{
     const na=Number(a), nb=Number(b);
     if(!Number.isNaN(na) && !Number.isNaN(nb)) return na-nb;
     return a.localeCompare(b,'ko');
   });
 
-  nums.forEach(num=>{
-    const option=document.createElement('option');
-    option.value=num;
-    option.textContent=num;
-    select.appendChild(option);
+  wheel.innerHTML='';
+
+  // iOS 휠처럼 첫/마지막 값도 중앙까지 올 수 있도록 위아래 여백을 둠.
+  const topSpacer=document.createElement('div');
+  topSpacer.className='route-wheel-spacer';
+  wheel.appendChild(topSpacer);
+
+  routeWheelNumbers.forEach(num=>{
+    const item=document.createElement('button');
+    item.type='button';
+    item.className='route-wheel-item';
+    item.dataset.value=num;
+    item.setAttribute('role','option');
+    item.textContent=num;
+    item.addEventListener('click',()=>{
+      scrollRouteWheelTo(num,true);
+    });
+    wheel.appendChild(item);
   });
 
-  if(current && routeIndex.has(current)) select.value=current;
+  const bottomSpacer=document.createElement('div');
+  bottomSpacer.className='route-wheel-spacer';
+  wheel.appendChild(bottomSpacer);
+
+  if(routeWheelNumbers.length){
+    const initial=(routeWheelSelected && routeIndex.has(routeWheelSelected))
+      ? routeWheelSelected
+      : routeWheelNumbers[0];
+    requestAnimationFrame(()=>scrollRouteWheelTo(initial,false));
+  }
 }
 
 function focusRouteNumber(num){
@@ -2733,9 +2755,63 @@ function focusRouteNumber(num){
   },0);
 }
 
-document.getElementById('routeNumberSelect').addEventListener('change',function(){
-  if(this.value) focusRouteNumber(this.value);
-});
+function routeWheelNearest(){
+  const wheel=document.getElementById('routeNumberWheel');
+  if(!wheel) return null;
+  const center=wheel.scrollTop+wheel.clientHeight/2;
+  let nearest=null;
+  let nearestDist=Infinity;
+
+  wheel.querySelectorAll('.route-wheel-item').forEach(item=>{
+    const itemCenter=item.offsetTop+item.offsetHeight/2;
+    const dist=Math.abs(itemCenter-center);
+    if(dist<nearestDist){
+      nearest=item;
+      nearestDist=dist;
+    }
+  });
+  return nearest;
+}
+
+function syncRouteWheelSelection(focusMap=true){
+  const wheel=document.getElementById('routeNumberWheel');
+  const item=routeWheelNearest();
+  if(!wheel || !item) return;
+
+  const num=item.dataset.value;
+  const changed=routeWheelSelected!==num;
+  routeWheelSelected=num;
+
+  wheel.querySelectorAll('.route-wheel-item').forEach(el=>{
+    const active=el===item;
+    el.classList.toggle('active',active);
+    el.setAttribute('aria-selected',active?'true':'false');
+  });
+
+  if(changed && focusMap) focusRouteNumber(num);
+}
+
+function scrollRouteWheelTo(num,focusMap=true){
+  const wheel=document.getElementById('routeNumberWheel');
+  if(!wheel) return;
+  const item=wheel.querySelector('.route-wheel-item[data-value="'+CSS.escape(String(num))+'"]');
+  if(!item) return;
+
+  const target=item.offsetTop-(wheel.clientHeight-item.offsetHeight)/2;
+  wheel.scrollTo({top:target,behavior:focusMap?'smooth':'auto'});
+
+  if(focusMap){
+    clearTimeout(routeWheelScrollTimer);
+    routeWheelScrollTimer=setTimeout(()=>syncRouteWheelSelection(true),220);
+  }else{
+    requestAnimationFrame(()=>syncRouteWheelSelection(false));
+  }
+}
+
+document.getElementById('routeNumberWheel')?.addEventListener('scroll',()=>{
+  clearTimeout(routeWheelScrollTimer);
+  routeWheelScrollTimer=setTimeout(()=>syncRouteWheelSelection(true),120);
+},{passive:true});
 
 function updateRouteLabelVisibility(){
   // 카카오 지도 level 값은 숫자가 클수록 더 멀리 축소된 상태임
@@ -4634,6 +4710,104 @@ if ('serviceWorker' in navigator) {
 @media (max-width:700px){
   .panel:not(.collapsed) .panel-header{
     top:0 !important;
+  }
+}
+
+/* iPhone Timer-style wheel picker for route numbers */
+.route-wheel-wrap{
+  position:relative;
+  margin:0 !important;
+  height:190px;
+  overflow:hidden;
+  border-radius:16px;
+  background:#fff;
+}
+.route-number-wheel{
+  position:relative;
+  z-index:2;
+  height:190px;
+  overflow-y:auto;
+  overflow-x:hidden;
+  scroll-snap-type:y mandatory;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  overscroll-behavior:contain;
+  padding:0;
+  mask-image:linear-gradient(to bottom, transparent 0%, #000 24%, #000 76%, transparent 100%);
+  -webkit-mask-image:linear-gradient(to bottom, transparent 0%, #000 24%, #000 76%, transparent 100%);
+}
+.route-number-wheel::-webkit-scrollbar{
+  display:none;
+}
+.route-wheel-spacer{
+  height:72px;
+  flex:0 0 72px;
+}
+.route-wheel-item{
+  width:100%;
+  height:46px;
+  min-height:46px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin:0 !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  color:#8e8e93 !important;
+  font-size:22px !important;
+  font-weight:500 !important;
+  line-height:46px !important;
+  scroll-snap-align:center;
+  transition:font-size .12s ease,color .12s ease,opacity .12s ease;
+}
+.route-wheel-item.active{
+  color:#111 !important;
+  font-size:25px !important;
+  font-weight:600 !important;
+}
+.route-wheel-highlight{
+  position:absolute;
+  z-index:1;
+  left:8px;
+  right:8px;
+  top:50%;
+  height:46px;
+  transform:translateY(-50%);
+  border-radius:10px;
+  background:rgba(118,118,128,.12);
+  pointer-events:none;
+}
+.route-wheel-wrap::before,
+.route-wheel-wrap::after{
+  content:"";
+  position:absolute;
+  z-index:3;
+  left:0;
+  right:0;
+  height:1px;
+  background:rgba(60,60,67,.16);
+  pointer-events:none;
+}
+.route-wheel-wrap::before{
+  top:calc(50% - 23px);
+}
+.route-wheel-wrap::after{
+  top:calc(50% + 23px);
+}
+@media (max-width:700px){
+  .route-wheel-wrap,
+  .route-number-wheel{
+    height:210px;
+  }
+  .route-wheel-spacer{
+    height:82px;
+    flex-basis:82px;
+  }
+  .route-wheel-item{
+    height:46px;
+    min-height:46px;
   }
 }
 </style>
