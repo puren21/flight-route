@@ -1182,16 +1182,40 @@
   <div class="panel-body">
     <div id="menuHome" class="menu-home">
       <button class="ios-menu-row" type="button" data-page="routePage" data-title="경로목록">
-        <span>경로목록</span><span class="ios-chevron">›</span>
+        <span class="ios-menu-left">
+          <span class="ios-menu-icon ios-icon-route" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M7 6h11M7 12h11M7 18h11"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg>
+          </span>
+          <span class="ios-menu-text">경로목록</span>
+        </span>
+        <span class="ios-chevron">›</span>
       </button>
       <button class="ios-menu-row" type="button" data-page="stylePage" data-title="스타일 설정">
-        <span>스타일 설정</span><span class="ios-chevron">›</span>
+        <span class="ios-menu-left">
+          <span class="ios-menu-icon ios-icon-style" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2.2"/><circle cx="15" cy="12" r="2.2"/><circle cx="11" cy="18" r="2.2"/></svg>
+          </span>
+          <span class="ios-menu-text">스타일 설정</span>
+        </span>
+        <span class="ios-chevron">›</span>
       </button>
       <button class="ios-menu-row" type="button" data-page="labelPage" data-title="라벨">
-        <span>라벨</span><span class="ios-chevron">›</span>
+        <span class="ios-menu-left">
+          <span class="ios-menu-icon ios-icon-label" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4 5.5h8.8L20 12.7 12.8 20H4z"/><circle cx="9" cy="10" r="1.3"/></svg>
+          </span>
+          <span class="ios-menu-text">라벨</span>
+        </span>
+        <span class="ios-chevron">›</span>
       </button>
       <button class="ios-menu-row" type="button" data-page="otherPage" data-title="기타기능">
-        <span>기타기능</span><span class="ios-chevron">›</span>
+        <span class="ios-menu-left">
+          <span class="ios-menu-icon ios-icon-other" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="18" cy="12" r="1.8"/></svg>
+          </span>
+          <span class="ios-menu-text">기타기능</span>
+        </span>
+        <span class="ios-chevron">›</span>
       </button>
     </div>
 
@@ -1327,6 +1351,7 @@ const mobileMenuLauncher=document.getElementById('mobileMenuLauncher');
 const menuBackBtn=document.getElementById('menuBackBtn');
 const panelTitle=document.getElementById('panelTitle');
 const menuHome=document.getElementById('menuHome');
+const menuPages=[...document.querySelectorAll('.menu-page')];
 const MEMO_STORAGE_KEY='flightRouteMemosV1';
 const ROUTE_STATE_STORAGE_KEY='flightRouteStatesV1';
 const ROUTE_STATE_CLOUD_KEY='__route_states__';
@@ -1389,6 +1414,43 @@ document.querySelector('.panel-header')?.addEventListener('click',e=>{
 mobileMenuLauncher.addEventListener('click',()=>{
   toggleControlPanel();
 });
+
+function updateStablePanelWidth(){
+  if(window.matchMedia('(max-width:700px)').matches){
+    controlPanel.style.removeProperty('--stable-panel-width');
+    return;
+  }
+
+  const wasCollapsed=controlPanel.classList.contains('collapsed');
+  const wasDetail=controlPanel.classList.contains('detail-view');
+  const previousHomeDisplay=menuHome.style.display;
+  const previousActive=menuPages.map(page=>page.classList.contains('active'));
+
+  controlPanel.classList.remove('collapsed');
+  controlPanel.classList.remove('detail-view');
+  controlPanel.style.setProperty('--stable-panel-width','320px');
+
+  let maxWidth=320;
+
+  menuHome.style.display='flex';
+  menuPages.forEach(page=>page.classList.remove('active'));
+  maxWidth=Math.max(maxWidth,Math.ceil(controlPanel.scrollWidth));
+
+  menuHome.style.display='none';
+  menuPages.forEach((page,index)=>{
+    menuPages.forEach(p=>p.classList.remove('active'));
+    page.classList.add('active');
+    maxWidth=Math.max(maxWidth,Math.ceil(controlPanel.scrollWidth));
+  });
+
+  menuHome.style.display=previousHomeDisplay;
+  menuPages.forEach((page,index)=>page.classList.toggle('active',previousActive[index]));
+  controlPanel.classList.toggle('detail-view',wasDetail);
+  controlPanel.classList.toggle('collapsed',wasCollapsed);
+
+  maxWidth=Math.min(Math.max(maxWidth,320),420);
+  controlPanel.style.setProperty('--stable-panel-width',maxWidth+'px');
+}
 
 function showMenuHome(){
   controlPanel.classList.remove('detail-view');
@@ -2636,6 +2698,8 @@ document.getElementById('floatingLocBtn')?.addEventListener('click',locateMe);
 document.getElementById('menuLocBtn')?.addEventListener('click',locateMe);
 document.getElementById('resetRouteStatesBtn')?.addEventListener('click',resetRouteStates);
 syncPanelToggle();
+updateStablePanelWidth();
+window.addEventListener('resize',updateStablePanelWidth);
 renderMemoList();
 loadRemoteMemos();
 
@@ -2664,4 +2728,46 @@ if ('serviceWorker' in navigator) {
   font-weight:600 !important;
   line-height:1.2 !important;
 }
+
+  .ios-menu-left{
+    display:flex;
+    align-items:center;
+    gap:11px;
+    min-width:0;
+    flex:1;
+  }
+  .ios-menu-text{
+    white-space:nowrap;
+  }
+  .ios-menu-icon{
+    width:30px;
+    height:30px;
+    flex:0 0 30px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:7px;
+    color:#fff;
+  }
+  .ios-menu-icon svg{
+    width:19px;
+    height:19px;
+    fill:none;
+    stroke:currentColor;
+    stroke-width:1.8;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+  }
+  .ios-icon-route{background:#3478f6;}
+  .ios-icon-style{background:#ff9500;}
+  .ios-icon-label{background:#af52de;}
+  .ios-icon-other{background:#8e8e93;}
+
+  @media (min-width:701px){
+    .panel:not(.collapsed){
+      width:var(--stable-panel-width,320px);
+      min-width:var(--stable-panel-width,320px);
+      max-width:var(--stable-panel-width,320px);
+    }
+  }
 </style>
