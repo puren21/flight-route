@@ -1420,8 +1420,31 @@ const statusEl=document.getElementById('status');
 const routeToggle={checked:true};
 const routeStyle={weight:3,color:'#E53935',opacity:.9};
 const offRouteStyle={weight:2,color:'#6F7F95',opacity:.5};
+const ROUTE_STYLE_STORAGE_KEY='flightRouteLineStyleV1';
 const LABEL_STYLE_STORAGE_KEY='flightRouteLabelStyleV1';
 const labelStyle={size:13,color:'#0D47A1'};
+
+try{
+  const savedRouteStyle=JSON.parse(localStorage.getItem(ROUTE_STYLE_STORAGE_KEY)||'null');
+  if(savedRouteStyle){
+    const w=Number(savedRouteStyle.route?.weight);
+    const c=String(savedRouteStyle.route?.color||'');
+    const o=Number(savedRouteStyle.route?.opacity);
+    const ow=Number(savedRouteStyle.off?.weight);
+    const oc=String(savedRouteStyle.off?.color||'');
+    const oo=Number(savedRouteStyle.off?.opacity);
+
+    if(Number.isFinite(w) && w>=1 && w<=10) routeStyle.weight=w;
+    if(/^#[0-9a-fA-F]{6}$/.test(c)) routeStyle.color=c;
+    if(Number.isFinite(o) && o>=0.1 && o<=1) routeStyle.opacity=o;
+
+    if(Number.isFinite(ow) && ow>=1 && ow<=10) offRouteStyle.weight=ow;
+    if(/^#[0-9a-fA-F]{6}$/.test(oc)) offRouteStyle.color=oc;
+    if(Number.isFinite(oo) && oo>=0.1 && oo<=1) offRouteStyle.opacity=oo;
+  }
+}catch(e){
+  console.error('라인 설정 불러오기 오류',e);
+}
 try{
   const savedLabelStyle=JSON.parse(localStorage.getItem(LABEL_STYLE_STORAGE_KEY)||'null');
   if(savedLabelStyle){
@@ -2792,10 +2815,44 @@ const offRouteWeightValue=document.getElementById('offRouteWeightValue');
 const offRouteOpacityValue=document.getElementById('offRouteOpacityValue');
 const saveLabelStyleBtn=document.getElementById('saveLabelStyleBtn');
 
+routeWeightInput.value=String(routeStyle.weight);
+routeWeightValue.textContent=String(routeStyle.weight);
+routeColorInput.value=routeStyle.color.toLowerCase();
+routeOpacityInput.value=String(routeStyle.opacity);
+routeOpacityValue.textContent=Math.round(routeStyle.opacity*100)+'%';
+
+offRouteWeightInput.value=String(offRouteStyle.weight);
+offRouteWeightValue.textContent=String(offRouteStyle.weight);
+offRouteColorInput.value=offRouteStyle.color.toLowerCase();
+offRouteOpacityInput.value=String(offRouteStyle.opacity);
+offRouteOpacityValue.textContent=Math.round(offRouteStyle.opacity*100)+'%';
+
 labelSizeInput.value=String(labelStyle.size);
 labelSizeValue.textContent=labelStyle.size+'px';
-
 labelColorInput.value=labelStyle.color.toLowerCase();
+
+function persistDisplayStyles(){
+  try{
+    localStorage.setItem(ROUTE_STYLE_STORAGE_KEY,JSON.stringify({
+      route:{
+        weight:routeStyle.weight,
+        color:routeStyle.color,
+        opacity:routeStyle.opacity
+      },
+      off:{
+        weight:offRouteStyle.weight,
+        color:offRouteStyle.color,
+        opacity:offRouteStyle.opacity
+      }
+    }));
+    localStorage.setItem(LABEL_STYLE_STORAGE_KEY,JSON.stringify({
+      size:labelStyle.size,
+      color:labelStyle.color
+    }));
+  }catch(error){
+    console.error('스타일 설정 저장 오류',error);
+  }
+}
 
 function refreshSizePresetGroups(){
   document.querySelectorAll('.size-preset-group').forEach(group=>{
@@ -2825,36 +2882,42 @@ routeWeightInput.addEventListener('input',()=>{
   routeStyle.weight=Number(routeWeightInput.value);
   routeWeightValue.textContent=routeWeightInput.value;
   applyRouteStyle();
+  persistDisplayStyles();
   refreshSizePresetGroups();
 });
 
 routeColorInput.addEventListener('input',()=>{
   routeStyle.color=routeColorInput.value;
   applyRouteStyle();
+  persistDisplayStyles();
 });
 
 routeOpacityInput.addEventListener('input',()=>{
   routeStyle.opacity=Number(routeOpacityInput.value);
   routeOpacityValue.textContent=Math.round(routeStyle.opacity*100)+'%';
   applyRouteStyle();
+  persistDisplayStyles();
 });
 
 offRouteWeightInput.addEventListener('input',()=>{
   offRouteStyle.weight=Number(offRouteWeightInput.value);
   offRouteWeightValue.textContent=offRouteWeightInput.value;
   applyOffRouteStyle();
+  persistDisplayStyles();
   refreshSizePresetGroups();
 });
 
 offRouteColorInput.addEventListener('input',()=>{
   offRouteStyle.color=offRouteColorInput.value;
   applyOffRouteStyle();
+  persistDisplayStyles();
 });
 
 offRouteOpacityInput.addEventListener('input',()=>{
   offRouteStyle.opacity=Number(offRouteOpacityInput.value);
   offRouteOpacityValue.textContent=Math.round(offRouteStyle.opacity*100)+'%';
   applyOffRouteStyle();
+  persistDisplayStyles();
 });
 
 labelSizeInput.addEventListener('input',()=>{
@@ -2865,6 +2928,7 @@ labelSizeInput.addEventListener('input',()=>{
       overlay._labelElement.style.fontSize=labelStyle.size+'px';
     }
   });
+  persistDisplayStyles();
   refreshSizePresetGroups();
 });
 
@@ -2875,19 +2939,12 @@ labelColorInput.addEventListener('input',()=>{
       overlay._labelElement.style.color=labelStyle.color;
     }
   });
+  persistDisplayStyles();
 });
 
 saveLabelStyleBtn?.addEventListener('click',()=>{
-  try{
-    localStorage.setItem(LABEL_STYLE_STORAGE_KEY,JSON.stringify({
-      size:labelStyle.size,
-      color:labelStyle.color
-    }));
-    statusEl.textContent='라벨 색상·크기를 기본값으로 저장했습니다.';
-  }catch(error){
-    console.error(error);
-    statusEl.textContent='라벨 설정을 저장하지 못했습니다.';
-  }
+  persistDisplayStyles();
+  statusEl.textContent='라인·라벨 설정을 현재 값으로 저장했습니다.';
 });
 
 kakao.maps.event.addListener(map,'zoom_changed',updateRouteLabelVisibility);
