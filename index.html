@@ -3971,4 +3971,35 @@ if ('serviceWorker' in navigator) {
   width:42px !important;
   height:42px !important;
 }
+
+/* Initial launcher icon: larger, visible only while panel is collapsed */
+.panel.collapsed .settings-title-icon.send-title-icon{
+  display:inline-flex !important;
+  width:50px !important;
+  height:50px !important;
+}
+.panel.collapsed .settings-title-icon.send-title-icon svg{
+  width:50px !important;
+  height:50px !important;
+}
+.panel:not(.collapsed) .settings-title-icon.send-title-icon{
+  display:none !important;
+}
+.panel:not(.collapsed) .settings-title-text{
+  display:inline !important;
+}
+.panel.collapsed{
+  width:52px !important;
+  min-width:52px !important;
+  max-width:52px !important;
+  height:52px !important;
+  min-height:52px !important;
+  max-height:52px !important;
+}
+.panel.collapsed .panel-header,
+.panel.collapsed .panel-header h1{
+  width:52px !important;
+  height:52px !important;
+  min-height:52px !important;
+}
 </style>
