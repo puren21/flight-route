@@ -6697,4 +6697,18 @@ if ('serviceWorker' in navigator) {
     overflow-y:auto !important;
   }
 }
+
+/* Mobile: keep the memo menu within the upper half of the screen */
+@media (max-width:700px){
+  #controlPanel.detail-view:has(#memoPage.active){
+    height:min(var(--user-panel-height,var(--stable-panel-height,50dvh)),50dvh) !important;
+    max-height:50dvh !important;
+  }
+
+  #controlPanel.detail-view:has(#memoPage.active) .panel-body{
+    min-height:0 !important;
+    overflow-y:auto !important;
+    -webkit-overflow-scrolling:touch !important;
+  }
+}
 </style>
