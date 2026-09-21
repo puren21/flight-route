@@ -267,7 +267,7 @@
     }
     .floating-location:hover { background: #fff; }
     .route-select-popup {
-      width: 220px;
+      width: 260px;
       padding: 10px;
       background: rgba(255,255,255,.98);
       border-radius: 10px;
@@ -282,7 +282,7 @@
     }
     .route-select-popup .route-select-actions {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(3, 1fr);
       gap: 6px;
     }
     .route-select-popup button {
@@ -1467,21 +1467,9 @@ function showRouteSelectPopup(routeLine,position){
   memoBtn.addEventListener('click',openMemo);
   memoBtn.addEventListener('touchend',openMemo,{passive:false});
 
-  const propBtn=document.createElement('button');
-  propBtn.className='route-prop-btn';
-  propBtn.type='button';
-  propBtn.textContent='속성';
-  const openProps=function(e){
-    if(e){ e.preventDefault(); e.stopPropagation(); }
-    showRouteProperties(routeLine);
-  };
-  propBtn.addEventListener('click',openProps);
-  propBtn.addEventListener('touchend',openProps,{passive:false});
-
   actions.appendChild(onBtn);
   actions.appendChild(offBtn);
   actions.appendChild(memoBtn);
-  actions.appendChild(propBtn);
   box.appendChild(title);
   box.appendChild(actions);
 
