@@ -2762,10 +2762,9 @@ function startKakaoNavi(name,lat,lng){
   const destinationName=encodeURIComponent(name || '선택 위치');
   const webUrl='https://map.kakao.com/link/to/'+destinationName+','+lat+','+lng;
 
-  // 카카오 공식 길찾기 바로가기 URL을 직접 사용함.
-  // 모바일/PC 환경에서 카카오맵 길찾기 화면으로 연결됨.
   if(isMobileRouteDevice()){
-    window.location.href=webUrl;
+    const appUrl='kakaomap://route?ep='+lat+','+lng+'&by=car';
+    openAppWithWebFallback(appUrl,webUrl);
     return;
   }
 
@@ -2825,6 +2824,13 @@ function showAddressPopup(latLng){
     const box=document.createElement('div');
     box.className='address-popup';
 
+    ['pointerdown','pointerup','mousedown','mouseup','click','touchstart','touchend'].forEach(eventName=>{
+      box.addEventListener(eventName,e=>{
+        e.stopPropagation();
+        try{ kakao.maps.event.preventMap(); }catch(err){}
+      },{passive:false});
+    });
+
     const close=document.createElement('button');
     close.className='close-btn';
     close.type='button';
@@ -2870,6 +2876,7 @@ function showAddressPopup(latLng){
       map:map,
       position:latLng,
       content:box,
+      clickable:true,
       xAnchor:0.5,
       yAnchor:1.08,
       zIndex:30
