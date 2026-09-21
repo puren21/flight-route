@@ -936,7 +936,125 @@
       .save-style-btn,.subtle-action{min-height:44px;}
     }
 
-  </style>
+  
+  /* iOS-style main menu navigation */
+  .menu-back-btn{
+    display:none;
+    flex:0 0 34px;
+    width:34px;
+    height:34px;
+    padding:0;
+    border:0;
+    border-radius:17px;
+    background:#f2f3f5;
+    color:#222;
+    font-size:30px;
+    font-weight:300;
+    line-height:30px;
+  }
+  .panel.detail-view .menu-back-btn{display:block;}
+  .panel-header h1{flex:1;text-align:left;}
+  .panel.detail-view .panel-header h1{text-align:center;}
+  .menu-home{
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+    border:1px solid #e5e7ea;
+    border-radius:12px;
+    background:#fff;
+  }
+  .ios-menu-row{
+    width:100%;
+    min-height:48px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:0 14px;
+    border:0;
+    border-bottom:1px solid #eceef0;
+    border-radius:0;
+    background:#fff;
+    color:#1d1d1f;
+    font-size:14px;
+    font-weight:600;
+    text-align:left;
+  }
+  .ios-menu-row:last-child{border-bottom:0;}
+  .ios-menu-row:hover{background:#f7f7f8;}
+  .ios-chevron{
+    color:#b0b3b8;
+    font-size:26px;
+    font-weight:300;
+    line-height:1;
+  }
+  .menu-page{
+    display:none;
+    padding:8px;
+    border:1px solid #e5e7ea;
+    border-radius:12px;
+    background:#fff;
+  }
+  .menu-page.active{display:block;}
+
+  /* iPhone-like route switch */
+  .route-select-popup .route-toggle-row{
+    min-height:38px;
+    padding:2px 0;
+  }
+  .route-select-popup .route-toggle-switch{
+    width:51px !important;
+    min-width:51px !important;
+    max-width:51px !important;
+    height:31px !important;
+    min-height:31px !important;
+    flex:0 0 51px !important;
+    padding:0 !important;
+    border:0 !important;
+    border-radius:16px !important;
+    background:#e9e9ea;
+    box-shadow:none;
+  }
+  .route-select-popup .route-toggle-switch::after{
+    top:2px;
+    left:2px;
+    width:27px;
+    height:27px;
+    box-shadow:0 1px 3px rgba(0,0,0,.28);
+  }
+  .route-select-popup .route-toggle-switch.on{background:#34c759;}
+  .route-select-popup .route-toggle-switch.on::after{transform:translateX(20px);}
+  .route-select-popup .route-toggle-label{
+    font-size:12px;
+    font-weight:600;
+    color:#3a3a3c;
+  }
+
+  @media (max-width:700px){
+    .panel-body{gap:6px;}
+    .menu-home{border-radius:14px;}
+    .ios-menu-row{
+      min-height:52px;
+      padding:0 15px;
+      font-size:15px;
+      font-weight:600;
+    }
+    .menu-page{
+      padding:10px;
+      border-radius:14px;
+    }
+    .panel.detail-view .panel-header{
+      display:grid;
+      grid-template-columns:36px 1fr 36px;
+      align-items:center;
+    }
+    .panel.detail-view .panel-header h1{
+      margin:0;
+      font-size:16px;
+      text-align:center;
+    }
+  }
+</style>
   <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7ee4bab8cd4d6be6d0d68a49e9b4502b&libraries=services"></script>
   <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js"></script>
   <link rel="manifest" href="./manifest.webmanifest">
@@ -965,128 +1083,125 @@
 <button id="floatingLocBtn" class="floating-location" type="button" title="현재 위치" aria-label="현재 위치">◎</button>
 <div class="panel collapsed" id="controlPanel">
   <div class="panel-header">
-    <h1>비행경로</h1>
+    <button id="menuBackBtn" class="menu-back-btn" type="button" aria-label="이전 메뉴">‹</button>
+    <h1 id="panelTitle">비행경로</h1>
     <button id="panelToggleBtn" class="panel-toggle" type="button" aria-label="메뉴 펼치기">＋</button>
   </div>
+
   <div class="panel-body">
-    <section class="menu-section">
-      <button class="style-section-toggle main-menu-toggle" type="button" data-target="routeMenuBody">
-        <span>경로목록</span><span>＋</span>
+    <div id="menuHome" class="menu-home">
+      <button class="ios-menu-row" type="button" data-page="routePage" data-title="경로목록">
+        <span>경로목록</span><span class="ios-chevron">›</span>
       </button>
-      <div id="routeMenuBody" class="style-section-body">
-        <div class="route-number-wrap">
-          <label for="routeNumberSelect">비행경로 번호</label>
-          <select id="routeNumberSelect" class="route-number-select">
-            <option value="">번호 선택</option>
-          </select>
-        </div>
+      <button class="ios-menu-row" type="button" data-page="stylePage" data-title="스타일 설정">
+        <span>스타일 설정</span><span class="ios-chevron">›</span>
+      </button>
+      <button class="ios-menu-row" type="button" data-page="labelPage" data-title="라벨">
+        <span>라벨</span><span class="ios-chevron">›</span>
+      </button>
+      <button class="ios-menu-row" type="button" data-page="otherPage" data-title="기타기능">
+        <span>기타기능</span><span class="ios-chevron">›</span>
+      </button>
+    </div>
+
+    <section id="routePage" class="menu-page">
+      <div class="route-number-wrap">
+        <label for="routeNumberSelect">비행경로 번호</label>
+        <select id="routeNumberSelect" class="route-number-select">
+          <option value="">번호 선택</option>
+        </select>
       </div>
     </section>
 
-    <section class="menu-section">
-      <button class="style-section-toggle main-menu-toggle" type="button" data-target="styleMenuBody">
-        <span>스타일 설정</span><span>＋</span>
+    <section id="stylePage" class="menu-page">
+      <button class="style-section-toggle" type="button" data-target="defaultStyleBody">
+        <span>기본 라인</span><span>＋</span>
       </button>
-      <div id="styleMenuBody" class="style-section-body">
-        <button class="style-section-toggle" type="button" data-target="defaultStyleBody">
-          <span>기본 라인</span><span>＋</span>
-        </button>
-        <div id="defaultStyleBody" class="style-section-body">
-          <div class="route-style-row">
-            <span>두께</span>
-            <input id="routeWeight" type="range" min="1" max="10" step="1" value="3">
-            <span id="routeWeightValue" class="route-style-value">3</span>
-          </div>
-          <div class="route-style-row">
-            <span>색상</span>
-            <input id="routeColor" type="color" value="#e53935">
-            <span></span>
-          </div>
-          <div class="route-style-row">
-            <span>투명도</span>
-            <input id="routeOpacity" type="range" min="0.1" max="1" step="0.1" value="0.9">
-            <span id="routeOpacityValue" class="route-style-value">90%</span>
-          </div>
-        </div>
-
-        <button class="style-section-toggle" type="button" data-target="offStyleBody">
-          <span>끄기 라인</span><span>＋</span>
-        </button>
-        <div id="offStyleBody" class="style-section-body">
-          <div class="route-style-row">
-            <span>두께</span>
-            <input id="offRouteWeight" type="range" min="1" max="10" step="1" value="2">
-            <span id="offRouteWeightValue" class="route-style-value">2</span>
-          </div>
-          <div class="route-style-row">
-            <span>색상</span>
-            <input id="offRouteColor" type="color" value="#6f7f95">
-            <span></span>
-          </div>
-          <div class="route-style-row">
-            <span>투명도</span>
-            <input id="offRouteOpacity" type="range" min="0.1" max="1" step="0.1" value="0.5">
-            <span id="offRouteOpacityValue" class="route-style-value">50%</span>
-          </div>
-        </div>
-        <button id="resetRouteStatesBtn" class="subtle-action" type="button">켜기·끄기 상태 초기화</button>
-      </div>
-    </section>
-
-    <section class="menu-section">
-      <button class="style-section-toggle main-menu-toggle" type="button" data-target="labelMenuBody">
-        <span>라벨</span><span>＋</span>
-      </button>
-      <div id="labelMenuBody" class="style-section-body">
+      <div id="defaultStyleBody" class="style-section-body">
         <div class="route-style-row">
-          <span>크기</span>
-          <input id="labelSize" type="range" min="8" max="28" step="1" value="13">
-          <span id="labelSizeValue" class="route-style-value">13px</span>
+          <span>두께</span>
+          <input id="routeWeight" type="range" min="1" max="10" step="1" value="3">
+          <span id="routeWeightValue" class="route-style-value">3</span>
         </div>
         <div class="route-style-row">
           <span>색상</span>
-          <input id="labelColor" type="color" value="#0d47a1">
+          <input id="routeColor" type="color" value="#e53935">
           <span></span>
         </div>
-        <div class="row">
-          <button id="saveLabelStyleBtn" class="save-style-btn" type="button">라벨 설정 저장</button>
+        <div class="route-style-row">
+          <span>투명도</span>
+          <input id="routeOpacity" type="range" min="0.1" max="1" step="0.1" value="0.9">
+          <span id="routeOpacityValue" class="route-style-value">90%</span>
         </div>
+      </div>
+
+      <button class="style-section-toggle" type="button" data-target="offStyleBody">
+        <span>끄기 라인</span><span>＋</span>
+      </button>
+      <div id="offStyleBody" class="style-section-body">
+        <div class="route-style-row">
+          <span>두께</span>
+          <input id="offRouteWeight" type="range" min="1" max="10" step="1" value="2">
+          <span id="offRouteWeightValue" class="route-style-value">2</span>
+        </div>
+        <div class="route-style-row">
+          <span>색상</span>
+          <input id="offRouteColor" type="color" value="#6f7f95">
+          <span></span>
+        </div>
+        <div class="route-style-row">
+          <span>투명도</span>
+          <input id="offRouteOpacity" type="range" min="0.1" max="1" step="0.1" value="0.5">
+          <span id="offRouteOpacityValue" class="route-style-value">50%</span>
+        </div>
+      </div>
+      <button id="resetRouteStatesBtn" class="subtle-action" type="button">켜기·끄기 상태 초기화</button>
+    </section>
+
+    <section id="labelPage" class="menu-page">
+      <div class="route-style-row">
+        <span>크기</span>
+        <input id="labelSize" type="range" min="8" max="28" step="1" value="13">
+        <span id="labelSizeValue" class="route-style-value">13px</span>
+      </div>
+      <div class="route-style-row">
+        <span>색상</span>
+        <input id="labelColor" type="color" value="#0d47a1">
+        <span></span>
+      </div>
+      <div class="row">
+        <button id="saveLabelStyleBtn" class="save-style-btn" type="button">라벨 설정 저장</button>
       </div>
     </section>
 
-    <section class="menu-section">
-      <button class="style-section-toggle main-menu-toggle" type="button" data-target="otherMenuBody">
-        <span>기타기능</span><span>＋</span>
-      </button>
-      <div id="otherMenuBody" class="style-section-body">
-        <div class="quick-grid" style="margin-top:6px;">
-          <button id="roadBtn" class="quick-btn active" type="button">일반지도</button>
-          <button id="skyBtn" class="quick-btn" type="button">위성지도</button>
-          <button id="menuLocBtn" class="quick-btn" type="button">현재 위치</button>
-        </div>
-
-        <label class="airspace-card">
-          <span class="airspace-label">
-            <span class="geo-swatch" style="background:rgba(110,110,110,.15);border-color:#6e6e6e"></span>
-            <span>
-              <strong>장애물공역</strong>
-              <small id="krAirspaceStatus">드론원스톱 장애물공역</small>
-            </span>
-          </span>
-          <input id="krAirspaceToggle" type="checkbox">
-        </label>
-        <input class="krAirspaceCategory" type="checkbox" value="obstacle" checked hidden>
-        <a class="geo-link compact-link" href="https://drone.onestop.go.kr/common/flightArea" target="_blank" rel="noopener">공식 지도 보기 ↗</a>
-
-        <button class="style-section-toggle" type="button" data-target="memoListBody">
-          <span>메모된 번호</span><span>＋</span>
-        </button>
-        <div id="memoListBody" class="style-section-body">
-          <div id="memoList" class="memo-list"></div>
-        </div>
-
-        <div class="status" id="status">GeoJSON 불러오는 중...</div>
+    <section id="otherPage" class="menu-page">
+      <div class="quick-grid">
+        <button id="roadBtn" class="quick-btn active" type="button">일반지도</button>
+        <button id="skyBtn" class="quick-btn" type="button">위성지도</button>
+        <button id="menuLocBtn" class="quick-btn" type="button">현재 위치</button>
       </div>
+
+      <label class="airspace-card">
+        <span class="airspace-label">
+          <span class="geo-swatch" style="background:rgba(110,110,110,.15);border-color:#6e6e6e"></span>
+          <span>
+            <strong>장애물공역</strong>
+            <small id="krAirspaceStatus">드론원스톱 장애물공역</small>
+          </span>
+        </span>
+        <input id="krAirspaceToggle" type="checkbox">
+      </label>
+      <input class="krAirspaceCategory" type="checkbox" value="obstacle" checked hidden>
+      <a class="geo-link compact-link" href="https://drone.onestop.go.kr/common/flightArea" target="_blank" rel="noopener">공식 지도 보기 ↗</a>
+
+      <button class="style-section-toggle" type="button" data-target="memoListBody">
+        <span>메모된 번호</span><span>＋</span>
+      </button>
+      <div id="memoListBody" class="style-section-body">
+        <div id="memoList" class="memo-list"></div>
+      </div>
+
+      <div class="status" id="status">GeoJSON 불러오는 중...</div>
     </section>
   </div>
 </div>
@@ -1118,6 +1233,9 @@ try{
 const controlPanel=document.getElementById('controlPanel');
 const panelToggleBtn=document.getElementById('panelToggleBtn');
 const mobileMenuLauncher=document.getElementById('mobileMenuLauncher');
+const menuBackBtn=document.getElementById('menuBackBtn');
+const panelTitle=document.getElementById('panelTitle');
+const menuHome=document.getElementById('menuHome');
 const MEMO_STORAGE_KEY='flightRouteMemosV1';
 const ROUTE_STATE_STORAGE_KEY='flightRouteStatesV1';
 const ROUTE_STATE_CLOUD_KEY='__route_states__';
@@ -1160,7 +1278,9 @@ function syncPanelToggle(){
   document.body.classList.toggle('menu-open',!collapsed);
 }
 function toggleControlPanel(){
+  const willOpen=controlPanel.classList.contains('collapsed');
   controlPanel.classList.toggle('collapsed');
+  if(willOpen) showMenuHome();
   syncPanelToggle();
 }
 
@@ -1169,12 +1289,42 @@ panelToggleBtn.addEventListener('click',e=>{
   toggleControlPanel();
 });
 
-document.querySelector('.panel-header')?.addEventListener('click',()=>{
+document.querySelector('.panel-header')?.addEventListener('click',e=>{
+  if(e.target.closest('#menuBackBtn') || e.target.closest('#panelToggleBtn')) return;
+  if(controlPanel.classList.contains('detail-view')) return;
   toggleControlPanel();
 });
 
 mobileMenuLauncher.addEventListener('click',()=>{
   toggleControlPanel();
+});
+
+function showMenuHome(){
+  controlPanel.classList.remove('detail-view');
+  menuHome.style.display='flex';
+  document.querySelectorAll('.menu-page').forEach(page=>page.classList.remove('active'));
+  panelTitle.textContent='비행경로';
+}
+
+function openMenuPage(pageId,title){
+  menuHome.style.display='none';
+  document.querySelectorAll('.menu-page').forEach(page=>{
+    page.classList.toggle('active',page.id===pageId);
+  });
+  controlPanel.classList.add('detail-view');
+  panelTitle.textContent=title;
+}
+
+document.querySelectorAll('.ios-menu-row').forEach(row=>{
+  row.addEventListener('click',e=>{
+    e.stopPropagation();
+    openMenuPage(row.dataset.page,row.dataset.title);
+  });
+});
+
+menuBackBtn?.addEventListener('click',e=>{
+  e.stopPropagation();
+  showMenuHome();
 });
 
 document.addEventListener('pointerdown',event=>{
@@ -2130,31 +2280,17 @@ document.querySelectorAll('.style-section-toggle').forEach(btn=>{
   btn.addEventListener('click',()=>{
     const body=document.getElementById(btn.dataset.target);
     const willOpen=!body.classList.contains('open');
+    const scope=btn.parentElement;
 
-    if(btn.classList.contains('main-menu-toggle')){
-      document.querySelectorAll('.main-menu-toggle').forEach(otherBtn=>{
-        if(otherBtn===btn) return;
-        const otherBody=document.getElementById(otherBtn.dataset.target);
-        otherBody?.classList.remove('open');
-        if(otherBtn.lastElementChild) otherBtn.lastElementChild.textContent='＋';
-      });
-    }else{
-      const scope=btn.parentElement;
-      scope.querySelectorAll(':scope > .style-section-body.open').forEach(openBody=>{
-        if(openBody===body) return;
-        openBody.classList.remove('open');
-        const otherBtn=scope.querySelector(':scope > .style-section-toggle[data-target="'+openBody.id+'"]');
-        if(otherBtn?.lastElementChild) otherBtn.lastElementChild.textContent='＋';
-      });
-    }
+    scope.querySelectorAll(':scope > .style-section-body.open').forEach(openBody=>{
+      if(openBody===body) return;
+      openBody.classList.remove('open');
+      const otherBtn=scope.querySelector(':scope > .style-section-toggle[data-target="'+openBody.id+'"]');
+      if(otherBtn?.lastElementChild) otherBtn.lastElementChild.textContent='＋';
+    });
 
-    if(willOpen){
-      body.classList.add('open');
-      btn.lastElementChild.textContent='−';
-    }else{
-      body.classList.remove('open');
-      btn.lastElementChild.textContent='＋';
-    }
+    body.classList.toggle('open',willOpen);
+    if(btn.lastElementChild) btn.lastElementChild.textContent=willOpen?'−':'＋';
   });
 });
 
