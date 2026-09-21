@@ -3033,10 +3033,35 @@ function goToRouteFromInput(){
   },220);
 }
 
+let routeNumberInputTimer=null;
+
 document.getElementById('routeNumberGoBtn')?.addEventListener('click',goToRouteFromInput);
+
+document.getElementById('routeNumberInput')?.addEventListener('input',e=>{
+  clearTimeout(routeNumberInputTimer);
+
+  const input=e.currentTarget;
+  const num=normalizeRouteSearchValue(input.value);
+
+  if(!num){
+    input.classList.remove('invalid');
+    return;
+  }
+
+  input.classList.remove('invalid');
+
+  // 유효한 경로번호가 입력된 뒤 0.5초 동안 추가 입력이 없으면 자동 이동함.
+  routeNumberInputTimer=setTimeout(()=>{
+    input.value=num;
+    scrollRouteWheelTo(num,false);
+    focusRouteNumber(num);
+  },500);
+});
+
 document.getElementById('routeNumberInput')?.addEventListener('keydown',e=>{
   if(e.key==='Enter'){
     e.preventDefault();
+    clearTimeout(routeNumberInputTimer);
     goToRouteFromInput();
     e.currentTarget.blur();
   }
