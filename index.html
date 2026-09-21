@@ -1550,6 +1550,12 @@ function toggleControlPanel(){
     }else{
       showMenuHome();
     }
+  }else{
+    // 메뉴를 접을 때는 하위 메뉴 표시 상태만 해제하고
+    // 마지막 메뉴 위치는 lastMenuState에 그대로 보존함.
+    // 이렇게 해야 접힌 상태에서 항상 초기 '설정' 아이콘이 보임.
+    controlPanel.classList.remove('detail-view');
+    ensureSettingsTitle();
   }
 
   syncPanelToggle();
@@ -1777,6 +1783,9 @@ document.addEventListener('pointerdown',event=>{
   }
 
   // 화면만 접고 메뉴 위치는 그대로 보존함.
+  // 접힌 상태에서는 하위 메뉴 헤더가 남지 않도록 초기 설정 아이콘으로 복원함.
+  controlPanel.classList.remove('detail-view');
+  ensureSettingsTitle();
   controlPanel.classList.add('collapsed');
   syncPanelToggle();
 });
