@@ -1361,6 +1361,9 @@
 const map=new kakao.maps.Map(document.getElementById('map'),{center:new kakao.maps.LatLng(35.16,126.84),level:8});
 
 let routePolylines=[],routeLabels=[],routeBounds=new kakao.maps.LatLngBounds(),currentMarker=null;
+let locationWatchId=null;
+let currentLocationLatLng=null;
+let locationTrackingStarted=false;
 const routeIndex=new Map();
 let selectedRoute=null;
 let routeSelectOverlay=null;
@@ -2788,38 +2791,83 @@ async function loadKoreanAirspace(){
   }
 }
 
+function updateCurrentLocationMarker(loc){
+  currentLocationLatLng=loc;
+
+  if(!currentMarker){
+    const markerEl=document.createElement('div');
+    markerEl.className='current-location-dot';
+    markerEl.setAttribute('aria-label','현재 위치');
+
+    currentMarker=new kakao.maps.CustomOverlay({
+      map:map,
+      position:loc,
+      content:markerEl,
+      xAnchor:0.5,
+      yAnchor:0.5,
+      zIndex:80
+    });
+  }else{
+    currentMarker.setPosition(loc);
+    currentMarker.setMap(map);
+  }
+}
+
+function handleLocationUpdate(position){
+  const lat=position.coords.latitude;
+  const lng=position.coords.longitude;
+  const loc=new kakao.maps.LatLng(lat,lng);
+
+  updateCurrentLocationMarker(loc);
+
+  // 위치 추적이 켜져 있는 동안 실제 이동에 맞춰 지도 중심도 계속 따라감.
+  map.setCenter(loc);
+
+  if(!locationTrackingStarted){
+    map.setLevel(4);
+    locationTrackingStarted=true;
+  }
+
+  statusEl.textContent='현재 위치 추적 중 · '+lat.toFixed(6)+', '+lng.toFixed(6);
+}
+
+function handleLocationError(error){
+  console.error(error);
+
+  let message='현재 위치를 가져오지 못했습니다.';
+  if(error && error.code===1) message='위치 권한을 허용해 주세요.';
+  else if(error && error.code===2) message='현재 위치를 확인할 수 없습니다.';
+  else if(error && error.code===3) message='현재 위치 확인 시간이 초과되었습니다.';
+
+  statusEl.textContent=message;
+  alert(message);
+}
+
 function locateMe(){
   if(!navigator.geolocation){
     alert('이 브라우저에서는 현재 위치 기능을 사용할 수 없습니다.');
     return;
   }
 
+  // 이미 추적 중이면 새 추적을 만들지 않고 현재 위치로 즉시 복귀함.
+  if(locationWatchId!==null){
+    if(currentLocationLatLng) map.setCenter(currentLocationLatLng);
+    statusEl.textContent='현재 위치 추적 중';
+    return;
+  }
+
   statusEl.textContent='현재 위치 확인 중...';
+  locationTrackingStarted=false;
 
-  navigator.geolocation.getCurrentPosition(position=>{
-    const lat=position.coords.latitude;
-    const lng=position.coords.longitude;
-    const loc=new kakao.maps.LatLng(lat,lng);
-
-    if(currentMarker) currentMarker.setMap(null);
-
-    currentMarker=new kakao.maps.Marker({
-      map:map,
-      position:loc
-    });
-
-    map.setCenter(loc);
-    map.setLevel(4);
-    statusEl.textContent='현재 위치: '+lat.toFixed(6)+', '+lng.toFixed(6);
-  },error=>{
-    console.error(error);
-    statusEl.textContent='현재 위치를 가져오지 못했습니다.';
-    alert('위치 권한을 허용했는지 확인해 주세요.');
-  },{
-    enableHighAccuracy:true,
-    timeout:10000,
-    maximumAge:0
-  });
+  locationWatchId=navigator.geolocation.watchPosition(
+    handleLocationUpdate,
+    handleLocationError,
+    {
+      enableHighAccuracy:true,
+      timeout:15000,
+      maximumAge:1000
+    }
+  );
 }
 document.getElementById('krAirspaceToggle')?.addEventListener('change',function(){
   krAirspaceEnabled=this.checked;
@@ -3478,4 +3526,24 @@ if ('serviceWorker' in navigator) {
   .panel.collapsed .panel-toggle{
     display:none !important;
   }
+
+.current-location-dot{
+  width:22px;
+  height:22px;
+  box-sizing:border-box;
+  border:4px solid #fff;
+  border-radius:50%;
+  background:#0a84ff;
+  box-shadow:
+    0 1px 4px rgba(0,0,0,.35),
+    0 0 0 1px rgba(0,0,0,.10);
+  pointer-events:none;
+}
+@media (max-width:700px){
+  .current-location-dot{
+    width:24px;
+    height:24px;
+    border-width:4px;
+  }
+}
 </style>
