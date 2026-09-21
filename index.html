@@ -1402,29 +1402,67 @@ function showRouteSelectPopup(routeLine,position){
   });
 }
 
+function isMobileRouteDevice(){
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ||
+    (navigator.maxTouchPoints>1 && /Macintosh/i.test(navigator.userAgent));
+}
+
+function openAppWithWebFallback(appUrl,webUrl){
+  let fallbackTimer=null;
+  const cancelFallback=()=>{
+    if(document.hidden && fallbackTimer){
+      clearTimeout(fallbackTimer);
+      fallbackTimer=null;
+    }
+  };
+  document.addEventListener('visibilitychange',cancelFallback,{once:true});
+  window.location.href=appUrl;
+  fallbackTimer=setTimeout(()=>{
+    if(!document.hidden) window.location.href=webUrl;
+  },1200);
+}
+
 function startKakaoNavi(name,lat,lng){
-  if(!window.Kakao || !Kakao.isInitialized() || !Kakao.Navi){
-    alert('카카오내비 연결을 준비하지 못했습니다.');
+  const destinationName=encodeURIComponent(name || '선택 위치');
+  const webUrl='https://map.kakao.com/link/to/'+destinationName+','+lat+','+lng;
+
+  if(isMobileRouteDevice()){
+    const appUrl='kakaomap://route?ep='+lat+','+lng+'&by=car';
+    openAppWithWebFallback(appUrl,webUrl);
     return;
   }
 
-  Kakao.Navi.start({
-    name: name || '선택 위치',
-    x: lng,
-    y: lat,
-    coordType: 'wgs84'
-  });
+  window.open(webUrl,'_blank','noopener,noreferrer');
+}
+
+function wgs84ToWebMercator(lat,lng){
+  const x=lng*20037508.34/180;
+  let y=Math.log(Math.tan((90+lat)*Math.PI/360))/(Math.PI/180);
+  y=y*20037508.34/180;
+  return {x:x,y:y};
 }
 
 function startNaverMapRoute(name,lat,lng){
+  const rawName=name || '선택 위치';
+  const destinationName=encodeURIComponent(rawName);
   const appName=encodeURIComponent(window.location.origin + window.location.pathname);
-  const destinationName=encodeURIComponent(name || '선택 위치');
-  const url='nmap://route/car?dlat='+lat+
-    '&dlng='+lng+
-    '&dname='+destinationName+
-    '&appname='+appName;
 
-  window.location.href=url;
+  if(isMobileRouteDevice()){
+    const appUrl='nmap://route/car?dlat='+lat+
+      '&dlng='+lng+
+      '&dname='+destinationName+
+      '&appname='+appName;
+    const p=wgs84ToWebMercator(lat,lng);
+    const webUrl='https://map.naver.com/p/directions/-/'+
+      p.x+','+p.y+','+destinationName+',,ADDRESS_POI/-/car';
+    openAppWithWebFallback(appUrl,webUrl);
+    return;
+  }
+
+  const p=wgs84ToWebMercator(lat,lng);
+  const webUrl='https://map.naver.com/p/directions/-/'+
+    p.x+','+p.y+','+destinationName+',,ADDRESS_POI/-/car';
+  window.open(webUrl,'_blank','noopener,noreferrer');
 }
 
 function showAddressPopup(latLng){
@@ -1470,7 +1508,7 @@ function showAddressPopup(latLng){
     const navi=document.createElement('button');
     navi.className='navi-btn';
     navi.type='button';
-    navi.textContent='카카오내비 길찾기';
+    navi.textContent='카카오맵 길찾기';
     navi.addEventListener('click',()=>startKakaoNavi(jibun,lat,lng));
 
     const naver=document.createElement('button');
