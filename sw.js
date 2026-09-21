@@ -1,4 +1,4 @@
-const CACHE='flight-route-v8';
+const CACHE='flight-route-v9';
 const APP_SHELL=['./flight-route.geojson','./manifest.webmanifest','./icon.svg'];
 
 self.addEventListener('install',event=>{
@@ -41,7 +41,7 @@ self.addEventListener('fetch',event=>{
   }
 
   event.respondWith(
-    fetch(request,{cache:'no-store'}).then(response=>{
+    fetch(request).then(response=>{
       const copy=response.clone();
       caches.open(CACHE).then(cache=>cache.put(request,copy)).catch(()=>{});
       return response;
