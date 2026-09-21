@@ -1176,7 +1176,7 @@
   <div class="panel-header">
     <button id="menuBackBtn" class="menu-back-btn" type="button" aria-label="이전 메뉴">‹</button>
     <h1 id="panelTitle">비행경로</h1>
-    <button id="panelToggleBtn" class="panel-toggle" type="button" aria-label="메뉴 펼치기">＋</button>
+    <button id="panelToggleBtn" class="panel-toggle" type="button" aria-label="메뉴 펼치기">›</button>
   </div>
 
   <div class="panel-body">
@@ -1230,7 +1230,7 @@
 
     <section id="stylePage" class="menu-page">
       <button class="style-section-toggle" type="button" data-target="defaultStyleBody">
-        <span>기본 라인</span><span>＋</span>
+        <span>기본 라인</span><span>›</span>
       </button>
       <div id="defaultStyleBody" class="style-section-body">
         <div class="route-style-row">
@@ -1251,7 +1251,7 @@
       </div>
 
       <button class="style-section-toggle" type="button" data-target="offStyleBody">
-        <span>끄기 라인</span><span>＋</span>
+        <span>끄기 라인</span><span>›</span>
       </button>
       <div id="offStyleBody" class="style-section-body">
         <div class="route-style-row">
@@ -1310,7 +1310,7 @@
       <a class="geo-link compact-link" href="https://drone.onestop.go.kr/common/flightArea" target="_blank" rel="noopener">공식 지도 보기 ↗</a>
 
       <button class="style-section-toggle" type="button" data-target="memoListBody">
-        <span>메모된 번호</span><span>＋</span>
+        <span>메모된 번호</span><span>›</span>
       </button>
       <div id="memoListBody" class="style-section-body">
         <div id="memoList" class="memo-list"></div>
@@ -1389,7 +1389,7 @@ try{
 
 function syncPanelToggle(){
   const collapsed=controlPanel.classList.contains('collapsed');
-  panelToggleBtn.textContent=collapsed?'＋':'−';
+  panelToggleBtn.textContent=collapsed?'›':'‹';
   panelToggleBtn.setAttribute('aria-label',collapsed?'메뉴 펼치기':'메뉴 접기');
   document.body.classList.toggle('menu-open',!collapsed);
 }
@@ -2449,11 +2449,11 @@ document.querySelectorAll('.style-section-toggle').forEach(btn=>{
       if(openBody===body) return;
       openBody.classList.remove('open');
       const otherBtn=scope.querySelector(':scope > .style-section-toggle[data-target="'+openBody.id+'"]');
-      if(otherBtn?.lastElementChild) otherBtn.lastElementChild.textContent='＋';
+      if(otherBtn?.lastElementChild) otherBtn.lastElementChild.textContent='›';
     });
 
     body.classList.toggle('open',willOpen);
-    if(btn.lastElementChild) btn.lastElementChild.textContent=willOpen?'−':'＋';
+    if(btn.lastElementChild) btn.lastElementChild.textContent=willOpen?'‹':'›';
   });
 });
 
@@ -2773,5 +2773,18 @@ if ('serviceWorker' in navigator) {
       min-width:var(--stable-panel-width,320px);
       max-width:var(--stable-panel-width,320px);
     }
+  }
+
+  .style-section-toggle > span:last-child,
+  .main-menu-toggle > span:last-child,
+  .panel-toggle{
+    font-weight:300 !important;
+    line-height:1 !important;
+  }
+  .style-section-toggle > span:last-child{
+    font-size:22px !important;
+  }
+  .panel-toggle{
+    font-size:24px !important;
   }
 </style>
