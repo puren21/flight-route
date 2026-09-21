@@ -1404,6 +1404,7 @@
       <div class="status" id="status">GeoJSON 불러오는 중...</div>
     </section>
   </div>
+  <div id="panelResizeHandle" class="panel-resize-handle" role="separator" aria-orientation="horizontal" aria-label="메뉴 높이 조절"></div>
 </div>
 <script>
 const mapElement=document.getElementById('map');
@@ -1533,6 +1534,52 @@ function toggleControlPanel(){
   controlPanel.classList.toggle('collapsed');
   if(willOpen) showMenuHome();
   syncPanelToggle();
+}
+
+const panelResizeHandle=document.getElementById('panelResizeHandle');
+if(panelResizeHandle){
+  let resizingPanel=false;
+  let resizeStartY=0;
+  let resizeStartHeight=0;
+
+  const stopPanelResize=e=>{
+    if(!resizingPanel) return;
+    resizingPanel=false;
+    controlPanel.classList.remove('resizing');
+    try{ panelResizeHandle.releasePointerCapture?.(e.pointerId); }catch(err){}
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  panelResizeHandle.addEventListener('pointerdown',e=>{
+    if(controlPanel.classList.contains('collapsed')) return;
+    if(e.button!==undefined && e.button!==0) return;
+
+    resizingPanel=true;
+    resizeStartY=e.clientY;
+    resizeStartHeight=controlPanel.getBoundingClientRect().height;
+    controlPanel.classList.add('resizing');
+
+    try{ panelResizeHandle.setPointerCapture?.(e.pointerId); }catch(err){}
+    e.preventDefault();
+    e.stopPropagation();
+  });
+
+  panelResizeHandle.addEventListener('pointermove',e=>{
+    if(!resizingPanel) return;
+
+    const panelRect=controlPanel.getBoundingClientRect();
+    const minHeight=220;
+    const maxHeight=Math.max(minHeight,window.innerHeight-panelRect.top-8);
+    const nextHeight=Math.min(maxHeight,Math.max(minHeight,resizeStartHeight+(e.clientY-resizeStartY)));
+
+    controlPanel.style.setProperty('--user-panel-height',Math.round(nextHeight)+'px');
+    e.preventDefault();
+    e.stopPropagation();
+  });
+
+  panelResizeHandle.addEventListener('pointerup',stopPanelResize);
+  panelResizeHandle.addEventListener('pointercancel',stopPanelResize);
 }
 
 panelToggleBtn.addEventListener('click',e=>{
@@ -5516,6 +5563,59 @@ if ('serviceWorker' in navigator) {
   .route-prefix-select{
     height:46px;
     font-size:16px;
+  }
+}
+
+/* Vertically resizable settings panel — initial height remains unchanged */
+.panel:not(.collapsed){
+  height:var(--user-panel-height,var(--stable-panel-height,auto)) !important;
+  min-height:220px !important;
+  max-height:calc(100dvh - 24px) !important;
+  position:absolute;
+  padding-bottom:20px !important;
+}
+.panel-resize-handle{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  height:20px;
+  z-index:120;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:ns-resize;
+  touch-action:none;
+  user-select:none;
+  -webkit-user-select:none;
+}
+.panel-resize-handle::before{
+  content:"";
+  width:42px;
+  height:4px;
+  border-radius:999px;
+  background:rgba(60,60,67,.28);
+}
+.panel.collapsed .panel-resize-handle{
+  display:none !important;
+}
+.panel.resizing{
+  user-select:none !important;
+  -webkit-user-select:none !important;
+}
+@media (max-width:700px){
+  .panel:not(.collapsed){
+    position:fixed;
+    min-height:220px !important;
+    max-height:calc(100dvh - env(safe-area-inset-top,0px) - 72px) !important;
+    padding-bottom:22px !important;
+  }
+  .panel-resize-handle{
+    height:22px;
+  }
+  .panel-resize-handle::before{
+    width:48px;
+    height:5px;
   }
 }
 </style>
