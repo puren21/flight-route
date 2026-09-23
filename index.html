@@ -4094,6 +4094,7 @@ let routePolylines=[],routeLabels=[],routeBounds=new kakao.maps.LatLngBounds(),c
 let locationWatchId=null;
 let currentLocationLatLng=null;
 let locationTrackingStarted=false;
+let locationRecenterRequested=false;
 let currentLocationMarkerEl=null;
 let currentLocationHeadingEl=null;
 let currentHeading=null;
@@ -6663,13 +6664,13 @@ function handleLocationUpdate(position){
   updateCurrentLocationMarker(loc);
   updateLocationHeadingVisual();
 
-  // 실제 이동을 따라가되 현재 줌 수준은 유지함.
-  if(locationTrackingStarted){
-    map.panTo(loc);
-  }else{
+  // GPS 갱신은 위치 마커만 움직임.
+  // 지도 중심 이동은 최초 위치 확인 또는 사용자가 '현재 위치'를 다시 눌렀을 때만 수행함.
+  if(!locationTrackingStarted || locationRecenterRequested){
     map.setCenter(loc);
-    map.setLevel(4);
+    if(!locationTrackingStarted) map.setLevel(4);
     locationTrackingStarted=true;
+    locationRecenterRequested=false;
   }
 
   statusEl.textContent='현재 위치 추적 중 · '+lat.toFixed(6)+', '+lng.toFixed(6);
@@ -6693,15 +6694,22 @@ async function locateMe(){
     return;
   }
 
-  // 이미 추적 중이면 새 추적을 만들지 않고 현재 위치로 즉시 복귀함.
+  // 이미 추적 중이면 새 추적은 만들지 않음.
+  // 사용자가 버튼을 다시 눌렀을 때만 현재 위치로 지도를 이동함.
   if(locationWatchId!==null){
-    if(currentLocationLatLng) map.setCenter(currentLocationLatLng);
+    if(currentLocationLatLng){
+      map.setCenter(currentLocationLatLng);
+      locationRecenterRequested=false;
+    }else{
+      locationRecenterRequested=true;
+    }
     statusEl.textContent='현재 위치 추적 중';
     return;
   }
 
   statusEl.textContent='현재 위치 확인 중...';
   locationTrackingStarted=false;
+  locationRecenterRequested=true;
   currentHeading=null;
   lastMovementPosition=null;
 
