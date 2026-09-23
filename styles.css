@@ -3837,11 +3837,14 @@ body.satellite-map .route-label{
 
 /* Current-location button: follow mode state */
 .floating-location.following{
-  background:#0a84ff !important;
-  color:#fff !important;
-  border-color:#0a84ff !important;
-  box-shadow:0 2px 12px rgba(10,132,255,.38) !important;
+  background:rgba(255,255,255,.96) !important;
+  color:#0a84ff !important;
+  border-color:rgba(10,132,255,.55) !important;
+  box-shadow:
+    0 2px 12px rgba(10,132,255,.24),
+    inset 0 0 0 1px rgba(10,132,255,.12) !important;
 }
 .floating-location.following:hover{
-  background:#0a84ff !important;
+  background:#fff !important;
+  color:#0a84ff !important;
 }
