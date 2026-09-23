@@ -3844,3 +3844,12 @@ body.satellite-map .route-label{
   background:#fff !important;
   color:#0a84ff !important;
 }
+
+
+/* 지도 상태의 영상 전환 버튼: 메인 메뉴와 같은 블루 계열의 연한 톤 */
+body:not(.satellite-map) .map-type-toggle{
+  color:#6aa9f8;
+}
+body.satellite-map .map-type-toggle{
+  color:#1c1c1e;
+}
