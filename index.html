@@ -7,7 +7,7 @@
   <meta http-equiv="Expires" content="0" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>비행경로</title>
-  <link rel="stylesheet" href="./styles.css?v=20260923-stable2" />
+  <link rel="stylesheet" href="./styles.css?v=20260923-improvements1" />
   <link rel="preconnect" href="https://dapi.kakao.com" crossorigin>
   <link rel="dns-prefetch" href="//dapi.kakao.com">
   <link rel="preconnect" href="https://zdjuksmhtvhetzblczqq.supabase.co" crossorigin>
@@ -229,8 +229,26 @@
     </section>
 
     <section id="otherPage" class="menu-page">
-      <div class="quick-grid">
+      <div class="quick-grid improvement-grid">
         <button id="menuLocBtn" class="quick-btn" type="button">현재 위치</button>
+        <button id="followLocBtn" class="quick-btn" type="button" aria-pressed="false">위치 따라가기</button>
+        <button id="nearbyRouteBtn" class="quick-btn" type="button">가까운 경로</button>
+      </div>
+
+      <div id="nearbyRouteResults" class="nearby-route-results" hidden></div>
+
+      <div class="utility-card">
+        <button id="exportSettingsBtn" class="utility-row" type="button">
+          <span>설정 내보내기</span><span class="utility-chevron">›</span>
+        </button>
+        <button id="importSettingsBtn" class="utility-row" type="button">
+          <span>설정 가져오기</span><span class="utility-chevron">›</span>
+        </button>
+        <input id="importSettingsFile" type="file" accept="application/json,.json" hidden>
+        <button id="diagnosticBtn" class="utility-row" type="button" aria-expanded="false">
+          <span>상태 정보</span><span class="utility-chevron">›</span>
+        </button>
+        <div id="diagnosticPanel" class="diagnostic-panel" hidden></div>
       </div>
 
       <label class="airspace-card">
@@ -251,11 +269,11 @@
   </div>
   <div id="panelResizeHandle" class="panel-resize-handle" role="separator" aria-orientation="horizontal" aria-label="메뉴 높이 조절"></div>
 </div>
-<script src="./app.js?v=20260923-stable2"></script>
+<script src="./app.js?v=20260923-improvements1"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js?v=16',{updateViaCache:'none'}).catch(console.error);
+    navigator.serviceWorker.register('./sw.js?v=17',{updateViaCache:'none'}).catch(console.error);
   });
 }
 </script>
