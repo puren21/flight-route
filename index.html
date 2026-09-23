@@ -3944,8 +3944,8 @@ body.satellite-map .route-label{
   .map-compass{
     display:flex;
     position:fixed;
-    top:calc(env(safe-area-inset-top,0px) + 12px);
-    right:12px;
+    right:14px;
+    bottom:108px;
     z-index:2147483645;
     width:44px;
     height:44px;
@@ -4224,6 +4224,9 @@ body.satellite-map .route-label{
 const mapElement=document.getElementById('map');
 const mobileRotationEnabled=window.matchMedia('(max-width:700px)').matches && ('ontouchstart' in window || navigator.maxTouchPoints>0);
 if(mobileRotationEnabled) mapElement.classList.add('mobile-rotation-map');
+if(!mobileRotationEnabled){
+  mapElement.classList.remove('mobile-rotation-map');
+}
 mapElement.style.transform='none';
 mapElement.style.transformOrigin='50% 50%';
 const map=new kakao.maps.Map(mapElement,{center:new kakao.maps.LatLng(35.16,126.84),level:8});
@@ -4274,28 +4277,49 @@ function resetMapToNorth(){
 }
 
 if(mobileRotationEnabled){
-  mapElement.addEventListener('touchstart',event=>{
-    if(event.touches.length===2){
+  let rotationGestureActive=false;
+
+  const touchStartedOnMap=event=>{
+    const target=event.target;
+    if(!target || !mapElement.contains(target)) return false;
+    if(target.closest?.('button,.panel,.memo-modal-backdrop,.route-select-popup,.address-popup')) return false;
+    return true;
+  };
+
+  window.addEventListener('touchstart',event=>{
+    if(event.touches.length===2 && touchStartedOnMap(event)){
+      rotationGestureActive=true;
       rotationGestureStartAngle=twoTouchAngle(event.touches);
       rotationGestureStartRotation=mapRotation;
     }
-  },{passive:true});
+  },{passive:true,capture:true});
 
-  mapElement.addEventListener('touchmove',event=>{
-    if(event.touches.length!==2 || rotationGestureStartAngle===null) return;
+  window.addEventListener('touchmove',event=>{
+    if(!rotationGestureActive || event.touches.length!==2 || rotationGestureStartAngle===null) return;
     const angle=twoTouchAngle(event.touches);
     if(angle===null) return;
     let delta=angle-rotationGestureStartAngle;
     if(delta>180) delta-=360;
     if(delta<-180) delta+=360;
-    applyMapRotation(rotationGestureStartRotation+delta);
-  },{passive:true});
+
+    // 아주 작은 손떨림은 무시하고, 카카오 기본 핀치 확대/축소와 동시에 회전함.
+    if(Math.abs(delta)>=1.2){
+      applyMapRotation(rotationGestureStartRotation+delta);
+    }
+  },{passive:true,capture:true});
 
   const finishRotationGesture=event=>{
-    if(event.touches.length<2) rotationGestureStartAngle=null;
+    if(event.touches.length<2){
+      rotationGestureActive=false;
+      rotationGestureStartAngle=null;
+    }
   };
-  mapElement.addEventListener('touchend',finishRotationGesture,{passive:true});
-  mapElement.addEventListener('touchcancel',()=>{rotationGestureStartAngle=null;},{passive:true});
+  window.addEventListener('touchend',finishRotationGesture,{passive:true,capture:true});
+  window.addEventListener('touchcancel',()=>{
+    rotationGestureActive=false;
+    rotationGestureStartAngle=null;
+  },{passive:true,capture:true});
+
   mapCompassBtn?.addEventListener('click',resetMapToNorth);
   applyMapRotation(0);
 }
@@ -7010,7 +7034,7 @@ loadRoute().then(()=>{
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js?v=11',{updateViaCache:'none'}).catch(console.error);
+    navigator.serviceWorker.register('./sw.js?v=12',{updateViaCache:'none'}).catch(console.error);
   });
 }
 </script>
