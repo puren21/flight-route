@@ -8,6 +8,17 @@
   let locationButtonInitialized=false;
   let pendingNearbySearch=false;
 
+  const originalUpdateLocationHeadingVisual=updateLocationHeadingVisual;
+  updateLocationHeadingVisual=function(){
+    if(!followLocationEnabled){
+      if(currentLocationHeadingEl){
+        currentLocationHeadingEl.classList.remove('visible');
+      }
+      return;
+    }
+    originalUpdateLocationHeadingVisual();
+  };
+
   function metersBetween(lat1,lng1,lat2,lng2){
     const R=6371000;
     const toRad=v=>v*Math.PI/180;
@@ -146,6 +157,7 @@
       locationButtonInitialized=true;
       followLocationEnabled=false;
       syncFloatingLocationButton();
+      if(currentLocationHeadingEl) currentLocationHeadingEl.classList.remove('visible');
       locateMe();
       return;
     }
@@ -157,9 +169,11 @@
       if(currentLocationLatLng){
         keepFollowLocationVisible(currentLocationLatLng);
       }
+      updateLocationHeadingVisual();
       locateMe();
       statusEl.textContent='위치 따라가기 켬';
     }else{
+      if(currentLocationHeadingEl) currentLocationHeadingEl.classList.remove('visible');
       statusEl.textContent='위치 따라가기 끔';
     }
 
