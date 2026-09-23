@@ -101,6 +101,7 @@
       box.hidden=false;
       box.innerHTML='<div class="diagnostic-panel">현재 위치를 확인하는 중입니다.</div>';
       locateMe();
+      statusEl.textContent='현재 위치 표시';
       return;
     }
 
@@ -143,8 +144,11 @@
     if(!btn) return;
     btn.classList.toggle('following',followLocationEnabled);
     btn.setAttribute('aria-pressed',followLocationEnabled?'true':'false');
-    btn.title=followLocationEnabled?'위치 따라가기 켜짐':'현재 위치';
-    btn.setAttribute('aria-label',followLocationEnabled?'위치 따라가기 켜짐':'현재 위치');
+    btn.title=followLocationEnabled?'위치 따라가기 끄기':'현재 위치 / 위치 따라가기';
+    btn.setAttribute(
+      'aria-label',
+      followLocationEnabled?'위치 따라가기 켜짐. 누르면 끄기':'현재 위치. 다시 누르면 위치 따라가기 켜기'
+    );
   }
 
   const floatingLocBtn=document.getElementById('floatingLocBtn');
