@@ -1,4 +1,4 @@
-const CACHE='flight-route-v27';
+const CACHE='flight-route-v28';
 const APP_SHELL=[
   './flight-route.geojson',
   './airspace/lt_c_aisobls.geojson',
@@ -38,7 +38,7 @@ self.addEventListener('fetch',event=>{
     url.pathname.endsWith('/flight-route/');
 
   if(isNavigation){
-    const freshUrl=new URL('./index.html?build=20260923-location-red',self.registration.scope).href;
+    const freshUrl=new URL('./index.html?build=20260923-live28',self.registration.scope).href;
     event.respondWith(
       fetch(freshUrl,{
         cache:'no-store',
@@ -54,21 +54,16 @@ self.addEventListener('fetch',event=>{
   if(isLocalStatic){
     event.respondWith((async()=>{
       const cache=await caches.open(CACHE);
-      const cached=await cache.match(request,{ignoreSearch:true});
-      const networkPromise=fetch(request).then(response=>{
+      try{
+        const response=await fetch(request,{cache:'no-store'});
         if(response && response.ok){
           cache.put(request,response.clone()).catch(()=>{});
+          return response;
         }
-        return response;
-      }).catch(()=>null);
+      }catch(e){}
 
-      if(cached){
-        event.waitUntil(networkPromise);
-        return cached;
-      }
-
-      const network=await networkPromise;
-      if(network) return network;
+      const cached=await cache.match(request,{ignoreSearch:true});
+      if(cached) return cached;
       return new Response('',{status:504,statusText:'Offline'});
     })());
     return;
