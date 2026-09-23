@@ -1,4 +1,4 @@
-const CACHE='flight-route-v26';
+const CACHE='flight-route-v27';
 const APP_SHELL=[
   './flight-route.geojson',
   './airspace/lt_c_aisobls.geojson',
@@ -38,7 +38,7 @@ self.addEventListener('fetch',event=>{
     url.pathname.endsWith('/flight-route/');
 
   if(isNavigation){
-    const freshUrl=new URL('./index.html?build=20260923-heading-pivot',self.registration.scope).href;
+    const freshUrl=new URL('./index.html?build=20260923-location-red',self.registration.scope).href;
     event.respondWith(
       fetch(freshUrl,{
         cache:'no-store',
