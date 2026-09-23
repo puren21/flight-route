@@ -1,5 +1,5 @@
 * { box-sizing: border-box; }
-    html, body {
+html, body {
       position:fixed;
       inset:0;
       width:100vw;
@@ -11,7 +11,7 @@
       overflow:hidden;
       font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
-    #map {
+#map {
       position:fixed;
       inset:0;
       width:100vw !important;
@@ -20,16 +20,16 @@
       height:100dvh !important;
       overflow:hidden;
     }
-    .panel { position:absolute; top:16px; left:16px; z-index:10; width:220px; padding:14px; background:rgba(255,255,255,.96); border-radius:12px; box-shadow:0 4px 18px rgba(0,0,0,.18); }
-    .panel h1 { margin:0; font-size:18px; }
-    .panel-header {
+.panel { position:absolute; top:16px; left:16px; z-index:10; width:220px; padding:14px; background:rgba(255,255,255,.96); border-radius:12px; box-shadow:0 4px 18px rgba(0,0,0,.18); }
+.panel h1 { margin:0; font-size:18px; }
+.panel-header {
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:10px;
       margin-bottom:12px;
     }
-    .mobile-menu-launcher{
+.mobile-menu-launcher{
       display:block;
       position:fixed;
       top:calc(env(safe-area-inset-top, 0px) + 10px);
@@ -48,7 +48,7 @@
       text-align:center;
       color:#222;
     }
-    .panel-toggle {
+.panel-toggle {
       flex:0 0 auto;
       width:34px;
       height:34px;
@@ -58,17 +58,17 @@
       font-weight:700;
       line-height:1;
     }
-    .panel-body { display:block; }
-    .route-number-wrap {
+.panel-body { display:block; }
+.route-number-wrap {
       margin: 8px 0 10px;
     }
-    .route-number-wrap label {
+.route-number-wrap label {
       display:block;
       font-size:12px;
       color:#555;
       margin-bottom:4px;
     }
-    .route-number-select {
+.route-number-select {
       width:100%;
       padding:7px 8px;
       border:1px solid #ccc;
@@ -76,69 +76,69 @@
       background:#fff;
       font-size:13px;
     }
-    .route-style-controls {
+.route-style-controls {
       margin: 8px 0 10px;
       padding: 9px;
       border: 1px solid #e1e4e8;
       border-radius: 9px;
       background: #fafafa;
     }
-    .geo-controls {
+.geo-controls {
       display:grid;
       gap:7px;
       padding-top:6px;
     }
-    .geo-controls select,
+.geo-controls select,
     .geo-controls button {
       width:100%;
     }
-    .geo-toggle-row {
+.geo-toggle-row {
       display:flex;
       align-items:center;
       gap:8px;
       font-size:12px;
       color:#333;
     }
-    .geo-toggle-row input { flex:0 0 auto; }
-    .geo-swatch {
+.geo-toggle-row input { flex:0 0 auto; }
+.geo-swatch {
       width:12px;
       height:12px;
       border-radius:50%;
       border:1px solid rgba(0,0,0,.28);
       flex:0 0 12px;
     }
-    .kr-airspace-legend {
+.kr-airspace-legend {
       display:grid;
       gap:5px;
       margin-top:4px;
       font-size:11px;
       color:#555;
     }
-    .kr-airspace-row {
+.kr-airspace-row {
       display:flex;
       align-items:center;
       gap:7px;
     }
-    .kr-airspace-row input { flex:0 0 auto; }
-    .geo-note {
+.kr-airspace-row input { flex:0 0 auto; }
+.geo-note {
       font-size:10px;
       line-height:1.4;
       color:#777;
     }
-    .geo-link {
+.geo-link {
       display:block;
       margin-top:2px;
       font-size:11px;
       color:#0D6EFD;
       text-decoration:none;
     }
-    .route-style-title {
+.route-style-title {
       font-size: 12px;
       font-weight: 700;
       color: #444;
       margin-bottom: 7px;
     }
-    .style-section-toggle {
+.style-section-toggle {
       width:100%;
       display:flex;
       align-items:center;
@@ -153,20 +153,20 @@
       color:#333;
       cursor:pointer;
     }
-    .style-section-body { display:none; padding-top:2px; }
-    .style-section-body.open { display:block; }
-    .memo-list {
+.style-section-body { display:none; padding-top:2px; }
+.style-section-body.open { display:block; }
+.memo-list {
       margin-top:8px;
       display:flex;
       flex-direction:column;
       gap:6px;
     }
-    .memo-empty {
+.memo-empty {
       font-size:12px;
       color:#777;
       padding:6px 2px;
     }
-    .memo-item {
+.memo-item {
       width:100%;
       display:grid;
       grid-template-columns:42px 1fr;
@@ -179,13 +179,13 @@
       text-align:left;
       cursor:pointer;
     }
-    .memo-item:hover { background:#f7f8fa; }
-    .memo-num {
+.memo-item:hover { background:#f7f8fa; }
+.memo-num {
       font-size:12px;
       font-weight:700;
       color:#0D47A1;
     }
-    .memo-text {
+.memo-text {
       font-size:12px;
       line-height:1.35;
       color:#444;
@@ -194,7 +194,7 @@
       -webkit-line-clamp:2;
       -webkit-box-orient:vertical;
     }
-    .route-style-row {
+.route-style-row {
       display: grid;
       grid-template-columns: 48px 1fr 44px;
       align-items: center;
@@ -203,11 +203,11 @@
       font-size: 12px;
       color: #555;
     }
-    .route-style-row input[type="range"] {
+.route-style-row input[type="range"] {
       width: 100%;
       margin: 0;
     }
-    .route-style-row input[type="color"] {
+.route-style-row input[type="color"] {
       width: 100%;
       height: 28px;
       padding: 1px;
@@ -215,32 +215,32 @@
       border-radius: 6px;
       background: #fff;
     }
-    .route-style-value {
+.route-style-value {
       text-align: right;
       font-variant-numeric: tabular-nums;
       color: #333;
     }
-    .panel.collapsed {
+.panel.collapsed {
       width:auto;
       min-width:0;
       padding:10px 12px;
     }
-    .panel.collapsed .panel-header {
+.panel.collapsed .panel-header {
       margin-bottom:0;
     }
-    .panel.collapsed .panel-body {
+.panel.collapsed .panel-body {
       display:none;
     }
-    .panel.collapsed h1 {
+.panel.collapsed h1 {
       font-size:16px;
     }
-    .row { display:flex; gap:8px; margin-top:8px; }
-    button { flex:1; border:0; border-radius:8px; padding:9px 10px; background:#f1f3f5; cursor:pointer; font-size:14px; }
-    button:hover { background:#e9ecef; }
-    button.active { background:#222; color:#fff; }
-    .toggle { display:flex; align-items:center; gap:8px; margin-top:10px; font-size:14px; }
-    .status { margin-top:10px; font-size:12px; line-height:1.5; color:#555; }
-    .floating-location {
+.row { display:flex; gap:8px; margin-top:8px; }
+button { flex:1; border:0; border-radius:8px; padding:9px 10px; background:#f1f3f5; cursor:pointer; font-size:14px; }
+button:hover { background:#e9ecef; }
+button.active { background:#222; color:#fff; }
+.toggle { display:flex; align-items:center; gap:8px; margin-top:10px; font-size:14px; }
+.status { margin-top:10px; font-size:12px; line-height:1.5; color:#555; }
+.floating-location {
       position: absolute;
       right: 14px;
       bottom: 56px;
@@ -258,8 +258,8 @@
       cursor: pointer;
       color: #222;
     }
-    .floating-location:hover { background: #fff; }
-    .route-select-popup {
+.floating-location:hover { background: #fff; }
+.route-select-popup {
       width: 120px;
       padding: 8px;
       background: rgba(255,255,255,.98);
@@ -268,17 +268,17 @@
       font-size: 13px;
       color: #222;
     }
-    .route-select-popup .route-select-title {
+.route-select-popup .route-select-title {
       font-weight: 700;
       margin-bottom: 8px;
       text-align: center;
     }
-    .route-select-popup .route-select-actions {
+.route-select-popup .route-select-actions {
       display: flex;
       flex-direction: column;
       gap: 7px;
     }
-    .route-select-popup button {
+.route-select-popup button {
       width:100%;
       flex: 0 0 auto;
       min-height:42px;
@@ -290,10 +290,10 @@
       cursor: pointer;
       transition: background .15s ease, border-color .15s ease, transform .05s ease;
     }
-    .route-select-popup button:active{
+.route-select-popup button:active{
       transform:scale(.99);
     }
-    .route-toggle-row{
+.route-toggle-row{
       display:flex;
       align-items:center;
       justify-content:space-between;
@@ -301,12 +301,12 @@
       min-height:42px;
       padding:4px 2px;
     }
-    .route-toggle-label{
+.route-toggle-label{
       font-size:12px;
       font-weight:700;
       color:#4b5157;
     }
-    .route-toggle-switch{
+.route-toggle-switch{
       position:relative;
       width:50px;
       height:30px;
@@ -319,7 +319,7 @@
       transition:background .18s ease;
       box-shadow:inset 0 0 0 1px rgba(0,0,0,.04);
     }
-    .route-toggle-switch::after{
+.route-toggle-switch::after{
       content:"";
       position:absolute;
       top:2px;
@@ -331,25 +331,25 @@
       box-shadow:0 1px 4px rgba(0,0,0,.24);
       transition:transform .18s ease;
     }
-    .route-toggle-switch.on{
+.route-toggle-switch.on{
       background:#34c759;
     }
-    .route-toggle-switch.on::after{
+.route-toggle-switch.on::after{
       transform:translateX(20px);
     }
-    .route-select-popup .route-memo-btn {
+.route-select-popup .route-memo-btn {
       background:#f6efe3;
       border-color:#eadfcb;
       color:#705a35;
     }
-    .route-select-popup .route-memo-btn:hover{
+.route-select-popup .route-memo-btn:hover{
       background:#efe4d2;
     }
-    .route-select-popup .route-prop-btn {
+.route-select-popup .route-prop-btn {
       background:#e7f1ff;
       color:#0D47A1;
     }
-    .memo-modal-backdrop {
+.memo-modal-backdrop {
       position:fixed;
       inset:0;
       z-index:2147483647;
@@ -359,8 +359,8 @@
       padding:18px;
       background:rgba(0,0,0,.35);
     }
-    .memo-modal-backdrop.open { display:flex; }
-    .memo-modal {
+.memo-modal-backdrop.open { display:flex; }
+.memo-modal {
       position:relative;
       width:220px;
       max-width:calc(100vw - 16px);
@@ -370,7 +370,7 @@
       box-shadow:0 10px 28px rgba(0,0,0,.22);
       padding:0;
     }
-    .memo-modal-title {
+.memo-modal-title {
       margin:0;
       padding:13px 18px;
       min-height:0;
@@ -386,8 +386,8 @@
       -webkit-user-select:none;
       touch-action:none;
     }
-    .memo-modal-title:active { cursor:grabbing; }
-    .memo-modal textarea {
+.memo-modal-title:active { cursor:grabbing; }
+.memo-modal textarea {
       width:calc(100% - 16px);
       min-height:120px;
       margin:8px 8px 0;
@@ -402,14 +402,14 @@
       box-sizing:border-box;
       outline:none;
     }
-    .memo-modal-actions {
+.memo-modal-actions {
       display:grid;
       grid-template-columns:1fr 1fr 1fr;
       gap:6px;
       padding:8px;
       margin:0;
     }
-    .memo-modal-actions button {
+.memo-modal-actions button {
       min-height:40px;
       padding:8px 6px;
       border:0;
@@ -417,10 +417,10 @@
       font-size:13px;
       font-weight:600;
     }
-    .memo-save-btn { background:#34c759; color:#fff; }
-    .memo-delete-btn { background:#fff; color:#c92a2a; }
-    .memo-cancel-btn { background:#fff; color:#222; }
-    .address-popup {
+.memo-save-btn { background:#34c759; color:#fff; }
+.memo-delete-btn { background:#fff; color:#c92a2a; }
+.memo-cancel-btn { background:#fff; color:#222; }
+.address-popup {
       width: 250px;
       padding: 12px;
       background: rgba(255,255,255,.98);
@@ -430,30 +430,30 @@
       font-size: 13px;
       line-height: 1.45;
     }
-    .address-popup .title {
+.address-popup .title {
       font-weight: 700;
       font-size: 14px;
       margin-bottom: 5px;
     }
-    .address-popup .addr {
+.address-popup .addr {
       word-break: keep-all;
     }
-    .address-popup .coord {
+.address-popup .coord {
       margin-top: 4px;
       color: #777;
       font-size: 11px;
     }
-    .address-popup .route-actions {
+.address-popup .route-actions {
       display:flex;
       flex-direction:column;
       gap:6px;
       margin-top:9px;
     }
-    .address-popup .route-actions button {
+.address-popup .route-actions button {
       width:100%;
       margin-top:0;
     }
-    .address-popup .navi-btn {
+.address-popup .navi-btn {
       width: 100%;
       margin-top: 0;
       padding: 8px 10px;
@@ -464,7 +464,7 @@
       font-weight: 700;
       cursor: pointer;
     }
-    .address-popup .naver-btn {
+.address-popup .naver-btn {
       width: 100%;
       margin-top: 0;
       padding: 8px 10px;
@@ -475,7 +475,7 @@
       font-weight: 700;
       cursor: pointer;
     }
-    .address-popup .close-btn {
+.address-popup .close-btn {
       position: absolute;
       right: 8px;
       top: 6px;
@@ -485,7 +485,7 @@
       font-size: 16px;
       cursor: pointer;
     }
-    .scale-bar {
+.scale-bar {
       position: absolute;
       right: 14px;
       bottom: 14px;
@@ -501,7 +501,7 @@
       line-height: 1.2;
       pointer-events: none;
     }
-    .scale-bar::before {
+.scale-bar::before {
       content: "";
       position: absolute;
       left: -1px;
@@ -509,7 +509,7 @@
       top: 0;
       border-top: 2px solid #222;
     }
-    .route-label {
+.route-label {
       color: #0D47A1;
       opacity: 1;
       font-size: 13px;
@@ -524,10 +524,10 @@
          1px  1px 0 rgba(255,255,255,.95);
       transform: translate(-50%, -50%);
     }
-    @media (min-width:701px) {
+@media (min-width:701px) {
       .mobile-menu-launcher { display:none !important; }
     }
-    @media (max-width:700px) {
+@media (max-width:700px) {
       .mobile-menu-launcher{
         display:block;
         position:fixed;
@@ -579,9 +579,7 @@
       button { padding:8px 6px; font-size:13px; }
       .status { font-size:11px; }
     }
-  
-    /* unified responsive menu */
-    .panel{
+.panel{
       width:320px;
       padding:12px;
       border:1px solid rgba(0,0,0,.08);
@@ -591,46 +589,46 @@
       backdrop-filter:blur(12px);
       -webkit-backdrop-filter:blur(12px);
     }
-    .panel-header{
+.panel-header{
       margin-bottom:10px;
       padding:2px 2px 8px;
       border-bottom:1px solid #edf0f2;
       cursor:pointer;
     }
-    .panel h1{
+.panel h1{
       font-size:17px;
       letter-spacing:-.3px;
     }
-    .panel-toggle{
+.panel-toggle{
       background:#f4f5f7;
       border:1px solid #e6e8eb;
     }
-    .panel-body{
+.panel-body{
       display:flex;
       flex-direction:column;
       gap:6px;
     }
-    .menu-section{
+.menu-section{
       margin:0;
       padding:8px;
       border:1px solid #e7eaee;
       border-radius:12px;
       background:#fff;
     }
-    .menu-section-title{
+.menu-section-title{
       margin-bottom:8px;
       font-size:12px;
       font-weight:800;
       color:#24292f;
       letter-spacing:-.2px;
     }
-    .quick-grid{
+.quick-grid{
       display:grid;
       grid-template-columns:1fr 1fr 1fr;
       gap:5px;
       margin-bottom:6px;
     }
-    .quick-btn{
+.quick-btn{
       min-height:40px;
       padding:8px 5px;
       border:1px solid #e2e5e9;
@@ -638,12 +636,12 @@
       font-size:12px;
       font-weight:700;
     }
-    .quick-btn.active{
+.quick-btn.active{
       background:#222;
       border-color:#222;
       color:#fff;
     }
-    .airspace-card{
+.airspace-card{
       min-height:46px;
       display:flex;
       align-items:center;
@@ -655,22 +653,22 @@
       background:#fafbfc;
       cursor:pointer;
     }
-    .airspace-label{
+.airspace-label{
       display:flex;
       align-items:center;
       gap:8px;
       min-width:0;
     }
-    .airspace-label > span:last-child{
+.airspace-label > span:last-child{
       display:flex;
       flex-direction:column;
       min-width:0;
     }
-    .airspace-label strong{
+.airspace-label strong{
       font-size:12px;
       color:#333;
     }
-    .airspace-label small{
+.airspace-label small{
       margin-top:2px;
       font-size:10px;
       color:#888;
@@ -678,31 +676,31 @@
       overflow:hidden;
       text-overflow:ellipsis;
     }
-    .airspace-card input{
+.airspace-card input{
       width:18px;
       height:18px;
       flex:0 0 auto;
     }
-    .compact-link{
+.compact-link{
       margin:7px 2px 0;
       text-align:right;
     }
-    .route-number-wrap{
+.route-number-wrap{
       margin:0;
     }
-    .route-number-wrap label{
+.route-number-wrap label{
       margin-bottom:6px;
       font-size:11px;
       color:#73777d;
     }
-    .route-number-select{
+.route-number-select{
       height:42px;
       padding:0 10px;
       border-color:#dfe3e7;
       border-radius:9px;
       font-size:13px;
     }
-    .style-section-toggle{
+.style-section-toggle{
       min-height:36px;
       margin-top:4px;
       padding:7px 9px;
@@ -711,14 +709,13 @@
       background:#f7f8fa;
       font-size:12px;
     }
-    .style-section-toggle:first-of-type{
+.style-section-toggle:first-of-type{
       margin-top:0;
     }
-    .style-section-toggle:hover{
+.style-section-toggle:hover{
       background:#f0f2f4;
     }
-
-    .style-section-toggle > span:last-child{
+.style-section-toggle > span:last-child{
       display:inline-flex;
       align-items:center;
       justify-content:center;
@@ -733,7 +730,7 @@
       font-weight:500;
       line-height:1;
     }
-    .main-menu-toggle > span:last-child{
+.main-menu-toggle > span:last-child{
       flex-basis:28px;
       width:28px;
       height:28px;
@@ -743,8 +740,7 @@
       font-weight:500;
       color:#34383d;
     }
-
-    .main-menu-toggle{
+.main-menu-toggle{
       min-height:42px;
       margin-top:0;
       padding:9px 11px;
@@ -756,17 +752,17 @@
       font-weight:800;
       box-shadow:0 1px 0 rgba(0,0,0,.02);
     }
-    .main-menu-toggle:hover{
+.main-menu-toggle:hover{
       background:#eef1f4;
     }
-    .main-menu-toggle + .style-section-body{
+.main-menu-toggle + .style-section-body{
       margin-top:5px;
       padding:6px 6px 4px 12px;
       border-left:3px solid #dfe4e8;
       background:#fafbfc;
       border-radius:8px;
     }
-    .main-menu-toggle + .style-section-body > .style-section-toggle{
+.main-menu-toggle + .style-section-body > .style-section-toggle{
       min-height:34px;
       margin-top:4px;
       padding:6px 8px;
@@ -777,32 +773,32 @@
       font-size:11px;
       font-weight:700;
     }
-    .main-menu-toggle + .style-section-body > .style-section-body{
+.main-menu-toggle + .style-section-body > .style-section-body{
       margin:2px 0 5px;
       padding:2px 2px 2px 8px;
       border-left:2px solid #edf0f2;
     }
-    .style-section-body{
+.style-section-body{
       padding:2px 2px 1px;
     }
-    .route-style-row{
+.route-style-row{
       grid-template-columns:50px 1fr 48px;
       gap:7px;
       margin-top:6px;
     }
-    .route-style-row input[type="color"]{
+.route-style-row input[type="color"]{
       height:32px;
     }
-    .save-style-btn{
+.save-style-btn{
       min-height:38px;
       background:#222;
       color:#fff;
       font-weight:700;
     }
-    .save-style-btn:hover{
+.save-style-btn:hover{
       background:#111;
     }
-    .subtle-action{
+.subtle-action{
       width:100%;
       min-height:38px;
       margin-top:8px;
@@ -811,24 +807,23 @@
       color:#6b7075;
       font-size:11px;
     }
-    .memo-item{
+.memo-item{
       min-height:42px;
       border-radius:9px;
     }
-    .status{
+.status{
       margin:0;
       padding:7px 3px 1px;
       color:#7a7f85;
       font-size:10px;
       text-align:center;
     }
-    .panel.collapsed{
+.panel.collapsed{
       width:auto;
       padding:9px 10px;
       border-radius:12px;
     }
-
-    @media (max-width:700px){
+@media (max-width:700px){
       .menu-section{
         padding:0;
         border:0;
@@ -912,8 +907,7 @@
         margin-right:0;
       }
     }
-
-    @media (max-width:700px){
+@media (max-width:700px){
       .panel{
         top:calc(env(safe-area-inset-top, 0px) + 62px);
         left:10px;
@@ -945,10 +939,7 @@
       .route-style-row{grid-template-columns:46px 1fr 46px;}
       .save-style-btn,.subtle-action{min-height:44px;}
     }
-
-  
-  /* iOS-style main menu navigation */
-  .menu-back-btn{
+.menu-back-btn{
     display:none;
     flex:0 0 34px;
     width:34px;
@@ -962,10 +953,10 @@
     font-weight:300;
     line-height:30px;
   }
-  .panel.detail-view .menu-back-btn{display:block;}
-  .panel-header h1{flex:1;text-align:left;}
-  .panel.detail-view .panel-header h1{text-align:center;}
-  .menu-home{
+.panel.detail-view .menu-back-btn{display:block;}
+.panel-header h1{flex:1;text-align:left;}
+.panel.detail-view .panel-header h1{text-align:center;}
+.menu-home{
     display:flex;
     flex-direction:column;
     overflow:hidden;
@@ -973,7 +964,7 @@
     border-radius:12px;
     background:#fff;
   }
-  .ios-menu-row{
+.ios-menu-row{
     width:100%;
     min-height:48px;
     display:flex;
@@ -990,29 +981,27 @@
     font-weight:600;
     text-align:left;
   }
-  .ios-menu-row:last-child{border-bottom:0;}
-  .ios-menu-row:hover{background:#f7f7f8;}
-  .ios-chevron{
+.ios-menu-row:last-child{border-bottom:0;}
+.ios-menu-row:hover{background:#f7f7f8;}
+.ios-chevron{
     color:#b0b3b8;
     font-size:26px;
     font-weight:300;
     line-height:1;
   }
-  .menu-page{
+.menu-page{
     display:none;
     padding:8px;
     border:1px solid #e5e7ea;
     border-radius:12px;
     background:#fff;
   }
-  .menu-page.active{display:block;}
-
-  /* iPhone-like route switch */
-  .route-select-popup .route-toggle-row{
+.menu-page.active{display:block;}
+.route-select-popup .route-toggle-row{
     min-height:38px;
     padding:2px 0;
   }
-  .route-select-popup .route-toggle-switch{
+.route-select-popup .route-toggle-switch{
     width:51px !important;
     min-width:51px !important;
     max-width:51px !important;
@@ -1025,22 +1014,21 @@
     background:#e9e9ea;
     box-shadow:none;
   }
-  .route-select-popup .route-toggle-switch::after{
+.route-select-popup .route-toggle-switch::after{
     top:2px;
     left:2px;
     width:27px;
     height:27px;
     box-shadow:0 1px 3px rgba(0,0,0,.28);
   }
-  .route-select-popup .route-toggle-switch.on{background:#34c759;}
-  .route-select-popup .route-toggle-switch.on::after{transform:translateX(20px);}
-  .route-select-popup .route-toggle-label{
+.route-select-popup .route-toggle-switch.on{background:#34c759;}
+.route-select-popup .route-toggle-switch.on::after{transform:translateX(20px);}
+.route-select-popup .route-toggle-label{
     font-size:12px;
     font-weight:600;
     color:#3a3a3c;
   }
-
-  @media (max-width:700px){
+@media (max-width:700px){
     .panel-body{gap:6px;}
     .menu-home{border-radius:14px;}
     .ios-menu-row{
@@ -1064,9 +1052,7 @@
       text-align:center;
     }
   }
-
-  /* Route popup - compact iOS card style */
-  .route-select-popup{
+.route-select-popup{
     width:220px !important;
     padding:0 !important;
     overflow:hidden;
@@ -1075,7 +1061,7 @@
     box-shadow:0 10px 28px rgba(0,0,0,.22) !important;
     color:#111;
   }
-  .route-select-popup .route-select-title{
+.route-select-popup .route-select-title{
     margin:0 !important;
     padding:13px 18px !important;
     min-height:48px;
@@ -1094,16 +1080,16 @@
     -webkit-user-select:none;
     touch-action:none;
   }
-  .route-select-popup .route-select-title:active{
+.route-select-popup .route-select-title:active{
     cursor:grabbing;
   }
-  .route-select-popup .route-select-actions{
+.route-select-popup .route-select-actions{
     display:flex !important;
     flex-direction:column;
     gap:8px !important;
     padding:8px !important;
   }
-  .route-menu-row{
+.route-menu-row{
     width:100%;
     min-height:54px;
     display:flex;
@@ -1119,21 +1105,21 @@
     font-weight:600;
     text-align:left;
   }
-  .route-menu-label{
+.route-menu-label{
     flex:1;
     min-width:0;
     font-size:16px;
     font-weight:600;
     line-height:1.2;
   }
-  .route-menu-chevron{
+.route-menu-chevron{
     flex:0 0 auto;
     color:#c7c7cc;
     font-size:28px;
     font-weight:300;
     line-height:1;
   }
-  .route-select-popup .route-toggle-switch{
+.route-select-popup .route-toggle-switch{
     width:51px !important;
     min-width:51px !important;
     max-width:51px !important;
@@ -1146,46 +1132,44 @@
     background:#d1d1d6;
     box-shadow:none !important;
   }
-  .route-select-popup .route-toggle-switch::after{
+.route-select-popup .route-toggle-switch::after{
     top:2px !important;
     left:2px !important;
     width:27px !important;
     height:27px !important;
     box-shadow:0 1px 3px rgba(0,0,0,.22) !important;
   }
-  .route-select-popup .route-toggle-switch.on{
+.route-select-popup .route-toggle-switch.on{
     background:#34c759 !important;
   }
-  .route-select-popup .route-toggle-switch.on::after{
+.route-select-popup .route-toggle-switch.on::after{
     transform:translateX(20px) !important;
   }
-  .route-select-popup .route-memo-btn{
+.route-select-popup .route-memo-btn{
     background:#fff !important;
     border:0 !important;
     color:#111 !important;
   }
-  .route-select-popup .route-memo-btn:hover{
+.route-select-popup .route-memo-btn:hover{
     background:#fff !important;
   }
-
 .route-select-popup .route-toggle-label,
 .route-select-popup .route-menu-label{
   font-size:16px !important;
   font-weight:600 !important;
   line-height:1.2 !important;
 }
-
-  .ios-menu-left{
+.ios-menu-left{
     display:flex;
     align-items:center;
     gap:11px;
     min-width:0;
     flex:1;
   }
-  .ios-menu-text{
+.ios-menu-text{
     white-space:nowrap;
   }
-  .ios-menu-icon{
+.ios-menu-icon{
     width:30px;
     height:30px;
     flex:0 0 30px;
@@ -1195,7 +1179,7 @@
     border-radius:7px;
     color:#fff;
   }
-  .ios-menu-icon svg{
+.ios-menu-icon svg{
     width:19px;
     height:19px;
     fill:none;
@@ -1204,12 +1188,11 @@
     stroke-linecap:round;
     stroke-linejoin:round;
   }
-  .ios-icon-route{background:#3478f6;}
-  .ios-icon-style{background:#ff9500;}
-  .ios-icon-label{background:#af52de;}
-  .ios-icon-other{background:#8e8e93;}
-
-  @media (min-width:701px){
+.ios-icon-route{background:#3478f6;}
+.ios-icon-style{background:#ff9500;}
+.ios-icon-label{background:#af52de;}
+.ios-icon-other{background:#8e8e93;}
+@media (min-width:701px){
     .panel{
       width:var(--stable-panel-width,320px);
       min-width:var(--stable-panel-width,320px);
@@ -1221,27 +1204,22 @@
       max-width:var(--stable-panel-width,320px);
     }
   }
-
-  .style-section-toggle > span:last-child,
+.style-section-toggle > span:last-child,
   .main-menu-toggle > span:last-child,
   .panel-toggle{
     font-weight:300 !important;
     line-height:1 !important;
   }
-  .style-section-toggle > span:last-child{
+.style-section-toggle > span:last-child{
     font-size:22px !important;
   }
-  .panel-toggle{
+.panel-toggle{
     font-size:24px !important;
   }
-
-  .panel.detail-view .panel-toggle{
+.panel.detail-view .panel-toggle{
     visibility:hidden;
     pointer-events:none;
   }
-
-
-/* 2026-09-21: iPhone Settings-style UI for every menu except the route-selection popup */
 :root{
   --ios-bg:#f2f2f7;
   --ios-card:#ffffff;
@@ -1251,8 +1229,6 @@
   --ios-blue:#007aff;
   --ios-radius:14px;
 }
-
-/* Main control panel */
 .panel{
   width:340px;
   padding:0 12px 14px;
@@ -1310,8 +1286,6 @@
   gap:18px;
   padding:0;
 }
-
-/* Main menu group */
 .menu-home{
   display:flex;
   flex-direction:column;
@@ -1359,8 +1333,6 @@
   font-size:28px;
   font-weight:300;
 }
-
-/* Detail pages */
 .menu-page,
 .menu-page.active{
   padding:0;
@@ -1387,8 +1359,6 @@
   margin-left:0;
   margin-right:0;
 }
-
-/* Card groups and rows */
 .route-number-wrap{
   padding:12px 14px 14px;
   border-radius:var(--ios-radius);
@@ -1411,7 +1381,6 @@
   color:var(--ios-text);
   font-size:15px;
 }
-
 .style-section-toggle{
   width:100%;
   min-height:54px;
@@ -1441,7 +1410,6 @@
   font-size:28px !important;
   font-weight:300 !important;
 }
-
 .style-section-body{
   margin:-10px 0 0;
   padding:6px 14px 12px;
@@ -1489,8 +1457,6 @@
   font-size:14px;
   text-align:right;
 }
-
-/* Label page as a grouped settings card */
 #labelPage > .route-style-row{
   padding:5px 14px;
   background:var(--ios-card);
@@ -1524,8 +1490,6 @@
 .save-style-btn:active,
 .subtle-action:hover,
 .subtle-action:active{background:#f6f6f8;}
-
-/* Other functions page */
 .quick-grid{
   display:grid;
   grid-template-columns:1fr;
@@ -1631,8 +1595,6 @@
   font-size:11px;
   text-align:left;
 }
-
-/* Memo dialog follows the same iOS surface language, but stays draggable */
 .memo-modal-backdrop{background:rgba(0,0,0,.22);}
 .memo-modal{
   width:min(360px,calc(100vw - 32px));
@@ -1682,8 +1644,6 @@
 }
 .memo-delete-btn{color:#ff3b30 !important;}
 .memo-save-btn{background:#007aff !important;color:#fff !important;}
-
-/* Floating launcher */
 .mobile-menu-launcher{
   width:46px;
   height:46px;
@@ -1696,9 +1656,6 @@
   font-size:22px;
   line-height:46px;
 }
-
-/* Keep the current line-selection popup exactly as-is: no selectors below target .route-select-popup */
-
 @media (max-width:700px){
   .panel{
     top:calc(env(safe-area-inset-top,0px) + 58px);
@@ -1725,9 +1682,7 @@
   .route-style-row{grid-template-columns:58px minmax(0,1fr) 48px;}
   .quick-btn,.airspace-card,.style-section-toggle{min-height:54px;}
 }
-
-
-  @media (min-width:701px){
+@media (min-width:701px){
     .panel{
       min-height:var(--stable-panel-height,0px);
       box-sizing:border-box;
@@ -1741,8 +1696,7 @@
       margin-bottom:0;
     }
   }
-
-  .settings-title-icon{
+.settings-title-icon{
     display:none;
     width:32px;
     height:32px;
@@ -1753,7 +1707,7 @@
     color:#fff;
     box-shadow:0 0 0 .5px rgba(60,60,67,.18);
   }
-  .settings-title-icon svg{
+.settings-title-icon svg{
     width:20px;
     height:20px;
     fill:none;
@@ -1762,29 +1716,28 @@
     stroke-linecap:round;
     stroke-linejoin:round;
   }
-  .panel.collapsed .settings-title-icon{
+.panel.collapsed .settings-title-icon{
     display:inline-flex;
   }
-  .panel.collapsed .settings-title-text{
+.panel.collapsed .settings-title-text{
     display:none;
   }
-  .panel.collapsed .panel-header{
+.panel.collapsed .panel-header{
     cursor:pointer;
     display:flex;
     align-items:center;
     justify-content:center;
   }
-  .panel.collapsed .panel-header h1{
+.panel.collapsed .panel-header h1{
     display:flex;
     align-items:center;
     justify-content:center;
     margin:0;
   }
-  .panel.collapsed .menu-back-btn,
+.panel.collapsed .menu-back-btn,
   .panel.collapsed .panel-toggle{
     display:none !important;
   }
-
 .current-location-dot{
   width:22px;
   height:22px;
@@ -1804,7 +1757,6 @@
     border-width:4px;
   }
 }
-
 .current-location-marker{
   position:relative;
   width:54px;
@@ -1881,8 +1833,6 @@
     border-width:4px;
   }
 }
-
-/* Initial state: lone iOS-style settings gear at top-left */
 .mobile-menu-launcher{
   display:none !important;
 }
@@ -1956,8 +1906,6 @@
 .panel.collapsed .panel-body{
   display:none !important;
 }
-
-/* Subtle Apple Maps-like current-position blink */
 .current-location-dot{
   animation:currentLocationSoftBlink 2.1s ease-in-out infinite;
 }
@@ -1979,9 +1927,6 @@
       0 0 0 5px rgba(10,132,255,.10);
   }
 }
-
-
-/* Locked initial icon: Apple Maps-style app icon */
 .settings-title-icon.apple-maps-title-icon{
   background:transparent !important;
   box-shadow:none !important;
@@ -2000,14 +1945,10 @@
   width:42px !important;
   height:42px !important;
 }
-
-/* Rotation disabled: keep Kakao map in its native orientation */
 #map{
   transform:none !important;
   transform-origin:center center !important;
 }
-
-/* Collapsed initial menu: show only the Apple Maps icon */
 @media (max-width:700px){
   .panel.collapsed{
     display:block !important;
@@ -2028,8 +1969,6 @@
   width:40px !important;
   height:40px !important;
 }
-
-/* Keep every expanded settings page the same vertical length */
 .panel:not(.collapsed){
   height:var(--stable-panel-height,auto) !important;
   min-height:var(--stable-panel-height,0px) !important;
@@ -2048,8 +1987,6 @@
   min-height:44px !important;
   max-height:44px !important;
 }
-
-/* Use the true tallest menu as the common height on every device */
 .panel:not(.collapsed){
   height:var(--stable-panel-height,auto) !important;
   min-height:var(--stable-panel-height,0px) !important;
@@ -2063,8 +2000,6 @@
     max-height:none !important;
   }
 }
-
-/* Locked initial menu icon: blue circular right arrow */
 .settings-title-icon.send-title-icon{
   display:inline-flex !important;
   align-items:center !important;
@@ -2088,8 +2023,6 @@
   width:42px !important;
   height:42px !important;
 }
-
-/* Initial launcher icon: larger, visible only while panel is collapsed */
 .panel.collapsed .settings-title-icon.send-title-icon{
   display:inline-flex !important;
   width:50px !important;
@@ -2119,8 +2052,6 @@
   height:52px !important;
   min-height:52px !important;
 }
-
-/* Memo editor: match the route-selection popup design */
 .memo-modal-backdrop{
   background:transparent !important;
 }
@@ -2204,8 +2135,6 @@
   background:#34c759 !important;
   color:#fff !important;
 }
-
-/* Ensure memo action labels stay visible */
 .memo-modal .memo-modal-actions .memo-save-btn{
   background:#34c759 !important;
   color:#fff !important;
@@ -2222,7 +2151,6 @@
   -webkit-text-fill-color:#222 !important;
   opacity:1 !important;
 }
-
 .size-preset-group{
   display:grid;
   grid-template-columns:repeat(3,minmax(0,1fr));
@@ -2247,7 +2175,6 @@
   color:#007aff;
   box-shadow:0 1px 3px rgba(0,0,0,.12);
 }
-
 #stylePage{
   display:none;
   flex-direction:column;
@@ -2259,7 +2186,6 @@
 #stylePage .nested-menu-row{
   width:100%;
 }
-
 .ios-icon-memo{
   background:#34c759;
 }
@@ -2288,14 +2214,10 @@
   flex-direction:column;
   gap:6px;
 }
-
-/* Common expanded-menu height reduced by one third; overflow scrolls inside */
 .panel:not(.collapsed){
   overflow-y:auto !important;
   overscroll-behavior:contain;
 }
-
-/* Memo list: right-side edit/delete actions */
 .memo-item{
   width:100% !important;
   min-height:52px !important;
@@ -2363,8 +2285,6 @@
     min-height:54px !important;
   }
 }
-
-/* Compact memo edit/delete buttons */
 .memo-item-actions button{
   width:48px !important;
   min-width:48px !important;
@@ -2377,15 +2297,12 @@
     padding:0 4px !important;
   }
 }
-
 .memo-num{
   color:#1c1c1e !important;
 }
 .memo-page-heading{
   display:none !important;
 }
-
-/* Address popup: no coordinates, natural address wrapping, no iOS text-callout */
 .address-popup{
   -webkit-user-select:none !important;
   user-select:none !important;
@@ -2404,8 +2321,6 @@
 #map *{
   -webkit-touch-callout:none;
 }
-
-/* Mobile map: prevent long-press text selection/copy menu across all map labels and overlays */
 @media (max-width:700px){
   #map,
   #map *,
@@ -2415,9 +2330,7 @@
   .route-select-popup,
   .route-select-popup *,
   .current-location-marker,
-  .current-location-marker *,
-  .north-compass,
-  .north-compass *{
+  .current-location-marker *{
     -webkit-user-select:none !important;
     user-select:none !important;
     -webkit-touch-callout:none !important;
@@ -2430,7 +2343,6 @@
     user-drag:none !important;
   }
 
-  /* Keep true controls editable/clickable */
   #map input,
   #map textarea,
   #map select,
@@ -2442,8 +2354,6 @@
     -webkit-touch-callout:default !important;
   }
 }
-
-/* Keep the current menu title/back controls visible while menu content scrolls */
 .panel:not(.collapsed) .panel-header{
   position:sticky !important;
   top:0 !important;
@@ -2458,8 +2368,6 @@
     top:0 !important;
   }
 }
-
-/* iPhone Timer-style wheel picker for route numbers */
 .route-wheel-wrap{
   position:relative;
   margin:0 !important;
@@ -2556,16 +2464,12 @@
     min-height:46px;
   }
 }
-
-/* Detail pages: make the whole top header feel like a back target */
 .panel.detail-view .panel-header{
   cursor:pointer !important;
 }
 .panel.detail-view .panel-header h1{
   pointer-events:none;
 }
-
-/* Fine-tune iOS wheel number vertical alignment */
 .route-wheel-item{
   line-height:1 !important;
   transform:translateY(-2px);
@@ -2574,16 +2478,12 @@
   line-height:1 !important;
   transform:translateY(-2px);
 }
-
-/* Hide Kakao's built-in left scale indicator */
 #map .map_scale,
 #map .wrap_scale,
 #map [class*="map_scale"],
 #map [class*="wrap_scale"]{
   display:none !important;
 }
-
-/* Full-width custom scale bar along the bottom */
 .scale-bar{
   position:fixed !important;
   left:12px !important;
@@ -2620,8 +2520,6 @@
     padding-top:5px !important;
   }
 }
-
-/* Right-side vertical scale bar */
 .vertical-scale-bar{
   position:fixed !important;
   top:72px !important;
@@ -2656,7 +2554,6 @@
 }
 .vertical-scale-bar::before{ top:0; }
 .vertical-scale-bar::after{ bottom:0; }
-
 @media (max-width:700px){
   .vertical-scale-bar{
     top:calc(env(safe-area-inset-top,0px) + 64px) !important;
@@ -2665,8 +2562,6 @@
     width:26px !important;
   }
 }
-
-/* Scale bars: line-only style with end caps */
 .scale-bar{
   background:transparent !important;
   border-radius:0 !important;
@@ -2692,22 +2587,17 @@
 .scale-bar::after{
   right:0 !important;
 }
-
 .vertical-scale-bar{
   background:transparent !important;
   backdrop-filter:none !important;
   -webkit-backdrop-filter:none !important;
 }
-
-/* Remove Kakao's own bottom-left scale UI */
 #map .map_scale,
 #map .wrap_scale,
 #map [class*="map_scale"],
 #map [class*="wrap_scale"]{
   display:none !important;
 }
-
-/* Thinner custom scale lines */
 .scale-bar{
   border-top-width:1px !important;
 }
@@ -2725,8 +2615,6 @@
   right:-1px !important;
   height:1px !important;
 }
-
-/* Distance-only scale labels */
 .scale-bar{
   left:10px !important;
   right:auto !important;
@@ -2751,7 +2639,6 @@
   display:none !important;
   content:none !important;
 }
-
 .vertical-scale-bar{
   top:calc(env(safe-area-inset-top,0px) + 10px) !important;
   right:10px !important;
@@ -2788,8 +2675,6 @@
     right:8px !important;
   }
 }
-
-/* Mobile: double the distance label text size */
 @media (max-width:700px){
   .scale-bar,
   .vertical-scale-bar{
@@ -2797,8 +2682,6 @@
     padding:3px 6px !important;
   }
 }
-
-/* Route popup: show selected line length at top-right */
 .route-select-popup .route-select-title{
   justify-content:space-between !important;
   gap:12px !important;
@@ -2817,8 +2700,6 @@
   opacity:.92;
   font-variant-numeric:tabular-nums;
 }
-
-/* Expand memo editor inside the selected-route popup */
 .route-inline-memo{
   display:none;
   margin:0;
@@ -2878,8 +2759,6 @@
 .route-memo-btn.memo-open .route-menu-chevron{
   font-size:22px !important;
 }
-
-/* Mobile-friendly direct route number search */
 .route-direct-search{
   display:grid;
   grid-template-columns:82px minmax(0,1fr) 68px;
@@ -2935,7 +2814,6 @@
     font-size:16px !important;
   }
 }
-
 .route-prefix-select{
   width:82px;
   min-width:82px;
@@ -2964,8 +2842,6 @@
     font-size:16px;
   }
 }
-
-/* Vertically resizable settings panel — initial height remains unchanged */
 .panel:not(.collapsed){
   height:var(--user-panel-height,var(--stable-panel-height,auto)) !important;
   min-height:220px !important;
@@ -3017,8 +2893,6 @@
     height:5px;
   }
 }
-
-/* Mobile: attach the settings panel to the very top */
 @media (max-width:700px){
   .panel:not(.collapsed){
     top:0 !important;
@@ -3034,13 +2908,10 @@
     padding-top:calc(env(safe-area-inset-top,0px) + 8px) !important;
   }
 
-  /* Hide the right-side distance label while the settings menu is open */
   body.menu-open .vertical-scale-bar{
     display:none !important;
   }
 }
-
-/* Main settings header: < 설정 */
 .panel:not(.detail-view):not(.collapsed) .panel-header{
   display:grid !important;
   grid-template-columns:40px minmax(0,1fr) 40px !important;
@@ -3061,8 +2932,6 @@
 .panel:not(.detail-view):not(.collapsed) .menu-back-btn{
   display:none !important;
 }
-
-/* Larger hit area for the initial settings launcher, visual icon unchanged */
 .panel.collapsed{
   top:calc(env(safe-area-inset-top,0px) + 0px) !important;
   left:0 !important;
@@ -3087,8 +2956,6 @@
   width:50px !important;
   height:50px !important;
 }
-
-/* Mobile readability: slightly larger text across controls and popups */
 @media (max-width:700px){
   .panel h1,
   .panel.detail-view .panel-header h1{
@@ -3161,8 +3028,6 @@
     font-size:16px !important;
   }
 }
-
-/* Mobile menu typography — iPhone Settings scale (2026-09-21) */
 @media (max-width:700px){
   .panel h1,
   .panel.detail-view .panel-header h1{
@@ -3227,11 +3092,8 @@
     font-size:17px !important;
   }
 }
-
-
-/* Mobile detail typography — match main iPhone Settings scale (2026-09-21) */
 @media (max-width:700px){
-  /* Detail-page section headers and labels */
+
   .panel.detail-view .menu-section-title,
   .panel.detail-view .route-style-title,
   .panel.detail-view .route-number-wrap label,
@@ -3243,7 +3105,6 @@
     line-height:1.35 !important;
   }
 
-  /* Detail controls */
   .panel.detail-view .style-section-toggle,
   .panel.detail-view .main-menu-toggle,
   .panel.detail-view .quick-btn,
@@ -3255,7 +3116,6 @@
     font-size:18px !important;
   }
 
-  /* Detail list rows / values */
   .panel.detail-view .ios-menu-row,
   .panel.detail-view .route-menu-row,
   .panel.detail-view .ios-menu-text,
@@ -3265,7 +3125,6 @@
     font-size:19px !important;
   }
 
-  /* Descriptions / notes */
   .panel.detail-view .status,
   .panel.detail-view .geo-note,
   .panel.detail-view .memo-empty,
@@ -3275,18 +3134,14 @@
     line-height:1.45 !important;
   }
 
-  /* Memo/list secondary text */
   .panel.detail-view .memo-num,
   .panel.detail-view .airspace-label strong,
   .panel.detail-view .geo-link{
     font-size:17px !important;
   }
 }
-
-
-/* Detail menu titles: left aligned like Settings (2026-09-21) */
 @media (max-width:700px){
-  /* Submenu headers such as 경로목록: align title to the left like 설정 */
+
   .panel.detail-view .panel-header{
     display:grid !important;
     grid-template-columns:40px minmax(0,1fr) 40px !important;
@@ -3309,9 +3164,6 @@
     width:100% !important;
   }
 }
-
-
-/* Apple Notes-inspired memo icon */
 .ios-icon-memo{
   background:transparent !important;
   color:initial !important;
@@ -3325,8 +3177,6 @@
   stroke:none !important;
   display:block;
 }
-
-/* Memo list: iPhone Settings-style rows */
 #memoPage.active{
   gap:0 !important;
 }
@@ -3414,8 +3264,6 @@
   font-size:15px !important;
   text-align:center;
 }
-
-/* Memo detail: same editor language as route-line memo */
 #memoDetailPage.active{
   display:flex !important;
 }
@@ -3477,8 +3325,6 @@
     font-size:15px !important;
   }
 }
-
-/* Memo route number: tap the number to move to that route */
 .memo-route-link{
   position:relative;
   z-index:2;
@@ -3488,8 +3334,6 @@
 .memo-route-link:active{
   opacity:.55;
 }
-
-/* Route list icon: gray iOS-style search icon */
 .ios-icon-route{
   background:transparent !important;
   overflow:hidden;
@@ -3502,8 +3346,6 @@
   fill:none !important;
   stroke:none !important;
 }
-
-/* Other functions: Apple Maps-style icon */
 .ios-icon-other.ios-icon-apple-maps{
   background:transparent !important;
   overflow:hidden;
@@ -3516,7 +3358,6 @@
   fill:none !important;
   stroke:none !important;
 }
-
 .ios-icon-other.ios-icon-apple-maps{
   background:transparent !important;
   box-shadow:none !important;
@@ -3529,8 +3370,6 @@
   object-fit:contain !important;
   border-radius:7px !important;
 }
-
-/* Style settings icon: orange tile with white layers */
 .ios-icon-style{
   background:transparent !important;
   overflow:hidden;
@@ -3543,8 +3382,6 @@
   fill:none !important;
   stroke:none !important;
 }
-
-/* Other functions: mint gradient layers icon */
 .ios-icon-other.ios-icon-mint-layers{
   background:transparent !important;
   overflow:hidden;
@@ -3557,8 +3394,6 @@
   fill:none !important;
   stroke:none !important;
 }
-
-/* Memo list: stable repeated route navigation on mobile */
 .memo-settings-row{
   cursor:default !important;
 }
@@ -3601,8 +3436,6 @@
 .memo-note-icon{
   cursor:pointer;
 }
-
-/* Hide visual scrollbars while keeping all menu scrolling enabled */
 .panel:not(.collapsed),
 .panel-body,
 .memo-settings-list{
@@ -3617,8 +3450,6 @@
   display:none !important;
   background:transparent !important;
 }
-
-/* Memo row: one tap always opens detail and moves map */
 .memo-settings-row{
   cursor:pointer !important;
   -webkit-appearance:none !important;
@@ -3630,8 +3461,6 @@
 .memo-settings-row .memo-settings-chevron{
   pointer-events:none !important;
 }
-
-/* Hide all visible scroll indicators in the settings panel, keep scrolling enabled */
 #controlPanel,
 #controlPanel .panel-body,
 #controlPanel .menu-page,
@@ -3650,8 +3479,6 @@
   display:none !important;
   -webkit-appearance:none !important;
 }
-
-/* Main menu icon artwork overrides */
 .ios-icon-route,
 .ios-icon-style{
   background:transparent !important;
@@ -3666,8 +3493,6 @@
   fill:none !important;
   stroke:none !important;
 }
-
-/* Mobile settings interaction stabilization */
 @media (max-width:700px){
   #controlPanel:not(.collapsed){
     top:0 !important;
@@ -3700,8 +3525,6 @@
     pointer-events:auto !important;
   }
 }
-
-/* Keep the resize grabber fixed while menu content scrolls */
 @media (max-width:700px){
   #controlPanel:not(.collapsed){
     display:flex !important;
@@ -3753,8 +3576,6 @@
     transform:translateX(-50%) !important;
   }
 }
-
-/* Attached main-menu app icons — visual size 120% */
 .ios-menu-icon.menu-photo-icon{
   background:transparent !important;
   box-shadow:none !important;
@@ -3771,8 +3592,6 @@
   transform-origin:center center !important;
   pointer-events:none !important;
 }
-
-/* Auto-fit settings panel height to visible content (2026-09-21) */
 #controlPanel:not(.collapsed){
   height:var(--user-panel-height,auto) !important;
   min-height:0 !important;
@@ -3794,8 +3613,6 @@
     overflow-y:auto !important;
   }
 }
-
-/* Mobile memo page: allow the resize handle to travel to the viewport bottom */
 @media (max-width:700px){
   #controlPanel.detail-view:has(#memoPage.active){
     height:var(--user-panel-height,auto) !important;
@@ -3814,8 +3631,6 @@
     max-height:none !important;
   }
 }
-
-/* Main-screen map / satellite toggle */
 .map-type-toggle{
   position:fixed;
   left:10px;
@@ -3875,8 +3690,6 @@
     height:27px;
   }
 }
-
-/* Satellite / hybrid map label contrast */
 body.satellite-map .route-label{
   color:#ffffff !important;
   text-shadow:
@@ -3889,8 +3702,6 @@ body.satellite-map .route-label{
     -1px  0   0 #000000,
      1px  0   0 #000000 !important;
 }
-
-/* Mobile initial top icon: 150% visual scale */
 @media (max-width:700px){
   .panel.collapsed .settings-title-icon.send-title-icon,
   .panel.collapsed .settings-title-icon.send-title-icon svg{
