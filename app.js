@@ -4,7 +4,6 @@ mapElement.style.transformOrigin='';
 const map=new kakao.maps.Map(mapElement,{center:new kakao.maps.LatLng(35.16,126.84),level:8});
 map.setCopyrightPosition(kakao.maps.CopyrightPosition.BOTTOMRIGHT, false);
 
-
 let routePolylines=[],routeLabels=[],routeBounds=new kakao.maps.LatLngBounds(),currentMarker=null;
 let locationWatchId=null;
 let currentLocationLatLng=null;
@@ -13,10 +12,8 @@ let locationRecenterRequested=false;
 let currentLocationMarkerEl=null;
 let currentLocationHeadingEl=null;
 let currentHeading=null;
-let deviceHeading=null;
 let lastMovementPosition=null;
 let locationMoveAnimation=null;
-let deviceOrientationListening=false;
 
 const routeIndex=new Map();
 let selectedRoute=null;
@@ -383,9 +380,6 @@ document.addEventListener('pointerdown',event=>{
   syncPanelToggle();
 });
 
-
-
-
 const geocoder=new kakao.maps.services.Geocoder();
 let addressOverlay=null;
 
@@ -598,11 +592,6 @@ async function deleteRemoteMemo(num){
 let memoEditingRoute=null;
 let memoEditingNumber='';
 
-function openMemoEditor(routeLine){
-  const num=routeLine?._routeNumber || '';
-  openMemoEditorByNumber(num,routeLine);
-}
-
 function openMemoEditorByNumber(num,routeLine=null){
   num=String(num||'');
   if(!num){
@@ -701,78 +690,7 @@ document.getElementById('memoModalBackdrop').addEventListener('click',function(e
   if(e.target===this) closeMemoEditor();
 });
 
-(function enableMemoModalDrag(){
-  const modal=document.querySelector('.memo-modal');
-  const handle=document.getElementById('memoModalTitle');
-  if(!modal || !handle) return;
-
-  let dragging=false;
-  let startX=0, startY=0;
-  let startLeft=0, startTop=0;
-
-  const clamp=(v,min,max)=>Math.min(Math.max(v,min),max);
-
-  handle.addEventListener('pointerdown',e=>{
-    if(e.button!==undefined && e.button!==0) return;
-    const rect=modal.getBoundingClientRect();
-
-    modal.style.position='fixed';
-    modal.style.left=rect.left+'px';
-    modal.style.top=rect.top+'px';
-    modal.style.margin='0';
-    modal.style.transform='none';
-
-    dragging=true;
-    startX=e.clientX;
-    startY=e.clientY;
-    startLeft=rect.left;
-    startTop=rect.top;
-
-    try{ handle.setPointerCapture?.(e.pointerId); }catch(err){}
-    e.preventDefault();
-    e.stopPropagation();
-  });
-
-  handle.addEventListener('pointermove',e=>{
-    if(!dragging) return;
-
-    const maxLeft=Math.max(8,window.innerWidth-modal.offsetWidth-8);
-    const maxTop=Math.max(8,window.innerHeight-modal.offsetHeight-8);
-
-    const nextLeft=clamp(startLeft+(e.clientX-startX),8,maxLeft);
-    const nextTop=clamp(startTop+(e.clientY-startY),8,maxTop);
-
-    modal.style.left=nextLeft+'px';
-    modal.style.top=nextTop+'px';
-    e.preventDefault();
-    e.stopPropagation();
-  });
-
-  const endDrag=e=>{
-    if(!dragging) return;
-    dragging=false;
-    try{ handle.releasePointerCapture?.(e.pointerId); }catch(err){}
-    e.stopPropagation();
-  };
-
-  handle.addEventListener('pointerup',endDrag);
-  handle.addEventListener('pointercancel',endDrag);
-
-  window.addEventListener('resize',()=>{
-    if(getComputedStyle(modal).position!=='fixed') return;
-    const rect=modal.getBoundingClientRect();
-    const maxLeft=Math.max(8,window.innerWidth-modal.offsetWidth-8);
-    const maxTop=Math.max(8,window.innerHeight-modal.offsetHeight-8);
-    modal.style.left=clamp(rect.left,8,maxLeft)+'px';
-    modal.style.top=clamp(rect.top,8,maxTop)+'px';
-  });
-})();
-
-function showRouteProperties(routeLine){
-  const num=routeLine._routeNumber || '번호 없음';
-  const memo=routeMemos[routeLine._routeNumber]?.memo || '저장된 메모 없음';
-  alert('번호: '+num+'\n\n메모:\n'+memo);
-}
+()();
 
 let memoDetailNumber='';
 
@@ -1547,16 +1465,6 @@ document.addEventListener('selectionchange',()=>{
     sel.removeAllRanges();
   }
 });
-
-function niceScaleDistance(meters){
-  const exponent=Math.pow(10,Math.floor(Math.log10(meters)));
-  const fraction=meters/exponent;
-  let niceFraction;
-  if(fraction>=5) niceFraction=5;
-  else if(fraction>=2) niceFraction=2;
-  else niceFraction=1;
-  return niceFraction*exponent;
-}
 
 function updateScaleBar(){
   const scaleBar=document.getElementById('scaleBar');
@@ -2541,39 +2449,6 @@ function updateCurrentLocationMarker(loc){
 
   animateCurrentLocationTo(loc);
   currentMarker.setMap(map);
-}
-
-function handleDeviceOrientation(event){
-  let heading=null;
-
-  if(Number.isFinite(event.webkitCompassHeading)){
-    heading=event.webkitCompassHeading;
-  }else if(Number.isFinite(event.alpha)){
-    heading=360-event.alpha;
-  }
-
-  heading=normalizeHeading(heading);
-  if(heading===null) return;
-
-  deviceHeading=heading;
-  if(currentHeading===null) updateLocationHeadingVisual();
-}
-
-async function enableDeviceHeading(){
-  if(deviceOrientationListening || typeof DeviceOrientationEvent==='undefined') return;
-
-  try{
-    if(typeof DeviceOrientationEvent.requestPermission==='function'){
-      const permission=await DeviceOrientationEvent.requestPermission();
-      if(permission!=='granted') return;
-    }
-
-    window.addEventListener('deviceorientationabsolute',handleDeviceOrientation,true);
-    window.addEventListener('deviceorientation',handleDeviceOrientation,true);
-    deviceOrientationListening=true;
-  }catch(error){
-    console.warn('방향 센서 사용 불가',error);
-  }
 }
 
 function handleLocationUpdate(position){
