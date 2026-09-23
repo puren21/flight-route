@@ -5,6 +5,7 @@
 
   const IMPROVEMENT_VERSION='2026.09.23-1';
   let followLocationEnabled=false;
+  let locationButtonInitialized=false;
   let pendingNearbySearch=false;
 
   function metersBetween(lat1,lng1,lat2,lng2){
@@ -126,28 +127,44 @@
     });
   }
 
-  function syncFollowButton(){
-    const btn=document.getElementById('followLocBtn');
+  function syncFloatingLocationButton(){
+    const btn=document.getElementById('floatingLocBtn');
     if(!btn) return;
-    btn.classList.toggle('active',followLocationEnabled);
+    btn.classList.toggle('following',followLocationEnabled);
     btn.setAttribute('aria-pressed',followLocationEnabled?'true':'false');
-    btn.textContent=followLocationEnabled?'위치 따라가기 켬':'위치 따라가기';
+    btn.title=followLocationEnabled?'위치 따라가기 켜짐':'현재 위치';
+    btn.setAttribute('aria-label',followLocationEnabled?'위치 따라가기 켜짐':'현재 위치');
   }
 
-  document.getElementById('followLocBtn')?.addEventListener('click',()=>{
+  const floatingLocBtn=document.getElementById('floatingLocBtn');
+  floatingLocBtn?.addEventListener('click',event=>{
+    // 기존 app.js의 단순 locateMe 클릭보다 먼저 처리함.
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    if(!locationButtonInitialized){
+      locationButtonInitialized=true;
+      followLocationEnabled=false;
+      syncFloatingLocationButton();
+      locateMe();
+      return;
+    }
+
     followLocationEnabled=!followLocationEnabled;
-    syncFollowButton();
+    syncFloatingLocationButton();
 
     if(followLocationEnabled){
       if(currentLocationLatLng){
         keepFollowLocationVisible(currentLocationLatLng);
       }
       locateMe();
-      statusEl.textContent='위치 따라가기 켬 · 지도를 움직여도 다음 GPS 갱신 시 현재 위치로 이동합니다.';
+      statusEl.textContent='위치 따라가기 켬';
     }else{
-      statusEl.textContent='위치 따라가기 끔 · 자유롭게 지도를 탐색할 수 있습니다.';
+      statusEl.textContent='위치 따라가기 끔';
     }
-  });
+
+    refreshDiagnostics();
+  },true);
 
   document.getElementById('nearbyRouteBtn')?.addEventListener('click',renderNearbyRoutes);
 
@@ -304,6 +321,5 @@
   document.getElementById('diagnosticBtn')?.addEventListener('click',renderDiagnostics);
   window.addEventListener('online',refreshDiagnostics);
   window.addEventListener('offline',refreshDiagnostics);
-
-  syncFollowButton();
+  syncFloatingLocationButton();
 })();
