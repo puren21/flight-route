@@ -3947,7 +3947,16 @@ body.satellite-map .route-label{
     will-change:transform;
   }
   .mobile-map-rotator.north-resetting{
-    transition:transform .25s ease-out;
+    transition:none;
+  }
+  .mobile-map-rotator .route-label{
+    transform:translate(-50%,-50%) rotate(var(--map-counter-rotation,0deg)) !important;
+    transform-origin:50% 50%;
+  }
+  .mobile-map-rotator .route-select-popup,
+  .mobile-map-rotator .address-popup{
+    transform:rotate(var(--map-counter-rotation,0deg));
+    transform-origin:50% 50%;
   }
   .mobile-map-rotator #map{
     position:absolute !important;
@@ -4265,9 +4274,11 @@ if(mobileRotationEnabled){
 const mapCompassBtn=document.getElementById('mapCompassBtn');
 const mapCompassIcon=document.getElementById('mapCompassIcon');
 let mapRotation=0;
+let targetMapRotation=0;
 let rotationGestureStartAngle=null;
 let rotationGestureStartRotation=0;
 let rotationFrame=null;
+let rotationLastTime=0;
 
 function normalizeRotation(value){
   let n=Number(value)||0;
@@ -4282,28 +4293,57 @@ function twoTouchAngle(touches){
   return Math.atan2(b.clientY-a.clientY,b.clientX-a.clientX)*180/Math.PI;
 }
 
-function applyMapRotation(value){
-  mapRotation=normalizeRotation(value);
-  if(rotationFrame) cancelAnimationFrame(rotationFrame);
-  rotationFrame=requestAnimationFrame(()=>{
-    if(mapRotator) mapRotator.style.transform='rotate('+mapRotation+'deg)';
-    if(mapCompassIcon){
-      mapCompassIcon.style.transform='rotate('+(-mapRotation)+'deg)';
-    }
-    if(mapCompassBtn){
-      mapCompassBtn.classList.toggle('rotated',Math.abs(mapRotation)>0.5);
-      mapCompassBtn.setAttribute('aria-label',Math.abs(mapRotation)>0.5?'정북 방향으로 복귀':'현재 정북 방향');
-      mapCompassBtn.setAttribute('title',Math.abs(mapRotation)>0.5?'정북 방향으로 복귀':'현재 정북 방향');
-    }
+function shortestRotationDelta(from,to){
+  return ((to-from+540)%360)-180;
+}
+
+function renderMapRotation(now){
+  const dt=rotationLastTime ? Math.min(40,now-rotationLastTime) : 16;
+  rotationLastTime=now;
+
+  const delta=shortestRotationDelta(mapRotation,targetMapRotation);
+  // 카카오 지도 앱처럼 목표 각도를 부드럽게 따라가도록 완만하게 보간함.
+  const alpha=1-Math.exp(-dt/115);
+  mapRotation=normalizeRotation(mapRotation+delta*alpha);
+
+  if(Math.abs(delta)<0.08){
+    mapRotation=targetMapRotation;
+  }
+
+  if(mapRotator){
+    mapRotator.style.transform='rotate('+mapRotation+'deg)';
+    mapRotator.style.setProperty('--map-counter-rotation',(-mapRotation)+'deg');
+  }
+  if(mapCompassIcon){
+    mapCompassIcon.style.transform='rotate('+(-mapRotation)+'deg)';
+  }
+  if(mapCompassBtn){
+    mapCompassBtn.classList.toggle('rotated',Math.abs(mapRotation)>0.5);
+    mapCompassBtn.setAttribute('aria-label',Math.abs(mapRotation)>0.5?'정북 방향으로 복귀':'현재 정북 방향');
+    mapCompassBtn.setAttribute('title',Math.abs(mapRotation)>0.5?'정북 방향으로 복귀':'현재 정북 방향');
+  }
+
+  if(Math.abs(shortestRotationDelta(mapRotation,targetMapRotation))>=0.08){
+    rotationFrame=requestAnimationFrame(renderMapRotation);
+  }else{
     rotationFrame=null;
-  });
+    rotationLastTime=0;
+  }
+}
+
+function applyMapRotation(value){
+  targetMapRotation=normalizeRotation(value);
+  if(rotationFrame===null){
+    rotationLastTime=0;
+    rotationFrame=requestAnimationFrame(renderMapRotation);
+  }
 }
 
 function resetMapToNorth(){
   if(!mobileRotationEnabled) return;
   if(mapRotator) mapRotator.classList.add('north-resetting');
   applyMapRotation(0);
-  window.setTimeout(()=>mapRotator?.classList.remove('north-resetting'),280);
+  window.setTimeout(()=>mapRotator?.classList.remove('north-resetting'),450);
 }
 
 if(mobileRotationEnabled){
@@ -4320,7 +4360,7 @@ if(mobileRotationEnabled){
     if(event.touches.length===2 && touchStartedOnMap(event)){
       rotationGestureActive=true;
       rotationGestureStartAngle=twoTouchAngle(event.touches);
-      rotationGestureStartRotation=mapRotation;
+      rotationGestureStartRotation=targetMapRotation;
     }
   },{passive:true,capture:true});
 
