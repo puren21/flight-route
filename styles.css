@@ -1766,11 +1766,11 @@ button.active { background:#222; color:#fff; }
 .current-location-heading{
   position:absolute;
   left:50%;
-  top:-34px;
-  width:42px;
-  height:58px;
+  top:-24px;
+  width:30px;
+  height:42px;
   opacity:0;
-  transform-origin:50% 61px;
+  transform-origin:50% 47px;
   transition:opacity .18s ease, transform .16s linear;
   pointer-events:none;
 }
@@ -1785,9 +1785,9 @@ button.active { background:#222; color:#fff; }
   width:0;
   height:0;
   transform:translateX(-50%);
-  border-left:19px solid transparent;
-  border-right:19px solid transparent;
-  border-top:58px solid rgba(10,132,255,.16);
+  border-left:13px solid transparent;
+  border-right:13px solid transparent;
+  border-top:42px solid rgba(10,132,255,.16);
   filter:drop-shadow(0 1px 2px rgba(10,132,255,.10));
 }
 .current-location-dot{
