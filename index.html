@@ -3923,6 +3923,66 @@ body.satellite-map .route-label{
     height:75px !important;
   }
 }
+
+/* Mobile map rotation + compass */
+.map-compass{
+  display:none;
+}
+@media (max-width:700px){
+  #map.mobile-rotation-map{
+    inset:auto !important;
+    left:-21vw !important;
+    top:-21dvh !important;
+    width:142vw !important;
+    min-width:142vw !important;
+    max-width:none !important;
+    height:142dvh !important;
+  }
+  #map.mobile-rotation-map.north-resetting{
+    transition:transform .25s ease-out;
+  }
+  .map-compass{
+    display:flex;
+    position:fixed;
+    top:calc(env(safe-area-inset-top,0px) + 12px);
+    right:12px;
+    z-index:2147483645;
+    width:44px;
+    height:44px;
+    min-width:44px;
+    padding:0;
+    align-items:center;
+    justify-content:center;
+    border:1px solid rgba(0,0,0,.16);
+    border-radius:22px;
+    background:rgba(255,255,255,.96);
+    box-shadow:0 2px 10px rgba(0,0,0,.18);
+    color:#222;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .map-compass svg{
+    width:28px;
+    height:28px;
+    overflow:visible;
+    transform-origin:50% 50%;
+    transition:transform .08s linear;
+  }
+  .map-compass .compass-north{
+    fill:#e53935;
+  }
+  .map-compass .compass-south{
+    fill:#777;
+  }
+  .map-compass .compass-center{
+    fill:#fff;
+    stroke:#555;
+    stroke-width:1.5;
+  }
+  .map-compass.rotated{
+    box-shadow:0 2px 12px rgba(0,0,0,.24);
+  }
+}
+
 </style>
 </head>
 <body>
@@ -3947,6 +4007,15 @@ body.satellite-map .route-label{
   </svg>
   <span id="mapTypeToggleLabel" class="map-type-toggle-label">영상</span>
 </button>
+
+<button id="mapCompassBtn" class="map-compass" type="button" aria-label="정북 방향으로 복귀" title="정북 방향으로 복귀">
+  <svg id="mapCompassIcon" viewBox="0 0 32 32" aria-hidden="true">
+    <path class="compass-north" d="M16 3 L21 16 L16 13 L11 16 Z"></path>
+    <path class="compass-south" d="M16 29 L11 16 L16 19 L21 16 Z"></path>
+    <circle class="compass-center" cx="16" cy="16" r="2.5"></circle>
+  </svg>
+</button>
+
 <div id="scaleBar" class="scale-bar">축척 계산 중...</div>
 <div id="verticalScaleBar" class="vertical-scale-bar">축척 계산 중...</div>
 <button id="floatingLocBtn" class="floating-location" type="button" title="현재 위치" aria-label="현재 위치">◎</button>
@@ -4153,10 +4222,84 @@ body.satellite-map .route-label{
 </div>
 <script>
 const mapElement=document.getElementById('map');
+const mobileRotationEnabled=window.matchMedia('(max-width:700px)').matches && ('ontouchstart' in window || navigator.maxTouchPoints>0);
+if(mobileRotationEnabled) mapElement.classList.add('mobile-rotation-map');
 mapElement.style.transform='none';
-mapElement.style.transformOrigin='';
+mapElement.style.transformOrigin='50% 50%';
 const map=new kakao.maps.Map(mapElement,{center:new kakao.maps.LatLng(35.16,126.84),level:8});
 map.setCopyrightPosition(kakao.maps.CopyrightPosition.BOTTOMRIGHT, false);
+
+const mapCompassBtn=document.getElementById('mapCompassBtn');
+const mapCompassIcon=document.getElementById('mapCompassIcon');
+let mapRotation=0;
+let rotationGestureStartAngle=null;
+let rotationGestureStartRotation=0;
+let rotationFrame=null;
+
+function normalizeRotation(value){
+  let n=Number(value)||0;
+  n=((n+180)%360+360)%360-180;
+  return n;
+}
+
+function twoTouchAngle(touches){
+  if(!touches || touches.length<2) return null;
+  const a=touches[0];
+  const b=touches[1];
+  return Math.atan2(b.clientY-a.clientY,b.clientX-a.clientX)*180/Math.PI;
+}
+
+function applyMapRotation(value){
+  mapRotation=normalizeRotation(value);
+  if(rotationFrame) cancelAnimationFrame(rotationFrame);
+  rotationFrame=requestAnimationFrame(()=>{
+    mapElement.style.transform='rotate('+mapRotation+'deg)';
+    if(mapCompassIcon){
+      mapCompassIcon.style.transform='rotate('+(-mapRotation)+'deg)';
+    }
+    if(mapCompassBtn){
+      mapCompassBtn.classList.toggle('rotated',Math.abs(mapRotation)>0.5);
+      mapCompassBtn.setAttribute('aria-label',Math.abs(mapRotation)>0.5?'정북 방향으로 복귀':'현재 정북 방향');
+      mapCompassBtn.setAttribute('title',Math.abs(mapRotation)>0.5?'정북 방향으로 복귀':'현재 정북 방향');
+    }
+    rotationFrame=null;
+  });
+}
+
+function resetMapToNorth(){
+  if(!mobileRotationEnabled) return;
+  mapElement.classList.add('north-resetting');
+  applyMapRotation(0);
+  window.setTimeout(()=>mapElement.classList.remove('north-resetting'),280);
+}
+
+if(mobileRotationEnabled){
+  mapElement.addEventListener('touchstart',event=>{
+    if(event.touches.length===2){
+      rotationGestureStartAngle=twoTouchAngle(event.touches);
+      rotationGestureStartRotation=mapRotation;
+    }
+  },{passive:true});
+
+  mapElement.addEventListener('touchmove',event=>{
+    if(event.touches.length!==2 || rotationGestureStartAngle===null) return;
+    const angle=twoTouchAngle(event.touches);
+    if(angle===null) return;
+    let delta=angle-rotationGestureStartAngle;
+    if(delta>180) delta-=360;
+    if(delta<-180) delta+=360;
+    applyMapRotation(rotationGestureStartRotation+delta);
+  },{passive:true});
+
+  const finishRotationGesture=event=>{
+    if(event.touches.length<2) rotationGestureStartAngle=null;
+  };
+  mapElement.addEventListener('touchend',finishRotationGesture,{passive:true});
+  mapElement.addEventListener('touchcancel',()=>{rotationGestureStartAngle=null;},{passive:true});
+  mapCompassBtn?.addEventListener('click',resetMapToNorth);
+  applyMapRotation(0);
+}
+
 
 let routePolylines=[],routeLabels=[],routeBounds=new kakao.maps.LatLngBounds(),currentMarker=null;
 let locationWatchId=null;
@@ -6867,7 +7010,7 @@ loadRoute().then(()=>{
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js?v=10',{updateViaCache:'none'}).catch(console.error);
+    navigator.serviceWorker.register('./sw.js?v=11',{updateViaCache:'none'}).catch(console.error);
   });
 }
 </script>
