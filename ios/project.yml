@@ -1,0 +1,24 @@
+name: FlightRoute
+options:
+  bundleIdPrefix: com.puren21
+settings:
+  base:
+    IPHONEOS_DEPLOYMENT_TARGET: "13.0"
+packages:
+  KakaoMapsSDK:
+    url: https://github.com/kakao-mapsSDK/KakaoMapsSDK-SPM.git
+    from: 2.0.0
+targets:
+  FlightRoute:
+    type: application
+    platform: iOS
+    sources:
+      - FlightRouteApp
+    info:
+      path: FlightRouteApp/Info.plist
+    dependencies:
+      - package: KakaoMapsSDK
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.puren21.flightroute
+        SWIFT_VERSION: "5.9"
