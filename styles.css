@@ -1766,11 +1766,11 @@ button.active { background:#222; color:#fff; }
 .current-location-heading{
   position:absolute;
   left:50%;
-  top:-13px;
+  top:50%;
   width:34px;
   height:28px;
   opacity:0;
-  transform-origin:50% 42px;
+  transform-origin:50% 0%;
   transition:opacity .12s ease, transform .06s linear;
   pointer-events:none;
 }
@@ -1780,7 +1780,10 @@ button.active { background:#222; color:#fff; }
 .current-location-heading::before{
   content:"";
   position:absolute;
-  inset:0;
+  left:0;
+  top:0;
+  width:34px;
+  height:28px;
   background:rgba(10,132,255,.20);
   clip-path:polygon(50% 0%, 100% 100%, 0% 100%);
   -webkit-clip-path:polygon(50% 0%, 100% 100%, 0% 100%);
