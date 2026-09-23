@@ -152,40 +152,12 @@
   document.getElementById('nearbyRouteBtn')?.addEventListener('click',renderNearbyRoutes);
 
   function keepFollowLocationVisible(loc){
-    // First place the GPS position at the map center.
-    map.setCenter(loc);
-
-    // Then compensate for UI that covers the actual visible map area.
-    requestAnimationFrame(()=>{
-      try{
-        const rect=mapElement.getBoundingClientRect();
-        if(!rect.width || !rect.height) return;
-
-        let safeTop=64;
-        const safeBottom=Math.max(safeTop+80,rect.height-64);
-
-        if(controlPanel && !controlPanel.classList.contains('collapsed')){
-          const panelRect=controlPanel.getBoundingClientRect();
-          const overlapBottom=Math.min(rect.bottom,panelRect.bottom)-rect.top;
-          if(overlapBottom>0){
-            safeTop=Math.min(rect.height-100,Math.max(safeTop,overlapBottom+18));
-          }
-        }
-
-        const desiredY=Math.max(
-          safeTop+40,
-          Math.min(safeBottom-40,(safeTop+safeBottom)/2)
-        );
-        const centerY=rect.height/2;
-        const dy=centerY-desiredY;
-
-        if(Math.abs(dy)>4){
-          map.panBy(0,dy);
-        }
-      }catch(e){
-        console.warn('위치 따라가기 화면 보정 실패',e);
-      }
-    });
+    // Follow mode keeps the latest GPS fix at the exact map center.
+    try{
+      map.setCenter(loc);
+    }catch(e){
+      console.warn('위치 따라가기 중심 이동 실패',e);
+    }
   }
 
   // Existing GPS handling is preserved, but follow mode snaps the marker to the
