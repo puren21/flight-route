@@ -112,7 +112,6 @@
         '<span class="nearby-route-distance">'+formatDistance(item.distance)+'</span>';
       btn.addEventListener('click',()=>{
         focusRouteKey(item.key);
-        try{ closePanel?.(); }catch(e){}
       });
       box.appendChild(btn);
     });
@@ -240,6 +239,14 @@
     ];
   }
 
+  function refreshDiagnostics(){
+    const panel=document.getElementById('diagnosticPanel');
+    if(!panel || panel.hidden) return;
+    panel.innerHTML=diagnosticRows()
+      .map(([k,v])=>'<div class="diagnostic-line"><span>'+k+'</span><strong>'+v+'</strong></div>')
+      .join('');
+  }
+
   function renderDiagnostics(){
     const panel=document.getElementById('diagnosticPanel');
     const btn=document.getElementById('diagnosticBtn');
@@ -248,16 +255,12 @@
     panel.hidden=!opening;
     btn.setAttribute('aria-expanded',opening?'true':'false');
     btn.querySelector('.utility-chevron')?.replaceChildren(document.createTextNode(opening?'‹':'›'));
-    if(!opening) return;
-
-    panel.innerHTML=diagnosticRows()
-      .map(([k,v])=>'<div class="diagnostic-line"><span>'+k+'</span><strong>'+v+'</strong></div>')
-      .join('');
+    if(opening) refreshDiagnostics();
   }
 
   document.getElementById('diagnosticBtn')?.addEventListener('click',renderDiagnostics);
-  window.addEventListener('online',()=>{ if(!document.getElementById('diagnosticPanel')?.hidden) renderDiagnostics(); });
-  window.addEventListener('offline',()=>{ if(!document.getElementById('diagnosticPanel')?.hidden) renderDiagnostics(); });
+  window.addEventListener('online',refreshDiagnostics);
+  window.addEventListener('offline',refreshDiagnostics);
 
   syncFollowButton();
 })();
