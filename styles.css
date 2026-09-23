@@ -1767,8 +1767,8 @@ button.active { background:#222; color:#fff; }
   position:absolute;
   left:50%;
   top:50%;
-  width:34px;
-  height:28px;
+  width:41px;
+  height:34px;
   opacity:0;
   transform-origin:50% 0%;
   transition:opacity .12s ease, transform .06s linear;
@@ -1782,8 +1782,8 @@ button.active { background:#222; color:#fff; }
   position:absolute;
   left:0;
   top:0;
-  width:34px;
-  height:28px;
+  width:41px;
+  height:34px;
   background:rgba(239,68,68,.22);
   clip-path:polygon(50% 0%, 100% 100%, 0% 100%);
   -webkit-clip-path:polygon(50% 0%, 100% 100%, 0% 100%);
