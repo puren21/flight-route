@@ -3839,6 +3839,68 @@
 }
 </style>
 <style>
+
+/* Main-screen map / satellite toggle */
+.map-type-toggle{
+  position:fixed;
+  left:10px;
+  bottom:calc(env(safe-area-inset-bottom,0px) + 38px);
+  z-index:2147483501;
+  width:48px;
+  min-width:48px;
+  height:66px;
+  padding:7px 4px 6px;
+  border:0;
+  border-radius:12px;
+  background:rgba(255,255,255,.92);
+  color:#1c1c1e;
+  box-shadow:0 2px 10px rgba(0,0,0,.22);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  font-size:13px;
+  font-weight:700;
+  line-height:1;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+.map-type-toggle svg{
+  width:25px;
+  height:25px;
+  display:block;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.8;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  pointer-events:none;
+}
+.map-type-toggle .map-type-toggle-label{
+  pointer-events:none;
+}
+.map-type-toggle:active{
+  transform:scale(.97);
+}
+@media (max-width:700px){
+  .map-type-toggle{
+    left:8px;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 48px);
+    width:52px;
+    min-width:52px;
+    height:72px;
+    border-radius:13px;
+    font-size:14px;
+  }
+  .map-type-toggle svg{
+    width:27px;
+    height:27px;
+  }
+}
+
 /* Satellite / hybrid map label contrast */
 body.satellite-map .route-label{
   color:#ffffff !important;
@@ -3877,6 +3939,14 @@ body.satellite-map .route-label{
     </div>
   </div>
 </div>
+<button id="mapTypeToggle" class="map-type-toggle" type="button" aria-label="영상으로 전환" title="영상으로 전환">
+  <svg id="mapTypeToggleIcon" viewBox="0 0 32 32" aria-hidden="true">
+    <rect x="4" y="6" width="24" height="20" rx="3"></rect>
+    <path d="M7 22l6-7 4 4 3-3 5 6"></path>
+    <circle cx="21.5" cy="11.5" r="2.2"></circle>
+  </svg>
+  <span id="mapTypeToggleLabel" class="map-type-toggle-label">영상</span>
+</button>
 <div id="scaleBar" class="scale-bar">축척 계산 중...</div>
 <div id="verticalScaleBar" class="vertical-scale-bar">축척 계산 중...</div>
 <button id="floatingLocBtn" class="floating-location" type="button" title="현재 위치" aria-label="현재 위치">◎</button>
@@ -4060,8 +4130,6 @@ body.satellite-map .route-label{
 
     <section id="otherPage" class="menu-page">
       <div class="quick-grid">
-        <button id="roadBtn" class="quick-btn active" type="button">일반지도</button>
-        <button id="skyBtn" class="quick-btn" type="button">위성지도</button>
         <button id="menuLocBtn" class="quick-btn" type="button">현재 위치</button>
       </div>
 
@@ -6349,18 +6417,47 @@ saveLabelStyleBtn?.addEventListener('click',()=>{
 });
 
 kakao.maps.event.addListener(map,'zoom_changed',updateRouteLabelVisibility);
-document.getElementById('roadBtn').addEventListener('click',()=>{
-  map.setMapTypeId(kakao.maps.MapTypeId.ROADMAP);
-  document.body.classList.remove('satellite-map');
-  roadBtn.classList.add('active');
-  skyBtn.classList.remove('active');
+const mapTypeToggle=document.getElementById('mapTypeToggle');
+const mapTypeToggleLabel=document.getElementById('mapTypeToggleLabel');
+const mapTypeToggleIcon=document.getElementById('mapTypeToggleIcon');
+let satelliteMapEnabled=false;
+
+function syncMapTypeToggle(){
+  if(!mapTypeToggle || !mapTypeToggleLabel || !mapTypeToggleIcon) return;
+
+  if(satelliteMapEnabled){
+    mapTypeToggleLabel.textContent='지도';
+    mapTypeToggle.setAttribute('aria-label','지도로 전환');
+    mapTypeToggle.setAttribute('title','지도로 전환');
+    mapTypeToggleIcon.innerHTML=
+      '<path d="M5 8l7-3 8 3 7-3v19l-7 3-8-3-7 3V8Z"></path>'+
+      '<path d="M12 5v19M20 8v19"></path>';
+  }else{
+    mapTypeToggleLabel.textContent='영상';
+    mapTypeToggle.setAttribute('aria-label','영상으로 전환');
+    mapTypeToggle.setAttribute('title','영상으로 전환');
+    mapTypeToggleIcon.innerHTML=
+      '<rect x="4" y="6" width="24" height="20" rx="3"></rect>'+
+      '<path d="M7 22l6-7 4 4 3-3 5 6"></path>'+
+      '<circle cx="21.5" cy="11.5" r="2.2"></circle>';
+  }
+}
+
+function setSatelliteMap(enabled){
+  satelliteMapEnabled=!!enabled;
+  map.setMapTypeId(
+    satelliteMapEnabled
+      ? kakao.maps.MapTypeId.HYBRID
+      : kakao.maps.MapTypeId.ROADMAP
+  );
+  document.body.classList.toggle('satellite-map',satelliteMapEnabled);
+  syncMapTypeToggle();
+}
+
+mapTypeToggle?.addEventListener('click',()=>{
+  setSatelliteMap(!satelliteMapEnabled);
 });
-document.getElementById('skyBtn').addEventListener('click',()=>{
-  map.setMapTypeId(kakao.maps.MapTypeId.HYBRID);
-  document.body.classList.add('satellite-map');
-  skyBtn.classList.add('active');
-  roadBtn.classList.remove('active');
-});
+syncMapTypeToggle();
 function mercatorToWgs84Point(pt){
   if(!Array.isArray(pt) || pt.length<2) return null;
   const x=Number(pt[0]), y=Number(pt[1]);
