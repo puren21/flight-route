@@ -22,6 +22,7 @@ const routeIndex=new Map();
 let selectedRoute=null;
 let routeSelectOverlay=null;
 let routePopupOpenedAt=0;
+let routePopupSuppressUntil=0;
 const statusEl=document.getElementById('status');
 const routeToggle={checked:true};
 const routeStyle={weight:3,color:'#E53935',opacity:.9};
@@ -1510,6 +1511,10 @@ kakao.maps.event.addListener(map,'click',function(){
 });
 
 kakao.maps.event.addListener(map,'rightclick',function(mouseEvent){
+  // iPhone 길게 누르기는 지도 rightclick과 노선 click이 함께 발생할 수 있음.
+  // 주소/길찾기 팝업을 우선하고, 같은 제스처에서 노선 팝업은 열리지 않도록 차단함.
+  routePopupSuppressUntil=Date.now()+900;
+  closeRouteSelectPopup();
   showAddressPopup(mouseEvent.latLng);
 });
 
@@ -1755,6 +1760,7 @@ function drawLineString(coordinates,labelNumber){
   });
 
   const openRouteMenu=function(mouseEvent){
+    if(Date.now()<routePopupSuppressUntil) return;
     const pos=(mouseEvent && mouseEvent.latLng)
       ? mouseEvent.latLng
       : displayPath[Math.floor(displayPath.length/2)];
