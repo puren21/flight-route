@@ -5,6 +5,7 @@
 
   const IMPROVEMENT_VERSION='2026.09.23-1';
   let followLocationEnabled=false;
+  let pendingNearbySearch=false;
 
   function metersBetween(lat1,lng1,lat2,lng2){
     const R=6371000;
@@ -84,12 +85,20 @@
     if(!box) return;
 
     if(!currentLocationLatLng){
+      pendingNearbySearch=true;
       box.hidden=false;
-      box.innerHTML='<div class="diagnostic-panel">현재 위치를 먼저 확인하고 있습니다.</div>';
+      box.innerHTML='<div class="diagnostic-panel">현재 위치를 확인하는 중입니다.</div>';
       locateMe();
       return;
     }
 
+    if(!routeIndex.size){
+      box.hidden=false;
+      box.innerHTML='<div class="diagnostic-panel">비행경로 데이터를 불러오는 중입니다.</div>';
+      return;
+    }
+
+    pendingNearbySearch=false;
     const ranked=[...routeIndex.entries()]
       .map(([key,entry])=>({key,distance:routeDistanceMeters(entry,currentLocationLatLng)}))
       .filter(item=>Number.isFinite(item.distance))
@@ -146,9 +155,20 @@
   const originalHandleLocationUpdate=handleLocationUpdate;
   handleLocationUpdate=function(position){
     originalHandleLocationUpdate(position);
-    if(followLocationEnabled && currentLocationLatLng){
-      map.setCenter(currentLocationLatLng);
+
+    if(followLocationEnabled){
+      const lat=Number(position?.coords?.latitude);
+      const lng=Number(position?.coords?.longitude);
+      if(Number.isFinite(lat) && Number.isFinite(lng)){
+        map.setCenter(new kakao.maps.LatLng(lat,lng));
+      }
     }
+
+    if(pendingNearbySearch){
+      window.setTimeout(renderNearbyRoutes,80);
+    }
+
+    refreshDiagnostics();
   };
 
   function collectBackup(){
