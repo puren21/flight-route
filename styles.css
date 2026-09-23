@@ -1766,12 +1766,12 @@ button.active { background:#222; color:#fff; }
 .current-location-heading{
   position:absolute;
   left:50%;
-  top:-16px;
-  width:30px;
-  height:30px;
+  top:-13px;
+  width:34px;
+  height:28px;
   opacity:0;
-  transform-origin:50% 39px;
-  transition:opacity .18s ease, transform .16s linear;
+  transform-origin:50% 42px;
+  transition:opacity .12s ease, transform .06s linear;
   pointer-events:none;
 }
 .current-location-heading.visible{
@@ -1780,15 +1780,11 @@ button.active { background:#222; color:#fff; }
 .current-location-heading::before{
   content:"";
   position:absolute;
-  left:50%;
-  top:0;
-  width:0;
-  height:0;
-  transform:translateX(-50%);
-  border-left:13px solid transparent;
-  border-right:13px solid transparent;
-  border-top:30px solid rgba(10,132,255,.16);
-  filter:drop-shadow(0 1px 2px rgba(10,132,255,.10));
+  inset:0;
+  background:rgba(10,132,255,.20);
+  clip-path:polygon(50% 0%, 100% 100%, 0% 100%);
+  -webkit-clip-path:polygon(50% 0%, 100% 100%, 0% 100%);
+  filter:drop-shadow(0 1px 2px rgba(10,132,255,.12));
 }
 .current-location-dot{
   position:absolute;
