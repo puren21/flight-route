@@ -3929,17 +3929,34 @@ body.satellite-map .route-label{
   display:none;
 }
 @media (max-width:700px){
-  #map.mobile-rotation-map{
-    inset:auto !important;
-    left:-21vw !important;
-    top:-21dvh !important;
-    width:142vw !important;
-    min-width:142vw !important;
-    max-width:none !important;
-    height:142dvh !important;
+  .mobile-map-rotation-frame{
+    position:fixed;
+    inset:0;
+    overflow:hidden;
+    z-index:0;
+    pointer-events:none;
   }
-  #map.mobile-rotation-map.north-resetting{
+  .mobile-map-rotator{
+    position:absolute;
+    left:-21vw;
+    top:-21dvh;
+    width:142vw;
+    height:142dvh;
+    transform-origin:50% 50%;
+    pointer-events:auto;
+    will-change:transform;
+  }
+  .mobile-map-rotator.north-resetting{
     transition:transform .25s ease-out;
+  }
+  .mobile-map-rotator #map{
+    position:absolute !important;
+    inset:0 !important;
+    width:100% !important;
+    min-width:100% !important;
+    max-width:none !important;
+    height:100% !important;
+    transform:none !important;
   }
   .map-compass{
     display:flex;
@@ -4223,14 +4240,27 @@ body.satellite-map .route-label{
 <script>
 const mapElement=document.getElementById('map');
 const mobileRotationEnabled=window.matchMedia('(max-width:700px)').matches && ('ontouchstart' in window || navigator.maxTouchPoints>0);
-if(mobileRotationEnabled) mapElement.classList.add('mobile-rotation-map');
-if(!mobileRotationEnabled){
-  mapElement.classList.remove('mobile-rotation-map');
+let mapRotationFrame=null;
+let mapRotator=null;
+
+if(mobileRotationEnabled){
+  mapRotationFrame=document.createElement('div');
+  mapRotationFrame.className='mobile-map-rotation-frame';
+  mapRotator=document.createElement('div');
+  mapRotator.className='mobile-map-rotator';
+
+  mapElement.parentNode.insertBefore(mapRotationFrame,mapElement);
+  mapRotationFrame.appendChild(mapRotator);
+  mapRotator.appendChild(mapElement);
 }
+
 mapElement.style.transform='none';
-mapElement.style.transformOrigin='50% 50%';
+mapElement.style.transformOrigin='';
 const map=new kakao.maps.Map(mapElement,{center:new kakao.maps.LatLng(35.16,126.84),level:8});
 map.setCopyrightPosition(kakao.maps.CopyrightPosition.BOTTOMRIGHT, false);
+if(mobileRotationEnabled){
+  setTimeout(()=>map.relayout(),0);
+}
 
 const mapCompassBtn=document.getElementById('mapCompassBtn');
 const mapCompassIcon=document.getElementById('mapCompassIcon');
@@ -4256,7 +4286,7 @@ function applyMapRotation(value){
   mapRotation=normalizeRotation(value);
   if(rotationFrame) cancelAnimationFrame(rotationFrame);
   rotationFrame=requestAnimationFrame(()=>{
-    mapElement.style.transform='rotate('+mapRotation+'deg)';
+    if(mapRotator) mapRotator.style.transform='rotate('+mapRotation+'deg)';
     if(mapCompassIcon){
       mapCompassIcon.style.transform='rotate('+(-mapRotation)+'deg)';
     }
@@ -4271,9 +4301,9 @@ function applyMapRotation(value){
 
 function resetMapToNorth(){
   if(!mobileRotationEnabled) return;
-  mapElement.classList.add('north-resetting');
+  if(mapRotator) mapRotator.classList.add('north-resetting');
   applyMapRotation(0);
-  window.setTimeout(()=>mapElement.classList.remove('north-resetting'),280);
+  window.setTimeout(()=>mapRotator?.classList.remove('north-resetting'),280);
 }
 
 if(mobileRotationEnabled){
@@ -4281,7 +4311,7 @@ if(mobileRotationEnabled){
 
   const touchStartedOnMap=event=>{
     const target=event.target;
-    if(!target || !mapElement.contains(target)) return false;
+    if(!target || !mapRotationFrame?.contains(target)) return false;
     if(target.closest?.('button,.panel,.memo-modal-backdrop,.route-select-popup,.address-popup')) return false;
     return true;
   };
@@ -7034,7 +7064,7 @@ loadRoute().then(()=>{
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js?v=12',{updateViaCache:'none'}).catch(console.error);
+    navigator.serviceWorker.register('./sw.js?v=13',{updateViaCache:'none'}).catch(console.error);
   });
 }
 </script>
