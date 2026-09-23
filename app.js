@@ -2597,14 +2597,14 @@ function handleLocationUpdate(position){
     );
 
     // GPS 흔들림은 방향으로 취급하지 않음.
-    if(moved>=2.5){
+    if(moved>=1.0){
       const movementBearing=bearingBetween(
         lastMovementPosition.lat,
         lastMovementPosition.lng,
         lat,
         lng
       );
-      currentHeading=smoothHeading(currentHeading,movementBearing);
+      currentHeading=movementBearing;
       lastMovementPosition={lat,lng};
     }
   }else{
