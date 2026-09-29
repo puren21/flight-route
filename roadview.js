@@ -218,9 +218,24 @@
     } catch (error) { finish('로드뷰를 찾지 못했습니다. 다시 시도해 주세요.'); }
   }
 
+  function refreshMapAfterCoverageOff() {
+    // Kakao RoadviewOverlay can leave its coverage tiles visually cached until
+    // the next map interaction. Preserve the current center and force a redraw
+    // as soon as the coverage layer is detached.
+    const center = map.getCenter();
+    map.relayout();
+    map.setCenter(center);
+    requestAnimationFrame(() => {
+      const nextCenter = map.getCenter();
+      map.relayout();
+      map.setCenter(nextCenter);
+    });
+  }
+
   coverageButton.addEventListener('click', () => {
     coverageEnabled = !coverageEnabled;
     coverage.setMap(coverageEnabled ? map : null);
+    if (!coverageEnabled) refreshMapAfterCoverageOff();
     coverageButton.setAttribute('aria-pressed', String(coverageEnabled));
     const label = coverageEnabled ? '로드뷰 가능 도로 숨기기' : '로드뷰 가능 도로 표시';
     coverageButton.setAttribute('aria-label', label);
