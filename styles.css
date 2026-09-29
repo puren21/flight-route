@@ -3876,3 +3876,19 @@ body.satellite-map .map-type-toggle{
   background:#fff1f1 !important;
   color:#ef4444 !important;
 }
+
+/* Keep Roadview above the map switch and below the existing menu controls. */
+.roadview-toggle{bottom:calc(env(safe-area-inset-bottom,0px) + 112px)}
+.roadview-toggle[aria-pressed="true"]{background:#fee500 !important;color:#191919}
+.roadview-panel{position:fixed;left:76px;bottom:calc(env(safe-area-inset-bottom,0px) + 38px);width:min(640px,calc(100vw - 92px));height:min(440px,calc(100dvh - 110px));z-index:2147483498;background:#fff;border-radius:14px;box-shadow:0 4px 24px #0005;overflow:hidden;display:flex;flex-direction:column}
+.roadview-panel[hidden]{display:none}
+.roadview-header{display:flex;align-items:center;justify-content:space-between;padding:6px 12px;flex-shrink:0;color:#191919;background:#fff}
+.roadview-header button{width:auto;min-height:40px;padding:6px 12px;border:0;border-radius:8px;background:#f0f2f5;color:#191919;cursor:pointer}
+.roadview-canvas{width:100%;flex:1;min-height:0;visibility:hidden}
+.roadview-panel.is-ready .roadview-canvas{visibility:visible}
+.roadview-status{position:absolute;top:50%;left:16px;right:16px;margin:0;text-align:center;color:#333;pointer-events:none}
+.roadview-status:empty{display:none}
+@media(max-width:700px){
+  .roadview-toggle{bottom:calc(env(safe-area-inset-bottom,0px) + 128px)}
+  .roadview-panel{left:72px;bottom:calc(env(safe-area-inset-bottom,0px) + 48px);width:calc(100vw - 80px);height:min(420px,calc(100dvh - 120px))}
+}
