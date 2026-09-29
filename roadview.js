@@ -1,5 +1,4 @@
 (() => {
-  const toggle = document.getElementById('roadviewToggle');
   const panel = document.getElementById('roadviewPanel');
   const canvas = document.getElementById('roadviewCanvas');
   const status = document.getElementById('roadviewStatus');
@@ -60,20 +59,14 @@
     panel.hidden = true;
     panel.classList.remove('is-ready');
     panel.setAttribute('aria-busy', 'false');
-    toggle.setAttribute('aria-pressed', 'false');
-    toggle.setAttribute('aria-label', '로드뷰 열기');
-    toggle.title = '로드뷰 열기';
-    toggle.focus({ preventScroll: true });
   }
 
   function open(position = map.getCenter()) {
     if (!panel.hidden) close();
     const request = ++generation;
     panel.hidden = false;
+    fitPanel();
     panel.setAttribute('aria-busy', 'true');
-    toggle.setAttribute('aria-pressed', 'true');
-    toggle.setAttribute('aria-label', '로드뷰 닫기');
-    toggle.title = '로드뷰 닫기';
     status.textContent = '주변 로드뷰를 찾는 중…';
     function fail(message) {
       if (request !== generation) return;
@@ -119,8 +112,57 @@
   }
 
   window.openRoadviewAt = open;
+  window.moveOpenRoadviewAt = position => {
+    if (panel.hidden) return false;
+    open(position);
+    return true;
+  };
+  kakao.maps.event.addListener(map, 'click', event => {
+    window.moveOpenRoadviewAt(event.latLng);
+  });
 
-  toggle.addEventListener('click', () => panel.hidden ? open() : close());
+  const resizeHandle = document.getElementById('roadviewResize');
+  let drag;
+  function resize(width, height) {
+    const rect = panel.getBoundingClientRect();
+    const viewport = window.visualViewport;
+    const right = viewport ? viewport.offsetLeft + viewport.width : window.innerWidth;
+    const top = viewport ? viewport.offsetTop : 0;
+    const maxWidth = Math.max(120, right - rect.left - 8);
+    const maxHeight = Math.max(100, rect.bottom - top - 72);
+    panel.style.width = Math.min(maxWidth, Math.max(Math.min(240, maxWidth), width)) + 'px';
+    panel.style.height = Math.min(maxHeight, Math.max(Math.min(180, maxHeight), height)) + 'px';
+  }
+  resizeHandle.addEventListener('pointerdown', event => {
+    if (event.button !== 0) return;
+    event.preventDefault();
+    const rect = panel.getBoundingClientRect();
+    drag = { id: event.pointerId, x: event.clientX, y: event.clientY, width: rect.width, height: rect.height };
+    resizeHandle.setPointerCapture(event.pointerId);
+  });
+  resizeHandle.addEventListener('pointermove', event => {
+    if (!drag || drag.id !== event.pointerId) return;
+    resize(drag.width + event.clientX - drag.x, drag.height - event.clientY + drag.y);
+  });
+  function endResize() { drag = null; }
+  resizeHandle.addEventListener('pointerup', endResize);
+  resizeHandle.addEventListener('pointercancel', endResize);
+  resizeHandle.addEventListener('lostpointercapture', endResize);
+  resizeHandle.addEventListener('keydown', event => {
+    const delta = { ArrowRight: [24, 0], ArrowLeft: [-24, 0], ArrowUp: [0, 24], ArrowDown: [0, -24] }[event.key];
+    if (!delta) return;
+    event.preventDefault();
+    const rect = panel.getBoundingClientRect();
+    resize(rect.width + delta[0], rect.height + delta[1]);
+  });
+  function fitPanel() {
+    if (panel.hidden) return;
+    const rect = panel.getBoundingClientRect();
+    resize(rect.width, rect.height);
+  }
+  window.addEventListener('resize', fitPanel);
+  window.visualViewport?.addEventListener('resize', fitPanel);
+
   closeButton.addEventListener('click', close);
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape' && !panel.hidden) close();

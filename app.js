@@ -1777,6 +1777,7 @@ function drawLineString(coordinates,labelNumber){
     const pos=(mouseEvent && mouseEvent.latLng)
       ? mouseEvent.latLng
       : displayPath[Math.floor(displayPath.length/2)];
+    if(window.moveOpenRoadviewAt?.(pos)) return;
     showRouteSelectPopup(routeLine,pos);
   };
 
