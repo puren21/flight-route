@@ -68,20 +68,12 @@
         zIndex: 40
       });
     }
-    locationOverlay.setPosition(position);
+    // Keep the roadview icon fixed at the map center while roadview is active.
+    map.setCenter(position);
+    const center = map.getCenter();
+    locationOverlay.setPosition(center);
     locationOverlay.setMap(map);
     syncDirection();
-
-    map.setCenter(position);
-    // Keep the centered marker visible without offsetting the map center.
-    const bounds = mapElement.getBoundingClientRect();
-    const rect = panel.getBoundingClientRect();
-    const cx = bounds.left + bounds.width / 2, cy = bounds.top + bounds.height / 2;
-    if (rect.left < cx + 65 && rect.right > cx - 65 && rect.top < cy + 65 && rect.bottom > cy - 65) {
-      const bottom = Math.min(rect.bottom, bounds.bottom - 8);
-      const height = Math.min(rect.height, bottom - cy - 65);
-      if (height >= 120) setRect(rect.left, bottom - height, rect.right, bottom);
-    }
   }
 
   function close() {
