@@ -3,8 +3,9 @@
   const canvas = document.getElementById('roadviewCanvas');
   const status = document.getElementById('roadviewStatus');
   const closeButton = document.getElementById('roadviewClose');
-  const forwardButton = document.getElementById('roadviewForward');
-  let forwardTimer;
+  let moveTimer;
+  let moveSequence = 0;
+  let previousPosition;
   const coverageButton = document.getElementById('roadviewCoverageToggle');
   const coverageHint = document.getElementById('roadviewCoverageHint');
   const coverage = new kakao.maps.RoadviewOverlay();
@@ -30,7 +31,7 @@
     if (!Number.isFinite(pan)) return;
     const heading = ((pan % 360) + 360) % 360;
     locationElement.style.setProperty('--roadview-heading', heading + 'deg');
-    locationElement.setAttribute('aria-label', '로드뷰 위치, 북쪽 기준 시계 방향 ' + Math.round(heading) + '도');
+    locationElement.setAttribute('aria-label', '로드뷰 위치, 북쪽 기준 시계 방향 ' + Math.round(heading) + '도, 선택하면 약 50m 이동');
   }
 
   function syncLocation() {
@@ -39,7 +40,19 @@
     if (!locationOverlay) {
       locationElement = document.createElement('div');
       locationElement.className = 'roadview-location';
-      locationElement.setAttribute('role', 'img');
+      locationElement.setAttribute('role', 'button');
+      locationElement.tabIndex = 0;
+      locationElement.title = '이 방향으로 약 50m 이동';
+      locationElement.addEventListener('click', event => {
+        event.stopPropagation();
+        kakao.maps.event.preventMap();
+        move50(viewer.getPosition(), viewer.getViewpoint().pan);
+      });
+      locationElement.addEventListener('keydown', event => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        move50(viewer.getPosition(), viewer.getViewpoint().pan);
+      });
       locationElement.innerHTML = '<svg class="roadview-direction" viewBox="0 0 120 120" aria-hidden="true">' +
         '<circle cx="60" cy="60" r="54" fill="#fee500" fill-opacity=".13" stroke="#d3c700" stroke-opacity=".45"/>' +
         '<g class="roadview-heading"><path d="M60 60L21.8 21.8A54 54 0 0 1 98.2 21.8Z" fill="#ffe600" fill-opacity=".65" stroke="#e6ce00" stroke-width="1.5"/>' +
@@ -59,26 +72,23 @@
     locationOverlay.setMap(map);
     syncDirection();
 
-    // Keep the location visible above the Roadview panel when it covers the pin.
+    map.setCenter(position);
+    // Keep the centered marker visible without offsetting the map center.
     const bounds = mapElement.getBoundingClientRect();
-    const panelBounds = panel.getBoundingClientRect();
-    const point = map.getProjection().containerPointFromCoords(position);
-    const x = bounds.left + point.x;
-    const y = bounds.top + point.y;
-    const covered = x >= panelBounds.left - 50 && x <= panelBounds.right + 50 &&
-      y >= panelBounds.top - 16 && y <= panelBounds.bottom + 60;
-    const outside = point.x < 50 || point.x > bounds.width - 50 ||
-      point.y < 65 || point.y > bounds.height - 30;
-    if (covered || outside) {
-      const targetY = Math.max(70, Math.min(bounds.height / 2, (panelBounds.top - bounds.top) / 2));
-      map.panBy(point.x - bounds.width / 2, point.y - targetY);
+    const rect = panel.getBoundingClientRect();
+    const cx = bounds.left + bounds.width / 2, cy = bounds.top + bounds.height / 2;
+    if (rect.left < cx + 65 && rect.right > cx - 65 && rect.top < cy + 65 && rect.bottom > cy - 65) {
+      const bottom = Math.min(rect.bottom, bounds.bottom - 8);
+      const height = Math.min(rect.height, bottom - cy - 65);
+      if (height >= 120) setRect(rect.left, bottom - height, rect.right, bottom);
     }
   }
 
   function close() {
     generation++;
-    clearTimeout(forwardTimer);
-    forwardButton.disabled = true;
+    clearTimeout(moveTimer);
+    moveSequence++;
+    previousPosition = null;
     clearTimeout(timer);
     if (viewer && onInit) kakao.maps.event.removeListener(viewer, 'init', onInit);
     if (viewer && onPositionChanged) kakao.maps.event.removeListener(viewer, 'position_changed', onPositionChanged);
@@ -127,12 +137,19 @@
             panel.setAttribute('aria-busy', 'false');
             panel.classList.add('is-ready');
             if (viewpoint) viewer.setViewpoint(viewpoint);
-            forwardButton.disabled = false;
+            previousPosition = viewer.getPosition();
             viewer.relayout();
             syncLocation();
           };
           onPositionChanged = () => {
-            if (request === generation && panel.classList.contains('is-ready')) syncLocation();
+            if (request !== generation || !panel.classList.contains('is-ready')) return;
+            const from = previousPosition, to = viewer.getPosition();
+            previousPosition = to;
+            syncLocation();
+            if (!from || !to) return;
+            const step = movement(from, to);
+            // Native arrows choose the road direction; extend short steps only.
+            if (step.distance > 1 && step.distance < 45) move50(from, step.bearing);
           };
           onViewpointChanged = () => {
             if (request === generation && panel.classList.contains('is-ready')) syncDirection();
@@ -152,43 +169,54 @@
     }
   }
 
-  forwardButton.addEventListener('click', () => {
-    if (!viewer || forwardButton.disabled || !panel.classList.contains('is-ready')) return;
-    const activeViewer = viewer, request = generation;
-    const panoId = viewer.getPanoId(), position = viewer.getPosition();
-    const viewpoint = viewer.getViewpoint();
-    const radians = Math.PI / 180, bearing = viewpoint.pan * radians;
-    const lat = position.getLat() * radians, lng = position.getLng() * radians;
+  function movement(from, to) {
+    const r = Math.PI / 180;
+    const lat1 = from.getLat() * r, lat2 = to.getLat() * r;
+    const dLat = lat2 - lat1, dLng = (to.getLng() - from.getLng()) * r;
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+    return {
+      distance: 6371000 * 2 * Math.asin(Math.sqrt(Math.min(1, a))),
+      bearing: Math.atan2(Math.sin(dLng) * Math.cos(lat2),
+        Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng)) / r
+    };
+  }
+
+  function move50(origin, heading) {
+    if (!viewer || !panel.classList.contains('is-ready')) return;
+    const activeViewer = viewer, request = generation, sequence = ++moveSequence;
+    clearTimeout(moveTimer);
+    const panoId = viewer.getPanoId(), viewpoint = viewer.getViewpoint();
+    const radians = Math.PI / 180, bearing = heading * radians;
+    const lat = origin.getLat() * radians, lng = origin.getLng() * radians;
     const distance = 50 / 6371000;
     const nextLat = Math.asin(Math.sin(lat) * Math.cos(distance) + Math.cos(lat) * Math.sin(distance) * Math.cos(bearing));
     const nextLng = lng + Math.atan2(Math.sin(bearing) * Math.sin(distance) * Math.cos(lat), Math.cos(distance) - Math.sin(lat) * Math.sin(nextLat));
     const target = new kakao.maps.LatLng(nextLat / radians, nextLng / radians);
-    forwardButton.disabled = true;
-    status.textContent = '약 50m 앞의 로드뷰를 찾는 중…';
+    status.textContent = '선택한 방향으로 이동 중…';
     let finished = false;
     function finish(message) {
-      if (finished || request !== generation) return false;
+      if (finished || request !== generation || sequence !== moveSequence) return false;
       finished = true;
-      clearTimeout(forwardTimer);
-      forwardButton.disabled = false;
+      clearTimeout(moveTimer);
       status.textContent = message;
       clearTimeout(timer);
-      timer = setTimeout(() => { if (request === generation) status.textContent = ''; }, 3500);
+      timer = setTimeout(() => { if (request === generation && sequence === moveSequence) status.textContent = ''; }, 3500);
       return true;
     }
-    forwardTimer = setTimeout(() => finish('연결이 지연됩니다. 다시 시도해 주세요.'), 10000);
+    moveTimer = setTimeout(() => finish('연결이 지연됩니다. 다시 시도해 주세요.'), 10000);
     try {
-      new kakao.maps.RoadviewClient().getNearestPanoId(target, 30, nextId => {
-        if (finished || request !== generation) return;
+      new kakao.maps.RoadviewClient().getNearestPanoId(target, 20, nextId => {
+        if (finished || request !== generation || sequence !== moveSequence) return;
         if (viewer !== activeViewer || viewer.getPanoId() !== panoId) { finish(''); return; }
         if (!nextId || nextId === panoId) {
-          finish('앞쪽에 이동할 로드뷰가 없습니다. 방향을 바꾸거나 지도를 눌러 주세요.');
+          finish('약 50m 앞에 이동할 로드뷰가 없습니다. 현재 위치를 유지합니다.');
           return;
         }
+        // Reopening establishes a new starting point, preventing chained jumps.
         if (finish('')) open(target, viewpoint, nextId);
       });
     } catch (error) { finish('로드뷰를 찾지 못했습니다. 다시 시도해 주세요.'); }
-  });
+  }
 
   coverageButton.addEventListener('click', () => {
     coverageEnabled = !coverageEnabled;

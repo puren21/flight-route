@@ -3905,8 +3905,6 @@ body.satellite-map .map-type-toggle{
 .roadview-corner-se::after{border-bottom-width:3px;border-right-width:3px}
 .roadview-corner:focus-visible{outline:2px solid #1675e8;outline-offset:-3px}
 
-#roadviewForward{font-size:12px;padding:6px;white-space:nowrap;background:#fee500}
-#roadviewForward:disabled{opacity:.45;cursor:default}
 .roadview-status:not(:empty){padding:10px;border-radius:8px;background:rgba(255,255,255,.94)}
 
 .roadview-coverage-toggle{bottom:calc(env(safe-area-inset-bottom,0px) + 112px)}
@@ -3916,7 +3914,9 @@ body.satellite-map .map-type-toggle{
 body:has(.roadview-panel:not([hidden])) .roadview-coverage-hint{display:none}
 @media(max-width:700px){.roadview-coverage-toggle{bottom:calc(env(safe-area-inset-bottom,0px) + 128px)}.roadview-coverage-hint{bottom:calc(env(safe-area-inset-bottom,0px) + 128px)}}
 
-.roadview-location{position:relative;width:120px;height:120px;pointer-events:none;user-select:none}
+.roadview-location{position:relative;width:120px;height:120px;pointer-events:auto;user-select:none;cursor:pointer;touch-action:manipulation}
 .roadview-direction{display:block;width:120px;height:120px;overflow:visible;filter:drop-shadow(0 1px 2px #0005)}
 .roadview-heading{transform:rotate(var(--roadview-heading,0deg));transform-origin:60px 60px}
 .roadview-location-label{position:absolute;top:94px;left:50%;transform:translateX(-50%);padding:3px 7px;border:1px solid #fff;border-radius:10px;background:#fee500;color:#191919;font-size:11px;font-weight:800;line-height:1.2;white-space:nowrap;box-shadow:0 1px 4px #0004}
+
+.roadview-location:focus-visible{outline:2px solid #1675e8;border-radius:50%}
