@@ -8,11 +8,52 @@
   let timer;
   let viewer;
   let onInit;
+  let onPositionChanged;
+  let locationOverlay;
+
+  function removeLocation() {
+    if (locationOverlay) locationOverlay.setMap(null);
+    locationOverlay = null;
+  }
+
+  function syncLocation() {
+    const position = viewer.getPosition();
+    if (!position) return;
+    if (!locationOverlay) {
+      locationOverlay = new kakao.maps.CustomOverlay({
+        position,
+        content: '<div class="roadview-location" role="img" aria-label="현재 로드뷰 위치"><span>로드뷰 위치</span><i></i></div>',
+        xAnchor: 0.5,
+        yAnchor: 1,
+        zIndex: 40
+      });
+    }
+    locationOverlay.setPosition(position);
+    locationOverlay.setMap(map);
+
+    // Keep the location visible above the Roadview panel when it covers the pin.
+    const bounds = mapElement.getBoundingClientRect();
+    const panelBounds = panel.getBoundingClientRect();
+    const point = map.getProjection().containerPointFromCoords(position);
+    const x = bounds.left + point.x;
+    const y = bounds.top + point.y;
+    const covered = x >= panelBounds.left - 50 && x <= panelBounds.right + 50 &&
+      y >= panelBounds.top - 16 && y <= panelBounds.bottom + 60;
+    const outside = point.x < 50 || point.x > bounds.width - 50 ||
+      point.y < 65 || point.y > bounds.height - 30;
+    if (covered || outside) {
+      const targetY = Math.max(70, Math.min(bounds.height / 2, (panelBounds.top - bounds.top) / 2));
+      map.panBy(point.x - bounds.width / 2, point.y - targetY);
+    }
+  }
 
   function close() {
     generation++;
     clearTimeout(timer);
     if (viewer && onInit) kakao.maps.event.removeListener(viewer, 'init', onInit);
+    if (viewer && onPositionChanged) kakao.maps.event.removeListener(viewer, 'position_changed', onPositionChanged);
+    onPositionChanged = null;
+    removeLocation();
     viewer = null;
     onInit = null;
     canvas.replaceChildren();
@@ -40,6 +81,7 @@
       clearTimeout(timer);
       panel.setAttribute('aria-busy', 'false');
       status.textContent = message;
+      removeLocation();
     }
     timer = setTimeout(() => fail('로드뷰 연결이 지연되고 있습니다. 닫은 뒤 다시 시도해 주세요.'), 15000);
     try {
@@ -59,7 +101,12 @@
             panel.setAttribute('aria-busy', 'false');
             panel.classList.add('is-ready');
             viewer.relayout();
+            syncLocation();
           };
+          onPositionChanged = () => {
+            if (request === generation && panel.classList.contains('is-ready')) syncLocation();
+          };
+          kakao.maps.event.addListener(viewer, 'position_changed', onPositionChanged);
           kakao.maps.event.addListener(viewer, 'init', onInit);
           viewer.setPanoId(panoId, position);
         } catch (error) {
