@@ -15,26 +15,49 @@
   let onInit;
   let onPositionChanged;
   let locationOverlay;
+  let locationElement;
+  let onViewpointChanged;
 
   function removeLocation() {
     if (locationOverlay) locationOverlay.setMap(null);
     locationOverlay = null;
+    locationElement = null;
+  }
+
+  function syncDirection() {
+    if (!viewer || !locationElement) return;
+    const pan = viewer.getViewpoint().pan;
+    if (!Number.isFinite(pan)) return;
+    const heading = ((pan % 360) + 360) % 360;
+    locationElement.style.setProperty('--roadview-heading', heading + 'deg');
+    locationElement.setAttribute('aria-label', '로드뷰 위치, 북쪽 기준 시계 방향 ' + Math.round(heading) + '도');
   }
 
   function syncLocation() {
     const position = viewer.getPosition();
     if (!position) return;
     if (!locationOverlay) {
+      locationElement = document.createElement('div');
+      locationElement.className = 'roadview-location';
+      locationElement.setAttribute('role', 'img');
+      locationElement.innerHTML = '<svg class="roadview-direction" viewBox="0 0 120 120" aria-hidden="true">' +
+        '<circle cx="60" cy="60" r="54" fill="#fee500" fill-opacity=".13" stroke="#d3c700" stroke-opacity=".45"/>' +
+        '<g class="roadview-heading"><path d="M60 60L21.8 21.8A54 54 0 0 1 98.2 21.8Z" fill="#ffe600" fill-opacity=".65" stroke="#e6ce00" stroke-width="1.5"/>' +
+        '<path d="M60 11l-5 9h10Z" fill="#fff" stroke="#827600" stroke-width="1.5"/>' +
+        '<circle cx="60" cy="60" r="15" fill="#fff" stroke="#39434c" stroke-width="2"/>' +
+        '<ellipse cx="60" cy="48" rx="7" ry="5" fill="#39b7ff" stroke="#0075d8" stroke-width="2"/></g></svg>' +
+        '<span class="roadview-location-label">로드뷰</span>';
       locationOverlay = new kakao.maps.CustomOverlay({
         position,
-        content: '<div class="roadview-location" role="img" aria-label="현재 로드뷰 위치"><span>로드뷰 위치</span><i></i></div>',
+        content: locationElement,
         xAnchor: 0.5,
-        yAnchor: 1,
+        yAnchor: 0.5,
         zIndex: 40
       });
     }
     locationOverlay.setPosition(position);
     locationOverlay.setMap(map);
+    syncDirection();
 
     // Keep the location visible above the Roadview panel when it covers the pin.
     const bounds = mapElement.getBoundingClientRect();
@@ -59,6 +82,8 @@
     clearTimeout(timer);
     if (viewer && onInit) kakao.maps.event.removeListener(viewer, 'init', onInit);
     if (viewer && onPositionChanged) kakao.maps.event.removeListener(viewer, 'position_changed', onPositionChanged);
+    if (viewer && onViewpointChanged) kakao.maps.event.removeListener(viewer, 'viewpoint_changed', onViewpointChanged);
+    onViewpointChanged = null;
     onPositionChanged = null;
     removeLocation();
     viewer = null;
@@ -109,6 +134,10 @@
           onPositionChanged = () => {
             if (request === generation && panel.classList.contains('is-ready')) syncLocation();
           };
+          onViewpointChanged = () => {
+            if (request === generation && panel.classList.contains('is-ready')) syncDirection();
+          };
+          kakao.maps.event.addListener(viewer, 'viewpoint_changed', onViewpointChanged);
           kakao.maps.event.addListener(viewer, 'position_changed', onPositionChanged);
           kakao.maps.event.addListener(viewer, 'init', onInit);
           viewer.setPanoId(panoId, position);
