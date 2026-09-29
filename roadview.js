@@ -25,9 +25,9 @@
     toggle.focus({ preventScroll: true });
   }
 
-  function open() {
+  function open(position = map.getCenter()) {
+    if (!panel.hidden) close();
     const request = ++generation;
-    const position = map.getCenter();
     panel.hidden = false;
     panel.setAttribute('aria-busy', 'true');
     toggle.setAttribute('aria-pressed', 'true');
@@ -47,7 +47,7 @@
       client.getNearestPanoId(position, 500, panoId => {
         if (request !== generation) return;
         if (!panoId) {
-          fail('지도 중심 주변 500m 이내에 로드뷰가 없습니다. 지도를 이동한 뒤 다시 열어 주세요.');
+          fail('선택한 위치 주변 500m 이내에 로드뷰가 없습니다. 다른 위치에서 다시 열어 주세요.');
           return;
         }
         try {
@@ -70,6 +70,8 @@
       fail('로드뷰를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.');
     }
   }
+
+  window.openRoadviewAt = open;
 
   toggle.addEventListener('click', () => panel.hidden ? open() : close());
   closeButton.addEventListener('click', close);

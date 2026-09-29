@@ -1472,6 +1472,18 @@ function showAddressPopup(latLng){
     naver.textContent='네이버지도 길찾기';
     naver.addEventListener('click',()=>startNaverMapRoute(jibun,lat,lng));
 
+    const roadview=document.createElement('button');
+    roadview.className='navi-btn roadview-menu-btn';
+    roadview.type='button';
+    roadview.textContent='카카오 로드뷰';
+    roadview.addEventListener('click',()=>{
+      if(addressOverlay){
+        addressOverlay.setMap(null);
+        addressOverlay=null;
+      }
+      window.openRoadviewAt(latLng);
+    });
+
     close.addEventListener('click',()=>{
       if(addressOverlay){
         addressOverlay.setMap(null);
@@ -1486,6 +1498,7 @@ function showAddressPopup(latLng){
     routeActions.className='route-actions';
     routeActions.appendChild(naver);
     routeActions.appendChild(navi);
+    routeActions.appendChild(roadview);
     box.appendChild(routeActions);
 
     addressOverlay=new kakao.maps.CustomOverlay({
