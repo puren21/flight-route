@@ -3894,4 +3894,27 @@ body.satellite-map .map-type-toggle{
 .roadview-location span{padding:5px 9px;border:2px solid #fff;border-radius:14px;background:#fee500;color:#191919;font-size:12px;font-weight:800;line-height:1.2;white-space:nowrap;box-shadow:0 2px 7px #0006}
 .roadview-location i{display:block;width:20px;height:20px;box-sizing:border-box;border:4px solid #fff;border-radius:50%;background:#e5ad00;box-shadow:0 0 0 2px #614b00,0 2px 8px #0005}
 
-#roadviewResize{margin-left:auto;margin-right:8px;touch-action:none;cursor:nesw-resize;user-select:none}
+
+.roadview-header{padding-left:32px;padding-right:32px}
+.roadview-corner{position:absolute;z-index:10;width:30px;height:30px;min-width:0;padding:0;border:0;background:transparent;touch-action:none;user-select:none}
+.roadview-corner::after{content:"";position:absolute;inset:6px;border:solid #56616e;border-width:0}
+.roadview-corner-nw{top:0;left:0;cursor:nwse-resize}
+.roadview-corner-ne{top:0;right:0;cursor:nesw-resize}
+.roadview-corner-sw{bottom:0;left:0;cursor:nesw-resize}
+.roadview-corner-se{bottom:0;right:0;cursor:nwse-resize}
+.roadview-corner-nw::after{border-top-width:3px;border-left-width:3px}
+.roadview-corner-ne::after{border-top-width:3px;border-right-width:3px}
+.roadview-corner-sw::after{border-bottom-width:3px;border-left-width:3px}
+.roadview-corner-se::after{border-bottom-width:3px;border-right-width:3px}
+.roadview-corner:focus-visible{outline:2px solid #1675e8;outline-offset:-3px}
+
+#roadviewForward{font-size:12px;padding:6px;white-space:nowrap;background:#fee500}
+#roadviewForward:disabled{opacity:.45;cursor:default}
+.roadview-status:not(:empty){padding:10px;border-radius:8px;background:rgba(255,255,255,.94)}
+
+.roadview-coverage-toggle{bottom:calc(env(safe-area-inset-bottom,0px) + 112px)}
+.roadview-coverage-toggle[aria-pressed="true"]{background:#fee500 !important;color:#191919}
+.roadview-coverage-hint{position:fixed;left:72px;bottom:calc(env(safe-area-inset-bottom,0px) + 112px);max-width:calc(100vw - 96px);z-index:2147483501;margin:0;padding:8px 10px;border-radius:9px;background:#fff;color:#191919;font-size:12px;box-shadow:0 2px 8px #0003;pointer-events:none}
+.roadview-coverage-hint[hidden]{display:none}
+body:has(.roadview-panel:not([hidden])) .roadview-coverage-hint{display:none}
+@media(max-width:700px){.roadview-coverage-toggle{bottom:calc(env(safe-area-inset-bottom,0px) + 128px)}.roadview-coverage-hint{bottom:calc(env(safe-area-inset-bottom,0px) + 128px)}}
